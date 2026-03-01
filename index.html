@@ -24,9 +24,8 @@
     }
     body { 
       font-family: 'Nunito', 'Noto Sans JP', sans-serif; 
-      /* Subtle traditional Japanese Seigaiha wave pattern or Asanoha inspired grid */
       background-color: #fcfaf8;
-      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='#e8e2dd' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='#e8e2dd' fill-opacity='0.5'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
     /* Safe area padding for mobile navigation */
     .pb-safe { padding-bottom: env(safe-area-inset-bottom, 24px); }
@@ -41,12 +40,13 @@
     .kanji-watermark {
       position: absolute;
       right: -10%;
-      top: -10%;
+      top: -5%;
       font-size: 150px;
       color: rgba(0,0,0,0.03);
       font-weight: 900;
       pointer-events: none;
       user-select: none;
+      z-index: 0;
     }
     
     @keyframes pop {
@@ -55,6 +55,9 @@
       100% { transform: scale(1); opacity: 1; }
     }
     .animate-pop { animation: pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    
+    /* Mobile Input Zoom Fix */
+    input[type="text"] { font-size: 16px; } 
   </style>
 </head>
 <body class="text-slate-800 selection:bg-pink-200">
@@ -75,7 +78,7 @@
       user: null,
       profileName: "Learner",
       isAuthLoading: true,
-      currentView: 'dashboard',
+      currentView: 'dashboard', // dashboard, theory, game, result, library, explore, profile
       activeDay: 1,
       completedDays: [],
       mistakesRecord: {},
@@ -87,9 +90,9 @@
       currentMistakes: [],
       transInput: '',
       transResult: '',
-      transRomaji: '', // Added Romaji support
+      transRomaji: '', 
       transLoading: false,
-      combo: 0 // Gamification addition
+      combo: 0 
     };
 
     // Pre-warm Speech Synthesis to load voices (fixes Firefox delay)
@@ -102,17 +105,17 @@
     const DETAILED_LESSONS = [
       {
         day: 1,
-        title: "First Encounters: The Magic of Greetings",
+        title: "First Encounters 👋",
         topic: "Greetings & Basics",
         theory: {
           intro: "Welcome to Day 1! In Japan, greetings are the foundation of respect. The language shifts based on the time of day and social status. Today we learn the core greetings and the all-important 'Sumimasen'.",
           concept: "Morning greetings have a polite suffix ('gozaimasu') that you drop with friends. 'Sumimasen' is your magic word—it means 'Excuse me', 'Sorry', and sometimes even 'Thank you'!",
           examples: [
-            { kana: "おはようございます", romaji: "Ohayou gozaimasu", eng: "Good morning (Polite)", context: "Use until 11:00 AM." },
-            { kana: "こんにちは", romaji: "Konnichiwa", eng: "Good afternoon / Hello", context: "Standard daytime greeting." },
-            { kana: "こんばんは", romaji: "Konbanwa", eng: "Good evening", context: "Use after sunset." },
-            { kana: "すみません", romaji: "Sumimasen", eng: "Excuse me / Sorry", context: "Use to get a waiter's attention or apologize." },
-            { kana: "ありがとう", romaji: "Arigatou", eng: "Thank you", context: "Add 'gozaimasu' to be polite to strangers." }
+            { kana: "おはようございます", romaji: "Ohayou gozaimasu", eng: "Good morning (Polite)", context: "Use until 11:00 AM. 🌅" },
+            { kana: "こんにちは", romaji: "Konnichiwa", eng: "Good afternoon / Hello", context: "Standard daytime greeting. ☀️" },
+            { kana: "こんばんは", romaji: "Konbanwa", eng: "Good evening", context: "Use after sunset. 🌙" },
+            { kana: "すみません", romaji: "Sumimasen", eng: "Excuse me / Sorry", context: "Use to get a waiter's attention or apologize. 🙏" },
+            { kana: "ありがとう", romaji: "Arigatou", eng: "Thank you", context: "Add 'gozaimasu' to be polite to strangers. 🎁" }
           ],
           culture: "Bow slightly (about 15 degrees) when saying these to strangers or superiors. It shows instant respect."
         },
@@ -130,16 +133,16 @@
       },
       {
         day: 2,
-        title: "Who Am I? The Power of 'Desu'",
+        title: "The Power of 'Desu' 🧠",
         topic: "Self Introduction",
         theory: {
           intro: "Today, we learn how to state facts using the most important word in Japanese: 'Desu'. We also learn how to introduce ourselves.",
           concept: "'Desu' acts like 'is/am/are'. The structure is: [Topic] wa [Info] desu.",
           examples: [
-            { kana: "わたしはマリアです", romaji: "Watashi wa Maria desu.", eng: "I am Maria.", context: "Formal introduction." },
-            { kana: "がくせいです", romaji: "Gakusei desu.", eng: "I am a student.", context: "Dropping 'Watashi wa' when it's obvious." },
-            { kana: "アメリカじんです", romaji: "Amerika jin desu.", eng: "I am American.", context: "Country + 'jin' = Nationality." },
-            { kana: "よろしくおねがいします", romaji: "Yoroshiku onegaishimasu", eng: "Nice to meet you / Please treat me well.", context: "Always say this at the end of an introduction." }
+            { kana: "わたしはマリアです", romaji: "Watashi wa Maria desu.", eng: "I am Maria.", context: "Formal introduction. 👤" },
+            { kana: "がくせいです", romaji: "Gakusei desu.", eng: "I am a student.", context: "Dropping 'Watashi wa' when it's obvious. 📚" },
+            { kana: "アメリカじんです", romaji: "Amerika jin desu.", eng: "I am American.", context: "Country + 'jin' = Nationality. 🌎" },
+            { kana: "よろしくおねがいします", romaji: "Yoroshiku onegaishimasu", eng: "Nice to meet you / Please treat me well.", context: "Always say this at the end of an introduction. 🤝" }
           ],
           culture: "Japanese drops pronouns constantly. If someone asks your job, just say '[Job] desu'. Saying 'I am' every time sounds robotic!"
         },
@@ -157,15 +160,15 @@
       },
       {
         day: 3,
-        title: "Survival: Where is the...?",
+        title: "Where is the...? 📍",
         topic: "Locations & Directions",
         theory: {
           intro: "You're in Tokyo, and you need the bathroom. Fast. Today is about finding things.",
           concept: "To ask a question, add the magic particle 'ka' at the end. To ask where something is: [Place] wa doko desu ka?",
           examples: [
-            { kana: "トイレはどこですか", romaji: "Toire wa doko desu ka?", eng: "Where is the bathroom?", context: "Toire = Toilet" },
-            { kana: "えきはどこですか", romaji: "Eki wa doko desu ka?", eng: "Where is the station?", context: "Eki = Station" },
-            { kana: "コンビニはどこですか", romaji: "Konbini wa doko desu ka?", eng: "Where is the convenience store?", context: "Konbini is your lifeline in Japan." }
+            { kana: "トイレはどこですか", romaji: "Toire wa doko desu ka?", eng: "Where is the bathroom?", context: "Toire = Toilet 🚽" },
+            { kana: "えきはどこですか", romaji: "Eki wa doko desu ka?", eng: "Where is the station?", context: "Eki = Station 🚉" },
+            { kana: "コンビニはどこですか", romaji: "Konbini wa doko desu ka?", eng: "Where is the convenience store?", context: "Konbini is your lifeline in Japan. 🏪" }
           ],
           culture: "Instead of pointing with one finger (which is rude), Japanese people use their whole open hand, palm facing up, to gesture toward a place."
         },
@@ -182,16 +185,16 @@
       },
       {
         day: 4,
-        title: "Agreeing, Disagreeing & 'I don't know'",
+        title: "I Don't Know! 🤷‍♂️",
         topic: "Agreements & Survival",
         theory: {
           intro: "Let's learn how to agree, disagree politely, and the most important survival phrase when you are confused.",
           concept: "'Hai' is Yes, and 'Iie' is No. However, Japanese people rarely say a direct 'No'. Also, 'Wakarimasen' will save you when someone speaks too fast.",
           examples: [
-            { kana: "はい、そうです", romaji: "Hai, sou desu.", eng: "Yes, that is correct.", context: "Polite agreement." },
-            { kana: "いいえ、ちがいます", romaji: "Iie, chigaimasu.", eng: "No, that is wrong.", context: "Direct disagreement." },
-            { kana: "ちょっと...", romaji: "Chotto...", eng: "It's a little bit...", context: "The polite way to decline an invitation." },
-            { kana: "わかりません", romaji: "Wakarimasen", eng: "I don't understand / I don't know", context: "Crucial! Use this instead of smiling and nodding." }
+            { kana: "はい、そうです", romaji: "Hai, sou desu.", eng: "Yes, that is correct.", context: "Polite agreement. ⭕" },
+            { kana: "いいえ、ちがいます", romaji: "Iie, chigaimasu.", eng: "No, that is wrong.", context: "Direct disagreement. ❌" },
+            { kana: "ちょっと...", romaji: "Chotto...", eng: "It's a little bit...", context: "The polite way to decline an invitation. 😅" },
+            { kana: "わかりません", romaji: "Wakarimasen", eng: "I don't understand / I don't know", context: "Crucial! Use this instead of smiling and nodding. 😵" }
           ],
           culture: "If someone invites you out and you can't go, just sucking air through your teeth and saying 'Chotto...' is the polite way to say no!"
         },
@@ -208,17 +211,17 @@
       },
       {
         day: 5,
-        title: "Shopping & Dining Like a Pro",
+        title: "Dining Like a Pro 🍣",
         topic: "Restaurants & Stores",
         theory: {
           intro: "Time to buy things and eat! Let's order food and ask for prices without just pointing and grunting.",
           concept: "Use the magical words 'Kudasai' or 'Onegaishimasu' (please). We will also learn how to compliment the food!",
           examples: [
-            { kana: "これをください", romaji: "Kore o kudasai.", eng: "This, please.", context: "While pointing at a menu or item." },
-            { kana: "いくらですか", romaji: "Ikura desu ka?", eng: "How much is it?", context: "Essential for shopping." },
-            { kana: "おいしい", romaji: "Oishii", eng: "Delicious (Polite/Standard)", context: "Say this to the chef or waiter to make them happy." },
-            { kana: "うまい", romaji: "Umai", eng: "Delicious (Casual/Masculine)", context: "Used more often by guys in casual settings." },
-            { kana: "みずをおねがいします", romaji: "Mizu o onegaishimasu.", eng: "Water, please.", context: "Mizu = Water." }
+            { kana: "これをください", romaji: "Kore o kudasai.", eng: "This, please.", context: "While pointing at a menu or item. 👈" },
+            { kana: "いくらですか", romaji: "Ikura desu ka?", eng: "How much is it?", context: "Essential for shopping. 💴" },
+            { kana: "おいしい", romaji: "Oishii", eng: "Delicious (Polite/Standard)", context: "Say this to the chef or waiter to make them happy. 😋" },
+            { kana: "うまい", romaji: "Umai", eng: "Delicious (Casual/Masculine)", context: "Used more often by guys in casual settings. 🍜" },
+            { kana: "みずをおねがいします", romaji: "Mizu o onegaishimasu.", eng: "Water, please.", context: "Mizu = Water. 💧" }
           ],
           culture: "You don't need to tip in Japan! In fact, leaving money on the table will result in the waiter chasing you down the street to return it. If the food is good, just say 'Oishii!'"
         },
@@ -240,14 +243,14 @@
     const generateFullMonth = () => {
       const fullCourse = [...DETAILED_LESSONS];
       const topics = [
-        { name: "Numbers & Money", phraseKana: "ひゃくえん", phraseRomaji: "Hyaku en", phraseEng: "100 Yen" },
-        { name: "Time & Scheduling", phraseKana: "いまなんじですか", phraseRomaji: "Ima nanji desu ka", phraseEng: "What time is it now?" },
-        { name: "Train Travel", phraseKana: "きっぷ", phraseRomaji: "Kippu", phraseEng: "Ticket" },
-        { name: "Hobbies & Fun", phraseKana: "たのしい", phraseRomaji: "Tanoshii", phraseEng: "Fun / Enjoyable" },
-        { name: "Describing Things", phraseKana: "おおきい", phraseRomaji: "Ookii", phraseEng: "Big" },
-        { name: "Weather Chat", phraseKana: "あついですね", phraseRomaji: "Atsui desu ne", phraseEng: "It's hot, isn't it?" },
-        { name: "Expressing Feelings", phraseKana: "うれしい", phraseRomaji: "Ureshii", phraseEng: "Happy / Glad" },
-        { name: "Emergencies", phraseKana: "たすけて", phraseRomaji: "Tasukete", phraseEng: "Help me" }
+        { name: "Numbers & Money 💴", phraseKana: "ひゃくえん", phraseRomaji: "Hyaku en", phraseEng: "100 Yen" },
+        { name: "Time & Scheduling ⏰", phraseKana: "いまなんじですか", phraseRomaji: "Ima nanji desu ka", phraseEng: "What time is it now?" },
+        { name: "Train Travel 🚄", phraseKana: "きっぷ", phraseRomaji: "Kippu", phraseEng: "Ticket" },
+        { name: "Hobbies & Fun 🎮", phraseKana: "たのしい", phraseRomaji: "Tanoshii", phraseEng: "Fun / Enjoyable" },
+        { name: "Describing Things 🏔️", phraseKana: "おおきい", phraseRomaji: "Ookii", phraseEng: "Big" },
+        { name: "Weather Chat ☀️", phraseKana: "あついですね", phraseRomaji: "Atsui desu ne", phraseEng: "It's hot, isn't it?" },
+        { name: "Expressing Feelings 💖", phraseKana: "うれしい", phraseRomaji: "Ureshii", phraseEng: "Happy / Glad" },
+        { name: "Emergencies 🚨", phraseKana: "たすけて", phraseRomaji: "Tasukete", phraseEng: "Help me" }
       ];
       
       for (let i = DETAILED_LESSONS.length + 1; i <= 30; i++) {
@@ -283,7 +286,6 @@
               feedback_incorrect: `Try saying '${t.phraseRomaji}' clearly.` 
             };
           } else {
-            // Complex Translation Exercise
             return {
               type: 'multiple_choice',
               question: `Translation Challenge: How do you say "${t.phraseEng}" in Japanese?`,
@@ -298,12 +300,12 @@
         fullCourse.push({
           day: i,
           title: `Day ${i}: ${t.name}`,
-          topic: t.name,
+          topic: t.name.split(' ')[0],
           theory: {
             intro: `Welcome to Day ${i}. Today we expand your conversational ability regarding ${t.name}. This session requires 15-20 minutes of focus.`,
             concept: "Translating full thoughts and repetitive speaking builds true fluency. Read the phrase below and practice saying it out loud before starting.",
             examples: [
-              { kana: t.phraseKana, romaji: t.phraseRomaji, eng: t.phraseEng, context: "Daily Focus Phrase" }
+              { kana: t.phraseKana, romaji: t.phraseRomaji, eng: t.phraseEng, context: "Daily Focus Phrase ✨" }
             ],
             culture: "Consistency is more important than intensity. Doing these exercises every single day will wire your brain for Japanese naturally."
           },
@@ -323,7 +325,7 @@
           { kana: "わかりません", romaji: "Wakarimasen", eng: "I don't understand / I don't know", context: "Crucial! Use this instead of smiling and nodding when lost." },
           { kana: "すみません", romaji: "Sumimasen", eng: "Excuse me / Sorry", context: "Use to get attention, apologize, or say a quick thanks." },
           { kana: "えいごをはなせますか", romaji: "Eigo o hanasemasu ka?", eng: "Can you speak English?", context: "Ask this before defaulting to English." },
-          { kana: "はい / いいえ", romaji: "Hai / Iie", eng: "Yes / No", context: "Japanese people rarely say a blunt 'Iie' (No). Use 'Chotto...' (A little...) to decline politely." }
+          { kana: "はい / いいえ", romaji: "Hai / Iie", eng: "Yes / No", context: "Japanese people rarely say a blunt 'Iie' (No). Use 'Chotto...' to decline politely." }
         ]
       },
       {
@@ -356,6 +358,13 @@
       }
     ];
 
+    const MAP_REGIONS = [
+      { name: "Tokyo & Kanto", icon: "🗼", emoji: "🍣", desc: "The bustling metropolis. Standard Japanese is spoken here.", keywords: ["Sushi", "Ramen", "High-Tech"] },
+      { name: "Kyoto & Osaka", icon: "🏯", emoji: "🐙", desc: "Traditional Japan & Kansai dialect. Say 'Ookini' instead of 'Arigatou' here!", keywords: ["Takoyaki", "Temples", "Geisha"] },
+      { name: "Hokkaido", icon: "❄️", emoji: "🦀", desc: "The snowy north. Famous for incredible seafood and winter festivals.", keywords: ["Snow", "Seafood", "Nature"] },
+      { name: "Okinawa", icon: "🏖️", emoji: "🍍", desc: "Tropical islands in the south. Say 'Haisai' instead of 'Konnichiwa'!", keywords: ["Beaches", "Goya", "Resorts"] }
+    ];
+
     // --- LOGIC & LOCAL FALLBACK (ANTI-CRASH) ---
     const loadLocalProgress = () => {
       try {
@@ -371,15 +380,15 @@
 
     const showSaveToast = () => {
       const toast = document.createElement('div');
-      toast.className = 'fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-2xl z-50 transition-all duration-300 text-sm font-bold flex items-center gap-2 animate-pop';
+      toast.className = 'fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl z-[100] transition-all duration-300 text-sm font-bold flex items-center gap-2 animate-pop border border-gray-700';
       toast.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i> Progress Saved Locally`;
       document.body.appendChild(toast);
       lucide.createIcons();
       setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translate(-50%, -10px)';
+        toast.style.transform = 'translate(-50%, -20px)';
         setTimeout(() => toast.remove(), 300);
-      }, 2500);
+      }, 2000);
     };
 
     const initApp = async () => {
@@ -454,7 +463,7 @@
           mistakesRecord: newMistakes,
           profileName: state.profileName
         }));
-        showSaveToast(); // Alert user that local save succeeded
+        showSaveToast(); 
       }
     };
 
@@ -468,7 +477,6 @@
         utterance.lang = 'ja-JP'; 
         utterance.rate = 0.85; 
         
-        // Smart search for a Female Japanese Voice
         const voices = window.speechSynthesis.getVoices();
         const jpVoices = voices.filter(v => v.lang.includes('ja'));
         if(jpVoices.length > 0) {
@@ -493,23 +501,39 @@
       renderApp();
 
       try {
-        // Using Google Translate free client API to fetch Translation AND Romaji
+        // Deep parsing of Google Translate free API to ensure Romaji is extracted
         const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ja&dt=t&dt=rm&q=${encodeURIComponent(text)}`;
         const res = await fetch(url);
         const data = await res.json();
         
+        let jpText = "";
+        let romajiText = "";
+
         if (data && data[0]) {
-          state.transResult = data[0][0][0]; // Japanese Text
-          // Try to extract Romaji (Google sometimes places it at different indexes based on input)
-          if(data[0].length > 1 && data[0][1][0]) {
-              state.transRomaji = data[0][1][0];
-          } else if (data[0][0].length > 3 && data[0][0][3]) {
-              state.transRomaji = data[0][0][3];
-          } else {
-              state.transRomaji = "Audio available below";
-          }
+            data[0].forEach(item => {
+                // Japanese Kana/Kanji part
+                if (item[0] && typeof item[0] === 'string' && item[0] !== "null" && !item[0].match(/^[a-zA-Z\s]+$/)) {
+                    jpText += item[0];
+                }
+                // Romaji part is often in index 2 or 3
+                if (item[2] && typeof item[2] === 'string' && /^[a-zA-Zāēīōūōōuu\-\s\']+$/i.test(item[2])) {
+                    romajiText += item[2];
+                } else if (item[3] && typeof item[3] === 'string' && /^[a-zA-Zāēīōūōōuu\-\s\']+$/i.test(item[3])) {
+                    romajiText += item[3]; 
+                }
+            });
+            
+            // Fallback if parsing failed but it exists at the end of the array
+            if(!romajiText && data[0].length > 1) {
+                const lastEl = data[0][data[0].length - 1];
+                if(lastEl && typeof lastEl[2] === 'string') romajiText = lastEl[2];
+                else if(lastEl && typeof lastEl[3] === 'string') romajiText = lastEl[3];
+            }
+
+            state.transResult = jpText || "Could not translate.";
+            state.transRomaji = romajiText ? romajiText.trim() : "Audio available below";
         } else {
-          state.transResult = "Could not translate.";
+            state.transResult = "Could not translate.";
         }
       } catch(e) {
         state.transResult = "Network error. Try again.";
@@ -547,7 +571,7 @@
       
       const exercise = COURSE_DATA.find(d => d.day === state.activeDay).exercises[state.gameStep];
       
-      // AUTO-PLAY AUDIO ON CLICK IF JAPANESE OPTION EXISTS
+      // AUTO-PLAY AUDIO ON CLICK
       if (exercise.optionsKana && exercise.optionsKana[index]) {
         window.playAudio(null, exercise.optionsKana[index]);
       }
@@ -557,9 +581,9 @@
       
       if (index === exercise.answer) {
         state.score += 1;
-        state.combo += 1; // Increase gamification combo
+        state.combo += 1; 
       } else {
-        state.combo = 0; // Break combo
+        state.combo = 0; 
         state.currentMistakes.push(exercise.conceptTag);
       }
       renderApp();
@@ -589,18 +613,30 @@
 
       recognition.onresult = (event) => {
         state.isRecording = false;
-        const transcript = event.results[0][0].transcript.toLowerCase().trim();
+        let rawTranscript = event.results[0][0].transcript;
+        let transcript = rawTranscript.toLowerCase().trim();
+        
+        // Remove punctuation/spaces for a fairer comparison
+        const cleanTranscript = transcript.replace(/[.,!?。、！？\s]/g, '');
+
         const exercise = COURSE_DATA.find(d => d.day === state.activeDay).exercises[state.gameStep];
         
-        const isMatch = exercise.expectedKana.includes(transcript) || exercise.expectedRomaji.some(r => transcript.includes(r));
+        const isMatchKana = exercise.expectedKana.some(k => cleanTranscript.includes(k.replace(/[.,!?。、！？\s]/g, '')));
+        const isMatchRomaji = exercise.expectedRomaji.some(r => cleanTranscript.includes(r.replace(/[.,!?。、！？\s]/g, '')));
+        
+        // Fix: must have spoken something
+        const isMatch = cleanTranscript.length > 0 && (isMatchKana || isMatchRomaji);
         
         state.selectedAnswer = isMatch;
         state.showFeedback = true;
+
         if (isMatch) {
             state.score += 1;
             state.combo += 1;
         } else {
             state.combo = 0;
+            // Provide exact user feedback
+            exercise.feedback_incorrect = `You said: "${rawTranscript}". Try focusing on the exact pronunciation!`;
             state.currentMistakes.push(exercise.conceptTag);
         }
         renderApp();
@@ -608,12 +644,18 @@
 
       recognition.onerror = (event) => {
         state.isRecording = false;
+        state.showFeedback = true;
+        state.selectedAnswer = false; // Mark as failed
+        state.combo = 0;
+        
+        const exercise = COURSE_DATA.find(d => d.day === state.activeDay).exercises[state.gameStep];
+        
         if (event.error === 'not-allowed') {
-          alert("Microphone access denied. Please allow microphone access.");
+          exercise.feedback_incorrect = "Microphone blocked. Please allow mic access!";
+        } else if (event.error === 'no-speech') {
+          exercise.feedback_incorrect = "No speech detected. Please speak clearly into the microphone.";
         } else { 
-          state.score += 1; 
-          state.selectedAnswer = true; 
-          state.showFeedback = true; 
+          exercise.feedback_incorrect = "Error: " + event.error;
         }
         renderApp();
       };
@@ -667,7 +709,7 @@
       const root = document.getElementById('root');
       
       if (state.isAuthLoading) {
-        root.innerHTML = `<div class="min-h-screen flex items-center justify-center bg-white text-pink-500"><i data-lucide="loader-2" class="animate-spin w-12 h-12"></i></div>`;
+        root.innerHTML = `<div class="min-h-screen flex items-center justify-center bg-white text-rose-500"><i data-lucide="loader-2" class="animate-spin w-12 h-12"></i></div>`;
         lucide.createIcons();
         return;
       }
@@ -678,11 +720,12 @@
       else if (state.currentView === 'game') content = renderGame();
       else if (state.currentView === 'result') content = renderResult();
       else if (state.currentView === 'library') content = renderLibrary();
+      else if (state.currentView === 'explore') content = renderExplore();
       else if (state.currentView === 'profile') content = renderProfile();
 
       root.innerHTML = `
         ${renderNav()}
-        <main class="p-4 md:p-8 pt-4 md:pt-8 pb-32 md:pb-8">
+        <main class="p-4 md:p-8 pt-4 md:pt-8 pb-32 md:pb-12 max-w-[100vw] overflow-x-hidden">
           ${content}
         </main>
       `;
@@ -692,16 +735,20 @@
     const renderNav = () => {
       return `
         <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 pb-safe md:relative md:border-b md:border-t-0 z-50 shadow-[0_-4px_15px_-3px_rgba(0,0,0,0.05)]">
-          <div class="max-w-4xl mx-auto flex justify-around md:justify-center md:gap-20 p-3 md:p-5">
-            <button onclick="window.changeView('dashboard')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'dashboard' ? 'text-pink-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
-              <i data-lucide="map" class="w-6 h-6 md:w-7 md:h-7"></i>
+          <div class="max-w-4xl mx-auto flex justify-between md:justify-center md:gap-16 px-4 py-3 md:p-5">
+            <button onclick="window.changeView('dashboard')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'dashboard' ? 'text-rose-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
+              <i data-lucide="map-pin" class="w-6 h-6 md:w-7 md:h-7"></i>
               <span class="text-[10px] md:text-xs font-black uppercase tracking-widest">Journey</span>
             </button>
-            <button onclick="window.changeView('library')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'library' ? 'text-pink-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
+            <button onclick="window.changeView('explore')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'explore' ? 'text-rose-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
+              <i data-lucide="compass" class="w-6 h-6 md:w-7 md:h-7"></i>
+              <span class="text-[10px] md:text-xs font-black uppercase tracking-widest">Explore</span>
+            </button>
+            <button onclick="window.changeView('library')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'library' ? 'text-rose-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
               <i data-lucide="book-marked" class="w-6 h-6 md:w-7 md:h-7"></i>
               <span class="text-[10px] md:text-xs font-black uppercase tracking-widest">Guide</span>
             </button>
-            <button onclick="window.changeView('profile')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'profile' ? 'text-pink-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
+            <button onclick="window.changeView('profile')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'profile' ? 'text-rose-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
               <i data-lucide="circle-user-round" class="w-6 h-6 md:w-7 md:h-7"></i>
               <span class="text-[10px] md:text-xs font-black uppercase tracking-widest">Profile</span>
             </button>
@@ -738,7 +785,7 @@
         <div class="bg-white rounded-[2rem] japanese-shadow p-6 md:p-10 mb-8 border border-gray-50 relative z-10">
           <div class="flex justify-between items-center mb-8 border-b-2 border-gray-100 pb-4">
             <h2 class="text-3xl font-black text-gray-800 flex items-center gap-3">
-              <i data-lucide="map" class="text-rose-400 w-8 h-8"></i> Syllabus Map
+              <i data-lucide="map" class="text-rose-400 w-8 h-8"></i> Syllabus Map 🗺️
             </h2>
           </div>
           <p class="text-gray-500 mb-10 font-bold text-lg">Dedicate 15 minutes daily. Auto-save is active.</p>
@@ -792,6 +839,46 @@
       return html;
     };
 
+    const renderExplore = () => {
+      let html = `
+      <div class="max-w-5xl mx-auto pb-24 mt-2 md:mt-6 animate-pop">
+        
+        <div class="bg-white rounded-[3rem] p-10 md:p-12 mb-10 japanese-shadow border border-gray-50 text-center relative overflow-hidden">
+          <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0iI2QxZDVkYiIvPjwvc3ZnPg==')]"></div>
+          <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 relative z-10 flex justify-center items-center gap-3">
+             <i data-lucide="compass" class="w-12 h-12 text-rose-500"></i> Explore Japan 🗾
+          </h1>
+          <p class="text-gray-500 text-xl font-bold relative z-10">Discover regional culture, foods, and dialects.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      `;
+
+      MAP_REGIONS.forEach(region => {
+        html += `
+          <div class="bg-white rounded-[2rem] p-8 shadow-md border-2 border-gray-50 hover:shadow-xl hover:-translate-y-1 transition-all group">
+            <div class="flex justify-between items-start mb-6">
+              <div class="flex items-center gap-4">
+                <span class="text-5xl bg-gray-50 p-4 rounded-3xl group-hover:scale-110 transition-transform">${region.icon}</span>
+                <h2 class="text-3xl font-black text-gray-800">${region.name}</h2>
+              </div>
+            </div>
+            <p class="text-gray-600 font-bold text-lg mb-6 leading-relaxed">${region.desc}</p>
+            <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+               <span class="text-xs font-black text-indigo-500 uppercase tracking-widest mb-3 block">Local Vibes</span>
+               <div class="flex flex-wrap gap-3 items-center">
+                  <span class="text-3xl">${region.emoji}</span>
+                  ${region.keywords.map(kw => `<span class="bg-white px-4 py-2 rounded-full text-sm font-bold text-gray-700 shadow-sm border border-gray-100">${kw}</span>`).join('')}
+               </div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div></div>`;
+      return html;
+    };
+
     const renderTheory = () => {
       const lesson = COURSE_DATA.find(d => d.day === state.activeDay);
       
@@ -810,7 +897,7 @@
       `).join('');
 
       return `
-      <div class="max-w-3xl mx-auto pb-20 mt-2 md:mt-6">
+      <div class="max-w-3xl mx-auto pb-20 mt-2 md:mt-6 animate-pop">
         <button onclick="window.changeView('dashboard')" class="text-gray-500 mb-6 flex items-center hover:text-gray-800 font-black transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 w-fit">
           <i data-lucide="arrow-left" class="w-6 h-6 mr-2"></i> Back to Map
         </button>
@@ -839,7 +926,7 @@
             </div>
 
             <div>
-              <h3 class="font-black text-gray-800 mb-6 text-2xl border-b-2 pb-3 border-gray-100">Vocabulary & Phrases</h3>
+              <h3 class="font-black text-gray-800 mb-6 text-2xl border-b-2 pb-3 border-gray-100">Vocabulary & Phrases 📝</h3>
               <div class="space-y-6">
                 ${examplesHtml}
               </div>
@@ -848,7 +935,7 @@
             <div class="bg-green-50 rounded-[1.5rem] p-8 border border-green-100 flex gap-5 items-start shadow-sm">
               <i data-lucide="leaf" class="text-green-600 shrink-0 mt-1 w-10 h-10"></i>
               <div>
-                <h3 class="font-black text-green-900 mb-2 text-xl">Culture Note</h3>
+                <h3 class="font-black text-green-900 mb-2 text-xl">Culture Note 🎎</h3>
                 <p class="text-green-800 font-bold leading-relaxed">${lesson.theory.culture}</p>
               </div>
             </div>
@@ -874,7 +961,7 @@
       else if (exercise.type === 'speak') isCorrect = isAnswered && state.selectedAnswer === true;
 
       const progressWidth = (state.gameStep / lesson.exercises.length) * 100;
-      const typeLabel = exercise.type === 'speak' ? 'Speaking Exercise' : exercise.type === 'listen' ? 'Listening Check' : 'Translation Challenge';
+      const typeLabel = exercise.type === 'speak' ? 'Speaking Exercise 🎙️' : exercise.type === 'listen' ? 'Listening Check 🎧' : 'Translation Challenge 🧠';
 
       let exerciseHtml = '';
       if (exercise.type === 'multiple_choice' || exercise.type === 'listen') {
@@ -896,7 +983,7 @@
           let optionAudioBtn = '';
           if (exercise.optionsKana && exercise.optionsKana[i]) {
             optionAudioBtn = `
-              <button onclick="window.playAudio(event, '${exercise.optionsKana[i]}')" class="p-3 md:p-4 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-200 transition-colors shrink-0 z-10 border border-indigo-100 mr-2">
+              <button onclick="window.playAudio(event, '${exercise.optionsKana[i]}')" class="p-3 md:p-4 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-200 transition-colors shrink-0 z-10 border border-indigo-100 mr-2 shadow-sm">
                  <i data-lucide="volume-2" class="w-6 h-6"></i>
               </button>
             `;
@@ -933,12 +1020,12 @@
       const feedbackClass = isCorrect ? 'bg-green-50 border-green-200 text-green-900' : 'bg-rose-50 border-rose-200 text-rose-900';
       const iconClass = isCorrect ? 'bg-green-500' : 'bg-rose-500';
       const iconType = isCorrect ? 'check' : 'message-circle-warning';
-      const headingText = isCorrect ? 'Excellent!' : 'Sensei Advice';
+      const headingText = isCorrect ? 'Excellent! 🎉' : 'Sensei Advice 💡';
       const btnFeedClass = isCorrect ? 'bg-green-500 hover:bg-green-600 shadow-green-500/30' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/30';
       const btnText = state.gameStep === lesson.exercises.length - 1 ? 'Finish Lesson' : 'Next Question';
 
       return `
-      <div class="max-w-2xl mx-auto pb-20 mt-2 md:mt-6">
+      <div class="max-w-2xl mx-auto pb-20 mt-2 md:mt-6 animate-pop">
         
         <!-- Gamification Header -->
         <div class="flex justify-between items-center mb-6 px-2">
@@ -1012,7 +1099,7 @@
         : '';
 
       return `
-      <div class="max-w-lg mx-auto mt-12 text-center px-4">
+      <div class="max-w-lg mx-auto mt-12 text-center px-4 animate-pop">
         <div class="bg-white rounded-[3rem] japanese-shadow p-10 md:p-16 border border-gray-50 relative overflow-hidden">
           
           <div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0iI2QxZDVkYiIvPjwvc3ZnPg==')]"></div>
@@ -1040,7 +1127,7 @@
 
     const renderLibrary = () => {
       let html = `
-      <div class="max-w-5xl mx-auto pb-24 mt-2 md:mt-6">
+      <div class="max-w-5xl mx-auto pb-24 mt-2 md:mt-6 animate-pop">
         
         <!-- AI TRANSLATOR WIDGET -->
         <div class="bg-white p-8 md:p-10 rounded-[2.5rem] japanese-shadow border border-gray-50 mb-12 relative overflow-hidden">
@@ -1060,7 +1147,7 @@
           </div>
           
           ${state.transResult ? `
-            <div class="mt-8 bg-gray-900 p-8 rounded-[1.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-2xl animate-pop">
+            <div class="mt-8 bg-gray-900 p-8 rounded-[1.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-2xl animate-pop border border-gray-800">
               <div>
                  <span class="text-3xl md:text-4xl font-black text-white block mb-2">${state.transResult}</span>
                  <span class="text-xl font-bold text-indigo-300 tracking-wide">${state.transRomaji}</span>
@@ -1075,7 +1162,7 @@
         <div class="bg-gradient-to-r from-rose-400 to-orange-400 text-white rounded-[2.5rem] p-10 md:p-12 mb-12 shadow-xl text-center md:text-left relative overflow-hidden">
           <i data-lucide="book-marked" class="absolute right-0 bottom-0 w-64 h-64 opacity-10 transform translate-x-10 translate-y-10"></i>
           <h1 class="text-4xl md:text-5xl font-black mb-4 flex items-center justify-center md:justify-start gap-4 relative z-10">
-             Survival Guide
+             Survival Guide 🎒
           </h1>
           <p class="text-rose-50 text-xl font-bold relative z-10">Master these 90% of basic interactions.</p>
         </div>
@@ -1122,7 +1209,7 @@
     };
 
     const renderProfile = () => `
-      <div class="max-w-md mx-auto mt-10 md:mt-20 px-4 pb-20">
+      <div class="max-w-md mx-auto mt-10 md:mt-20 px-4 pb-20 animate-pop">
         <div class="bg-white rounded-[3rem] japanese-shadow p-10 border border-gray-50 text-center relative overflow-hidden">
           
           <div class="w-32 h-32 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-8 border-8 border-white shadow-xl relative z-10">
