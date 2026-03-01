@@ -16,6 +16,10 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Leaflet CSS & JS for OpenStreetMap -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
   <style>
     :root {
       --sakura-pink: #ffd1dc;
@@ -58,6 +62,22 @@
     
     /* Mobile Input Zoom Fix */
     input[type="text"] { font-size: 16px; } 
+
+    /* Custom Map Marker CSS */
+    .custom-map-icon { background: transparent; border: none; }
+    .custom-map-icon div { 
+      display: flex; align-items: center; justify-content: center; 
+      width: 44px; height: 44px; background: white; border-radius: 50%; 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); 
+      border: 3px solid #f43f5e; font-size: 22px; transition: transform 0.2s ease-out;
+    }
+    .custom-map-icon div:hover { transform: scale(1.15) translateY(-5px); cursor: pointer; }
+    .animate-bounce-slow { animation: bounce 3s infinite; }
+    
+    /* Override Leaflet UI to fit perfectly */
+    .leaflet-container { font-family: 'Nunito', sans-serif; z-index: 10; }
+    .leaflet-popup-content-wrapper { border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); padding: 5px; }
+    .leaflet-popup-content { margin: 10px 15px; }
   </style>
 </head>
 <body class="text-slate-800 selection:bg-pink-200">
@@ -100,6 +120,9 @@
       window.speechSynthesis.getVoices();
       window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
+
+    // Map Instance Variable
+    let myMap = null;
 
     // --- DATA & SYLLABUS ---
     const DETAILED_LESSONS = [
@@ -359,10 +382,11 @@
     ];
 
     const MAP_REGIONS = [
-      { name: "Tokyo & Kanto", icon: "🗼", emoji: "🍣", desc: "The bustling metropolis. Standard Japanese is spoken here.", keywords: ["Sushi", "Ramen", "High-Tech"] },
-      { name: "Kyoto & Osaka", icon: "🏯", emoji: "🐙", desc: "Traditional Japan & Kansai dialect. Say 'Ookini' instead of 'Arigatou' here!", keywords: ["Takoyaki", "Temples", "Geisha"] },
-      { name: "Hokkaido", icon: "❄️", emoji: "🦀", desc: "The snowy north. Famous for incredible seafood and winter festivals.", keywords: ["Snow", "Seafood", "Nature"] },
-      { name: "Okinawa", icon: "🏖️", emoji: "🍍", desc: "Tropical islands in the south. Say 'Haisai' instead of 'Konnichiwa'!", keywords: ["Beaches", "Goya", "Resorts"] }
+      { name: "Tokyo & Kanto", icon: "🗼", emoji: "🍣", desc: "The bustling metropolis. Standard Japanese is spoken here.", keywords: ["Sushi", "Ramen", "High-Tech"], lat: 35.6895, lng: 139.6917 },
+      { name: "Kyoto & Osaka", icon: "🏯", emoji: "🐙", desc: "Traditional Japan & Kansai dialect. Say 'Ookini' instead of 'Arigatou' here!", keywords: ["Takoyaki", "Temples", "Geisha"], lat: 34.6937, lng: 135.5023 },
+      { name: "Hokkaido", icon: "❄️", emoji: "🦀", desc: "The snowy north. Famous for incredible seafood and winter festivals.", keywords: ["Snow", "Seafood", "Nature"], lat: 43.0618, lng: 141.3545 },
+      { name: "Okinawa", icon: "🏖️", emoji: "🍍", desc: "Tropical islands in the south. Say 'Haisai' instead of 'Konnichiwa'!", keywords: ["Beaches", "Goya", "Resorts"], lat: 26.2124, lng: 127.6809 },
+      { name: "Mount Fuji", icon: "🗻", emoji: "🍵", desc: "Japan's iconic sacred mountain.", keywords: ["Hiking", "Onsen", "Matcha"], lat: 35.3606, lng: 138.7274 }
     ];
 
     // --- LOGIC & LOCAL FALLBACK (ANTI-CRASH) ---
@@ -541,6 +565,52 @@
       
       state.transLoading = false;
       renderApp();
+    };
+
+    // --- LEAFLET MAP INITIALIZATION ---
+    window.initMap = () => {
+        const container = document.getElementById('japan-map');
+        if (!container) return;
+        
+        if (myMap !== null) {
+            myMap.remove();
+            myMap = null;
+        }
+
+        // Center on Japan
+        myMap = L.map('japan-map', {
+            zoomControl: false // Customizing UI
+        }).setView([37.5, 137.5], 5);
+        
+        L.control.zoom({ position: 'topright' }).addTo(myMap);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            className: 'map-tiles'
+        }).addTo(myMap);
+
+        MAP_REGIONS.forEach(region => {
+            const icon = L.divIcon({
+                className: 'custom-map-icon',
+                html: `<div class="animate-bounce-slow border-4 border-rose-400">${region.icon}</div>`,
+                iconSize: [44, 44],
+                iconAnchor: [22, 22],
+                popupAnchor: [0, -22]
+            });
+
+            const marker = L.marker([region.lat, region.lng], {icon: icon}).addTo(myMap);
+            
+            marker.bindPopup(`
+                <div class="p-2 text-center min-w-[150px]">
+                    <h3 class="font-black text-lg text-gray-800 mb-1">${region.name}</h3>
+                    <div class="text-3xl mb-2">${region.emoji}</div>
+                    <p class="text-sm font-bold text-gray-600 mb-3">${region.desc}</p>
+                    <div class="flex flex-wrap justify-center gap-1">
+                        ${region.keywords.map(kw => `<span class="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md text-[10px] font-black uppercase">${kw}</span>`).join('')}
+                    </div>
+                </div>
+            `);
+        });
     };
 
     // --- GLOBAL ACTIONS ---
@@ -730,11 +800,16 @@
         </main>
       `;
       lucide.createIcons();
+
+      // Trigger map initialization after DOM update
+      if (state.currentView === 'explore') {
+          setTimeout(window.initMap, 50);
+      }
     };
 
     const renderNav = () => {
       return `
-        <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 pb-safe md:relative md:border-b md:border-t-0 z-50 shadow-[0_-4px_15px_-3px_rgba(0,0,0,0.05)]">
+        <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 pb-safe md:relative md:border-b md:border-t-0 z-[9999] shadow-[0_-4px_15px_-3px_rgba(0,0,0,0.05)]">
           <div class="max-w-4xl mx-auto flex justify-between md:justify-center md:gap-16 px-4 py-3 md:p-5">
             <button onclick="window.changeView('dashboard')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'dashboard' ? 'text-rose-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
               <i data-lucide="map-pin" class="w-6 h-6 md:w-7 md:h-7"></i>
@@ -848,7 +923,12 @@
           <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 relative z-10 flex justify-center items-center gap-3">
              <i data-lucide="compass" class="w-12 h-12 text-rose-500"></i> Explore Japan 🗾
           </h1>
-          <p class="text-gray-500 text-xl font-bold relative z-10">Discover regional culture, foods, and dialects.</p>
+          <p class="text-gray-500 text-xl font-bold relative z-10">Discover regional culture, foods, and dialects on the interactive map.</p>
+        </div>
+
+        <!-- NEW INTERACTIVE MAP CONTAINER -->
+        <div class="w-full h-[450px] md:h-[500px] rounded-[2rem] shadow-xl border-4 border-white mb-12 z-0 relative overflow-hidden">
+             <div id="japan-map" class="absolute inset-0"></div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -859,7 +939,7 @@
           <div class="bg-white rounded-[2rem] p-8 shadow-md border-2 border-gray-50 hover:shadow-xl hover:-translate-y-1 transition-all group">
             <div class="flex justify-between items-start mb-6">
               <div class="flex items-center gap-4">
-                <span class="text-5xl bg-gray-50 p-4 rounded-3xl group-hover:scale-110 transition-transform">${region.icon}</span>
+                <span class="text-5xl bg-gray-50 p-4 rounded-3xl group-hover:scale-110 transition-transform cursor-pointer" onclick="window.playAudio(event, '${region.name}')">${region.icon}</span>
                 <h2 class="text-3xl font-black text-gray-800">${region.name}</h2>
               </div>
             </div>
@@ -867,8 +947,8 @@
             <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100">
                <span class="text-xs font-black text-indigo-500 uppercase tracking-widest mb-3 block">Local Vibes</span>
                <div class="flex flex-wrap gap-3 items-center">
-                  <span class="text-3xl">${region.emoji}</span>
-                  ${region.keywords.map(kw => `<span class="bg-white px-4 py-2 rounded-full text-sm font-bold text-gray-700 shadow-sm border border-gray-100">${kw}</span>`).join('')}
+                  <span class="text-3xl hover:animate-bounce cursor-pointer">${region.emoji}</span>
+                  ${region.keywords.map(kw => `<span class="bg-white px-4 py-2 rounded-full text-sm font-bold text-gray-700 shadow-sm border border-gray-100 hover:text-indigo-600 transition-colors">${kw}</span>`).join('')}
                </div>
             </div>
           </div>
