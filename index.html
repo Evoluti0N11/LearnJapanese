@@ -1,0 +1,595 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  BookOpen, Play, CheckCircle, XCircle, Star, Volume2, 
+  Map, Library, Home, ChevronRight, MessageCircle, Mic, Award
+} from 'lucide-react';
+
+// --- DATA & SYLLABUS ---
+// We focus on Romaji for speaking/understanding first, introducing Kana gently.
+const COURSE_DATA = [
+  {
+    day: 1,
+    title: "First Encounters: The Magic of Greetings",
+    theory: {
+      intro: "Welcome to Day 1! In Japan, greetings are the foundation of respect and relationships. We'll start by learning how to acknowledge people appropriately based on the time of day.",
+      concept: "Unlike English where a simple 'Hello' works anytime, Japanese changes based on the sun.",
+      examples: [
+        { jp: "Ohayou gozaimasu", eng: "Good morning (Polite)", context: "Use until about 11:00 AM. The 'gozaimasu' makes it formal." },
+        { jp: "Konnichiwa", eng: "Good afternoon / Hello", context: "Use from 11:00 AM to sunset. It's your standard daytime greeting." },
+        { jp: "Konbanwa", eng: "Good evening", context: "Use after the sun goes down." }
+      ],
+      culture: "When saying these, a slight bow of the head (about 15 degrees) adds a great touch of respect!"
+    },
+    exercises: [
+      {
+        type: 'multiple_choice',
+        question: "It's 8:30 AM and you see your boss. What do you say?",
+        options: ["Konnichiwa", "Ohayou gozaimasu", "Konbanwa"],
+        answer: 1,
+        feedback_incorrect: "Remember, the sun is just coming up! 'Konnichiwa' is for later in the day, and 'Konbanwa' is for night. We need the morning greeting."
+      },
+      {
+        type: 'listen',
+        question: "Listen to the audio. Which greeting is this?",
+        audioText: "Konnichiwa",
+        options: ["Good morning", "Good afternoon", "Good evening"],
+        answer: 1,
+        feedback_incorrect: "That was 'Konnichiwa', which is used during the daytime (Good afternoon)."
+      },
+      {
+        type: 'multiple_choice',
+        question: "How do you say 'Good evening'?",
+        options: ["Konbanwa", "Ohayou", "Sayounara"],
+        answer: 0,
+        feedback_incorrect: "Look at the 'ban' in Konbanwa—it relates to night/evening. 'Ohayou' is morning!"
+      }
+    ]
+  },
+  {
+    day: 2,
+    title: "Who Am I? The Power of 'Desu'",
+    theory: {
+      intro: "Today, we learn how to state facts. The most important word you'll learn this week is 'Desu' (pronounced 'dess').",
+      concept: "'Desu' acts like 'is/am/are' in English. The basic sentence structure is: [Topic] wa [Information] desu.",
+      examples: [
+        { jp: "Watashi wa [Name] desu.", eng: "I am [Name].", context: "Introducing yourself." },
+        { jp: "Gakusei desu.", eng: "I am a student.", context: "Notice we dropped 'Watashi wa' (I am). In Japanese, if the context is obvious, we drop the subject!" }
+      ],
+      culture: "Japanese people rarely use 'Watashi' (I) in every sentence. It sounds a bit robotic. Once people know you're talking about yourself, just say the noun + desu!"
+    },
+    exercises: [
+      {
+        type: 'multiple_choice',
+        question: "How would you say 'I am Anna'?",
+        options: ["Anna wa watashi desu", "Watashi wa Anna desu", "Desu Anna watashi"],
+        answer: 1,
+        feedback_incorrect: "The structure is [Topic] + wa + [Name] + desu. So, 'Watashi' (I) + wa + Anna + desu."
+      },
+      {
+        type: 'listen',
+        question: "What does this mean?",
+        audioText: "Watashi wa gakusei desu",
+        options: ["I am a teacher", "You are a student", "I am a student"],
+        answer: 2,
+        feedback_incorrect: "Listen closely for 'Watashi' (I) and 'gakusei' (student)."
+      },
+      {
+        type: 'multiple_choice',
+        question: "True or False: You MUST say 'Watashi wa' in every single sentence when talking about yourself.",
+        options: ["True", "False"],
+        answer: 1,
+        feedback_incorrect: "False! In Japanese, we love to drop the subject if it's already obvious. It sounds more natural."
+      }
+    ]
+  },
+  {
+    day: 3,
+    title: "Survival: Where is the...?",
+    theory: {
+      intro: "You're in Tokyo, and you need the bathroom. Fast. Today we learn how to ask where things are.",
+      concept: "To ask a question, we add the 'magic question particle' at the end of a sentence: 'ka'. To ask where something is, use: [Place] wa doko desu ka?",
+      examples: [
+        { jp: "Toire wa doko desu ka?", eng: "Where is the bathroom?", context: "Toire = Toilet/Bathroom" },
+        { jp: "Eki wa doko desu ka?", eng: "Where is the train station?", context: "Eki = Station" }
+      ],
+      culture: "Pointing with your index finger is considered slightly rude in Japan. Use your whole open hand to gesture towards a direction instead!"
+    },
+    exercises: [
+      {
+        type: 'multiple_choice',
+        question: "How do you ask 'Where is the station?'",
+        options: ["Eki wa toire desu ka?", "Eki wa doko desu ka?", "Doko wa eki desu ka?"],
+        answer: 1,
+        feedback_incorrect: "'Doko' means 'where'. The structure is [Thing] + wa + doko + desu + ka."
+      },
+      {
+        type: 'multiple_choice',
+        question: "What makes a sentence a question in spoken Japanese?",
+        options: ["Raising your voice very high", "Adding 'ka' at the end", "Reversing the word order"],
+        answer: 1,
+        feedback_incorrect: "While raising your pitch helps, the grammatical rule is to simply add the particle 'ka' to the end of a polite 'desu/masu' sentence."
+      }
+    ]
+  }
+];
+
+// Generate placeholder days for the 5-month visual roadmap (150 days)
+const TOTAL_DAYS = 150;
+const ROADMAP = Array.from({ length: TOTAL_DAYS }, (_, i) => {
+  const dayNum = i + 1;
+  const existingData = COURSE_DATA.find(d => d.day === dayNum);
+  if (existingData) return existingData;
+  
+  // Categorize months for visual grouping
+  let month = "";
+  if (dayNum <= 30) month = "Month 1: Survival & Basics";
+  else if (dayNum <= 60) month = "Month 2: Daily Life & Navigation";
+  else if (dayNum <= 90) month = "Month 3: Expressions & Opinions";
+  else if (dayNum <= 120) month = "Month 4: Connecting Ideas";
+  else month = "Month 5: Casual Fluency";
+
+  return {
+    day: dayNum,
+    title: `Day ${dayNum} Lesson`,
+    isLocked: dayNum > 3, // Lock days after 3 for this demo
+    monthGroup: month
+  };
+});
+
+// --- HELPER COMPONENTS ---
+
+const AudioButton = ({ text, className = "" }) => {
+  const playAudio = () => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ja-JP'; // Japanese
+      utterance.rate = 0.8; // Slightly slower for learning
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert("Sorry, your browser doesn't support Text-to-Speech.");
+    }
+  };
+
+  return (
+    <button 
+      onClick={playAudio}
+      className={`flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-full transition-colors ${className}`}
+    >
+      <Volume2 size={20} />
+      <span className="font-semibold">Listen</span>
+    </button>
+  );
+};
+
+// --- MAIN APPLICATION COMPONENT ---
+
+export default function App() {
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, theory, game, grammar
+  const [activeDay, setActiveDay] = useState(1);
+  const [completedDays, setCompletedDays] = useState([]);
+  const [gameStep, setGameStep] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  // Load progress on mount
+  useEffect(() => {
+    // We are keeping state in memory per instructions, but simulating a load
+    const saved = [1]; // Pretend Day 1 is always completed for visual demo
+    // setCompletedDays(saved);
+  }, []);
+
+  const handleStartDay = (dayNum) => {
+    setActiveDay(dayNum);
+    setCurrentView('theory');
+    setGameStep(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+  };
+
+  const handleAnswer = (index) => {
+    if (showFeedback) return;
+    setSelectedAnswer(index);
+    setShowFeedback(true);
+    
+    const currentLesson = COURSE_DATA.find(d => d.day === activeDay);
+    if (index === currentLesson.exercises[gameStep].answer) {
+      setScore(s => s + 1);
+    }
+  };
+
+  const nextQuestion = () => {
+    const currentLesson = COURSE_DATA.find(d => d.day === activeDay);
+    if (gameStep < currentLesson.exercises.length - 1) {
+      setGameStep(s => s + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      // Finish Day
+      if (!completedDays.includes(activeDay)) {
+        setCompletedDays([...completedDays, activeDay]);
+      }
+      setCurrentView('result');
+    }
+  };
+
+  // --- VIEWS ---
+
+  const renderDashboard = () => {
+    let currentMonthGroup = "";
+
+    return (
+      <div className="max-w-4xl mx-auto pb-20">
+        <header className="bg-gradient-to-r from-pink-400 to-orange-400 text-white rounded-3xl p-8 mb-8 shadow-lg flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-extrabold mb-2">Konnichi-WOW! 🌸</h1>
+            <p className="text-pink-100 text-lg">Speak Japanese from Zero in 5 Months.</p>
+          </div>
+          <div className="hidden md:flex flex-col items-center bg-white/20 p-4 rounded-2xl">
+            <Award size={40} className="text-yellow-300 mb-1" />
+            <span className="font-bold">{completedDays.length} / 150 Days</span>
+          </div>
+        </header>
+
+        <div className="bg-white rounded-3xl shadow-sm p-6 mb-8 border border-gray-100">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Map className="text-blue-500" /> Your Learning Journey
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Follow the path. Every day introduces a new concept, pushing you closer to fluency. Just 15 minutes a day!
+          </p>
+
+          <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-1 before:bg-gradient-to-b before:from-pink-300 before:to-blue-300">
+            {ROADMAP.filter(d => d.day <= 10).map((dayData, index) => { // Showing only first 10 for UI brevity
+              const isCompleted = completedDays.includes(dayData.day);
+              const isLocked = dayData.isLocked || (dayData.day > 1 && !completedDays.includes(dayData.day - 1) && !completedDays.includes(dayData.day));
+              const isPlayable = !isLocked && COURSE_DATA.find(d => d.day === dayData.day);
+              
+              const showMonthHeader = dayData.monthGroup && dayData.monthGroup !== currentMonthGroup;
+              if (showMonthHeader) currentMonthGroup = dayData.monthGroup;
+
+              return (
+                <div key={dayData.day}>
+                  {showMonthHeader && (
+                    <div className="relative z-10 text-center my-8">
+                      <span className="bg-blue-500 text-white px-4 py-2 rounded-full font-bold shadow-md">
+                        {dayData.monthGroup}
+                      </span>
+                    </div>
+                  )}
+                  <div className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active ${isLocked ? 'opacity-60' : ''}`}>
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-pink-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 font-bold">
+                      {isCompleted ? <CheckCircle size={20} /> : dayData.day}
+                    </div>
+                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded-2xl shadow-sm border border-gray-100 transition-transform transform hover:-translate-y-1">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-bold text-gray-800">{dayData.title}</h3>
+                          {isCompleted && <span className="text-xs font-semibold text-green-500">Completed!</span>}
+                          {isLocked && <span className="text-xs font-semibold text-gray-400">Locked</span>}
+                        </div>
+                        {isPlayable && !isCompleted && (
+                          <button 
+                            onClick={() => handleStartDay(dayData.day)}
+                            className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow transition-colors"
+                          >
+                            <Play size={20} />
+                          </button>
+                        )}
+                        {isCompleted && (
+                          <button 
+                            onClick={() => handleStartDay(dayData.day)}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-600 p-2 rounded-full transition-colors"
+                          >
+                            <Play size={20} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            <div className="relative z-10 text-center my-8">
+              <span className="bg-gray-200 text-gray-500 px-4 py-2 rounded-full font-bold">
+                ... 140 more days to unlock fluency!
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTheory = () => {
+    const lesson = COURSE_DATA.find(d => d.day === activeDay);
+    if (!lesson) return null;
+
+    return (
+      <div className="max-w-3xl mx-auto pb-20 mt-8">
+        <button onClick={() => setCurrentView('dashboard')} className="text-gray-500 mb-6 flex items-center hover:text-gray-800">
+          <ChevronRight className="rotate-180 mr-1" /> Back to Map
+        </button>
+
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+          <div className="bg-blue-500 text-white p-8">
+            <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-semibold tracking-wide uppercase mb-4 inline-block">
+              Daily Briefing • Day {lesson.day}
+            </span>
+            <h2 className="text-3xl font-bold">{lesson.title}</h2>
+          </div>
+          
+          <div className="p-8 space-y-8 text-gray-700 text-lg">
+            <div className="flex gap-4 items-start">
+              <div className="bg-pink-100 p-3 rounded-2xl shrink-0">
+                <MessageCircle className="text-pink-500" size={32} />
+              </div>
+              <p className="leading-relaxed pt-2">{lesson.theory.intro}</p>
+            </div>
+
+            <div className="bg-yellow-50 rounded-2xl p-6 border border-yellow-100">
+              <h3 className="font-bold text-yellow-800 mb-2 flex items-center gap-2">
+                <BookOpen size={20} /> The Core Concept
+              </h3>
+              <p>{lesson.theory.concept}</p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">Real Life Examples</h3>
+              <div className="space-y-4">
+                {lesson.theory.examples.map((ex, i) => (
+                  <div key={i} className="bg-gray-50 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xl font-bold text-blue-600 mb-1">{ex.jp}</p>
+                      <p className="text-gray-600 font-medium">"{ex.eng}"</p>
+                      <p className="text-sm text-gray-500 mt-2">{ex.context}</p>
+                    </div>
+                    <AudioButton text={ex.jp} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-green-50 rounded-2xl p-6 border border-green-100 flex gap-4 items-start">
+              <Star className="text-green-500 shrink-0" size={28} />
+              <div>
+                <h3 className="font-bold text-green-800 mb-1">Culture Note</h3>
+                <p className="text-green-900">{lesson.theory.culture}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 bg-gray-50 border-t flex justify-end">
+            <button 
+              onClick={() => setCurrentView('game')}
+              className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 transition-transform transform hover:scale-105"
+            >
+              Start Practice <ChevronRight />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderGame = () => {
+    const lesson = COURSE_DATA.find(d => d.day === activeDay);
+    if (!lesson) return null;
+    
+    const exercise = lesson.exercises[gameStep];
+    const isAnswered = selectedAnswer !== null;
+    const isCorrect = isAnswered && selectedAnswer === exercise.answer;
+
+    return (
+      <div className="max-w-2xl mx-auto pb-20 mt-8">
+        {/* Progress Bar */}
+        <div className="mb-8 bg-gray-200 h-3 rounded-full overflow-hidden">
+          <div 
+            className="bg-green-500 h-full transition-all duration-500"
+            style={{ width: `${(gameStep / lesson.exercises.length) * 100}%` }}
+          />
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-8 min-h-[400px] flex flex-col">
+          <div className="flex-grow">
+            {exercise.type === 'listen' && (
+              <div className="flex justify-center mb-8">
+                 <AudioButton text={exercise.audioText} className="scale-150 transform" />
+              </div>
+            )}
+            
+            <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center leading-snug">
+              {exercise.question}
+            </h2>
+
+            <div className="space-y-4">
+              {exercise.options.map((opt, i) => {
+                let btnClass = "bg-white border-2 border-gray-200 text-gray-700 hover:border-pink-400 hover:bg-pink-50";
+                
+                if (isAnswered) {
+                  if (i === exercise.answer) {
+                    btnClass = "bg-green-100 border-2 border-green-500 text-green-800"; // Correct answer styling
+                  } else if (i === selectedAnswer) {
+                    btnClass = "bg-red-100 border-2 border-red-500 text-red-800"; // Selected wrong answer styling
+                  } else {
+                    btnClass = "bg-gray-50 border-2 border-gray-200 text-gray-400 opacity-50"; // Other unselected styling
+                  }
+                }
+
+                return (
+                  <button
+                    key={i}
+                    disabled={isAnswered}
+                    onClick={() => handleAnswer(i)}
+                    className={`w-full p-4 rounded-2xl text-lg font-semibold transition-all text-left flex justify-between items-center ${btnClass}`}
+                  >
+                    {opt}
+                    {isAnswered && i === exercise.answer && <CheckCircle className="text-green-500" />}
+                    {isAnswered && i === selectedAnswer && i !== exercise.answer && <XCircle className="text-red-500" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* AI Feedback Area */}
+          <div className={`mt-8 transition-opacity duration-300 ${isAnswered ? 'opacity-100' : 'opacity-0'}`}>
+            {isAnswered && (
+              <div className={`p-6 rounded-2xl flex gap-4 items-start ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-orange-50 border border-orange-200'}`}>
+                <div className={`p-2 rounded-full text-white shrink-0 ${isCorrect ? 'bg-green-500' : 'bg-orange-500'}`}>
+                   {isCorrect ? <CheckCircle /> : <MessageCircle />}
+                </div>
+                <div>
+                  <h4 className={`font-bold text-lg mb-1 ${isCorrect ? 'text-green-800' : 'text-orange-800'}`}>
+                    {isCorrect ? 'Excellent!' : 'Not quite! (AI Sensei Feedback)'}
+                  </h4>
+                  <p className={isCorrect ? 'text-green-700' : 'text-orange-700'}>
+                    {isCorrect ? "Spot on! You nailed the pattern." : exercise.feedback_incorrect}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {isAnswered && (
+              <button 
+                onClick={nextQuestion}
+                className={`w-full mt-6 py-4 rounded-full font-bold text-lg text-white shadow-lg transition-transform transform hover:scale-105 ${isCorrect ? 'bg-green-500 hover:bg-green-600' : 'bg-pink-500 hover:bg-pink-600'}`}
+              >
+                {gameStep === lesson.exercises.length - 1 ? 'Complete Lesson' : 'Next Question'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderResult = () => {
+    const lesson = COURSE_DATA.find(d => d.day === activeDay);
+    const total = lesson.exercises.length;
+    const isPerfect = score === total;
+
+    return (
+      <div className="max-w-md mx-auto mt-16 text-center">
+        <div className="bg-white rounded-3xl shadow-2xl p-10 transform transition-all scale-100">
+          <div className="w-24 h-24 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+            <Award size={60} />
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-800 mb-2">Lesson Complete!</h2>
+          <p className="text-gray-500 mb-8">Day {activeDay}: {lesson.title}</p>
+          
+          <div className="text-6xl font-black text-pink-500 mb-4">
+            {score}/{total}
+          </div>
+          <p className="text-lg font-medium text-gray-700 mb-8">
+            {isPerfect ? "Flawless victory! You're a natural. 🌸" : "Great effort! Mistakes are how we learn."}
+          </p>
+
+          <button 
+            onClick={() => setCurrentView('dashboard')}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-full font-bold text-lg shadow-lg transition-transform transform hover:scale-105"
+          >
+            Return to Map
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderGrammarLibrary = () => (
+    <div className="max-w-4xl mx-auto pb-20 mt-8">
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-3xl p-8 mb-8 shadow-lg">
+        <h1 className="text-3xl font-extrabold mb-2 flex items-center gap-3">
+          <Library size={32} /> Grammar & Form Library
+        </h1>
+        <p className="text-indigo-100">Your permanent reference for the building blocks of Japanese.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Sentence Structure */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">1. Word Order (SOV)</h3>
+          <p className="text-gray-600 mb-4">
+            English uses Subject-Verb-Object (I eat sushi).<br/>
+            Japanese uses Subject-Object-Verb (I sushi eat).
+          </p>
+          <div className="bg-gray-50 p-3 rounded-lg font-mono text-sm">
+            Watashi wa (I) + Sushi o (Sushi) + Tabemasu (Eat).
+          </div>
+        </div>
+
+        {/* Essential Particles */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">2. Magic Particles</h3>
+          <ul className="space-y-3 text-gray-600">
+            <li><strong className="text-pink-500">Wa (は):</strong> Topic marker. "As for..."</li>
+            <li><strong className="text-blue-500">Ka (か):</strong> Question mark. Goes at the end.</li>
+            <li><strong className="text-green-500">No (の):</strong> Possession. Like 's (Watashi no = My).</li>
+            <li><strong className="text-orange-500">Ni (に):</strong> Time/Target. (Tokyo ni ikimasu = Go to Tokyo).</li>
+          </ul>
+        </div>
+
+        {/* Verb Conjugation */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 md:col-span-2">
+          <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">3. The Polite "-Masu" Form</h3>
+          <p className="text-gray-600 mb-4">This is your safe, polite tense for talking to strangers and colleagues.</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="bg-blue-50 p-4 rounded-xl">
+              <span className="block font-bold text-blue-800 mb-1">Present/Future</span>
+              <span className="text-gray-600">-masu (tabemasu)</span>
+            </div>
+            <div className="bg-red-50 p-4 rounded-xl">
+              <span className="block font-bold text-red-800 mb-1">Negative</span>
+              <span className="text-gray-600">-masen (tabemasen)</span>
+            </div>
+            <div className="bg-green-50 p-4 rounded-xl">
+              <span className="block font-bold text-green-800 mb-1">Past</span>
+              <span className="text-gray-600">-mashita (tabemashita)</span>
+            </div>
+            <div className="bg-orange-50 p-4 rounded-xl">
+              <span className="block font-bold text-orange-800 mb-1">Past Negative</span>
+              <span className="text-gray-600">-masen deshita</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // --- MAIN RENDER ---
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-gray-800 selection:bg-pink-200">
+      {/* Navigation Bar */}
+      <nav className="fixed bottom-0 w-full bg-white border-t border-gray-200 pb-safe md:relative md:border-b md:border-t-0 z-50">
+        <div className="max-w-4xl mx-auto flex justify-around md:justify-center md:gap-12 p-4">
+          <button 
+            onClick={() => setCurrentView('dashboard')}
+            className={`flex flex-col items-center gap-1 transition-colors ${currentView === 'dashboard' ? 'text-pink-500' : 'text-gray-400 hover:text-gray-600'}`}
+          >
+            <Home size={24} />
+            <span className="text-xs font-bold">Path</span>
+          </button>
+          <button 
+            onClick={() => setCurrentView('grammar')}
+            className={`flex flex-col items-center gap-1 transition-colors ${currentView === 'grammar' ? 'text-pink-500' : 'text-gray-400 hover:text-gray-600'}`}
+          >
+            <Library size={24} />
+            <span className="text-xs font-bold">Library</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Main Content Area */}
+      <main className="p-4 md:p-8 pt-8 pb-24 md:pb-8">
+        {currentView === 'dashboard' && renderDashboard()}
+        {currentView === 'theory' && renderTheory()}
+        {currentView === 'game' && renderGame()}
+        {currentView === 'result' && renderResult()}
+        {currentView === 'grammar' && renderGrammarLibrary()}
+      </main>
+
+    </div>
+  );
+}
