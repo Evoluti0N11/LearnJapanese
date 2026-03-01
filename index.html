@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Konnichi-WOW! Speak Japanese in 30 Days</title>
   
+  <!-- Google Fonts for Professional Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+  
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
@@ -12,16 +17,47 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
+    :root {
+      --sakura-pink: #ffd1dc;
+      --matcha-green: #c5d8a4;
+      --ai-indigo: #2c3e50;
+    }
+    body { 
+      font-family: 'Nunito', 'Noto Sans JP', sans-serif; 
+      /* Subtle traditional Japanese Seigaiha wave pattern or Asanoha inspired grid */
+      background-color: #fcfaf8;
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='#e8e2dd' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
     /* Safe area padding for mobile navigation */
-    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 24px); }
     /* Prevent text selection on game buttons */
     .no-select { user-select: none; -webkit-user-select: none; }
     /* Hide scrollbar for clean UI but allow scrolling */
     .hide-scroll::-webkit-scrollbar { display: none; }
     .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Japanese UI Elements */
+    .japanese-shadow { box-shadow: 0 10px 25px -5px rgba(44, 62, 80, 0.08), 0 8px 10px -6px rgba(44, 62, 80, 0.04); }
+    .kanji-watermark {
+      position: absolute;
+      right: -10%;
+      top: -10%;
+      font-size: 150px;
+      color: rgba(0,0,0,0.03);
+      font-weight: 900;
+      pointer-events: none;
+      user-select: none;
+    }
+    
+    @keyframes pop {
+      0% { transform: scale(0.95); opacity: 0; }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop { animation: pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
   </style>
 </head>
-<body class="bg-slate-50 font-sans text-gray-800 selection:bg-pink-200">
+<body class="text-slate-800 selection:bg-pink-200">
 
   <!-- Main Application Container -->
   <div id="root">
@@ -30,7 +66,6 @@
 
   <script type="module">
     // --- SAFE DYNAMIC FIREBASE SETUP ---
-    // This structure guarantees the app won't crash on GitHub pages if config is missing.
     let db, auth, doc, setDoc, onSnapshot, signOut, signInAnonymously, signInWithCustomToken;
     let useFirebase = false;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -52,7 +87,9 @@
       currentMistakes: [],
       transInput: '',
       transResult: '',
-      transLoading: false
+      transRomaji: '', // Added Romaji support
+      transLoading: false,
+      combo: 0 // Gamification addition
     };
 
     // Pre-warm Speech Synthesis to load voices (fixes Firefox delay)
@@ -332,15 +369,26 @@
       } catch(e) { console.error("Local storage error", e); }
     };
 
+    const showSaveToast = () => {
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-2xl z-50 transition-all duration-300 text-sm font-bold flex items-center gap-2 animate-pop';
+      toast.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i> Progress Saved Locally`;
+      document.body.appendChild(toast);
+      lucide.createIcons();
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translate(-50%, -10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    };
+
     const initApp = async () => {
-      // 1. Check if Firebase Config is injected (Works on Canvas, undefined on GitHub Pages)
       try {
         const configStr = typeof window.__firebase_config !== 'undefined' ? window.__firebase_config : null;
         if (configStr) {
           const config = JSON.parse(configStr);
           if (Object.keys(config).length > 0) {
             useFirebase = true;
-            // Dynamically load Firebase ONLY if config exists. Prevents strict-mode blocks.
             const appMod = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
             const authMod = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
             const fsMod = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
@@ -375,14 +423,13 @@
             } else {
               await signInAnonymously(auth);
             }
-            return; // Successfully initialized cloud
+            return;
           }
         }
       } catch(e) {
         console.warn("Cloud init skipped/failed. Falling back to local storage.", e);
       }
 
-      // 2. Local Fallback Execution (Always runs on GitHub Pages)
       useFirebase = false;
       state.user = { uid: 'local-user' };
       state.isAuthLoading = false;
@@ -407,12 +454,14 @@
           mistakesRecord: newMistakes,
           profileName: state.profileName
         }));
+        showSaveToast(); // Alert user that local save succeeded
       }
     };
 
     // --- AUDIO & TRANSLATION LOGIC ---
     window.playAudio = (e, textKana) => {
       if (e) { e.stopPropagation(); e.preventDefault(); }
+      if (!textKana) return;
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(textKana);
@@ -423,12 +472,10 @@
         const voices = window.speechSynthesis.getVoices();
         const jpVoices = voices.filter(v => v.lang.includes('ja'));
         if(jpVoices.length > 0) {
-          // Look for known female voice names
           let bestVoice = jpVoices.find(v => /Kyoko|Nanami|Google|Female|Haruka/i.test(v.name));
           if(!bestVoice) bestVoice = jpVoices[0];
           utterance.voice = bestVoice;
         }
-
         window.speechSynthesis.speak(utterance);
       } else {
         alert("Text-to-Speech not supported in this browser.");
@@ -442,14 +489,25 @@
       const text = inputEl.value.trim();
       state.transLoading = true;
       state.transResult = "Translating...";
+      state.transRomaji = "";
       renderApp();
 
       try {
-        // Free MyMemory Translation API
-        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ja`);
+        // Using Google Translate free client API to fetch Translation AND Romaji
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ja&dt=t&dt=rm&q=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
         const data = await res.json();
-        if (data && data.responseData && data.responseData.translatedText) {
-          state.transResult = data.responseData.translatedText;
+        
+        if (data && data[0]) {
+          state.transResult = data[0][0][0]; // Japanese Text
+          // Try to extract Romaji (Google sometimes places it at different indexes based on input)
+          if(data[0].length > 1 && data[0][1][0]) {
+              state.transRomaji = data[0][1][0];
+          } else if (data[0][0].length > 3 && data[0][0][3]) {
+              state.transRomaji = data[0][0][3];
+          } else {
+              state.transRomaji = "Audio available below";
+          }
         } else {
           state.transResult = "Could not translate.";
         }
@@ -472,6 +530,7 @@
       state.currentView = 'theory';
       state.gameStep = 0;
       state.score = 0;
+      state.combo = 0;
       state.selectedAnswer = null;
       state.showFeedback = false;
       state.currentMistakes = [];
@@ -485,13 +544,22 @@
 
     window.handleMultipleChoiceAnswer = (index) => {
       if (state.showFeedback) return;
+      
+      const exercise = COURSE_DATA.find(d => d.day === state.activeDay).exercises[state.gameStep];
+      
+      // AUTO-PLAY AUDIO ON CLICK IF JAPANESE OPTION EXISTS
+      if (exercise.optionsKana && exercise.optionsKana[index]) {
+        window.playAudio(null, exercise.optionsKana[index]);
+      }
+
       state.selectedAnswer = index;
       state.showFeedback = true;
       
-      const exercise = COURSE_DATA.find(d => d.day === state.activeDay).exercises[state.gameStep];
       if (index === exercise.answer) {
         state.score += 1;
+        state.combo += 1; // Increase gamification combo
       } else {
+        state.combo = 0; // Break combo
         state.currentMistakes.push(exercise.conceptTag);
       }
       renderApp();
@@ -528,9 +596,13 @@
         
         state.selectedAnswer = isMatch;
         state.showFeedback = true;
-        if (isMatch) state.score += 1;
-        else state.currentMistakes.push(exercise.conceptTag);
-        
+        if (isMatch) {
+            state.score += 1;
+            state.combo += 1;
+        } else {
+            state.combo = 0;
+            state.currentMistakes.push(exercise.conceptTag);
+        }
         renderApp();
       };
 
@@ -595,7 +667,7 @@
       const root = document.getElementById('root');
       
       if (state.isAuthLoading) {
-        root.innerHTML = `<div class="min-h-screen flex items-center justify-center bg-pink-50 text-pink-500"><i data-lucide="refresh-cw" class="animate-spin w-10 h-10"></i></div>`;
+        root.innerHTML = `<div class="min-h-screen flex items-center justify-center bg-white text-pink-500"><i data-lucide="loader-2" class="animate-spin w-12 h-12"></i></div>`;
         lucide.createIcons();
         return;
       }
@@ -610,7 +682,7 @@
 
       root.innerHTML = `
         ${renderNav()}
-        <main class="p-4 md:p-8 pt-4 md:pt-8 pb-28 md:pb-8">
+        <main class="p-4 md:p-8 pt-4 md:pt-8 pb-32 md:pb-8">
           ${content}
         </main>
       `;
@@ -619,19 +691,19 @@
 
     const renderNav = () => {
       return `
-        <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-200 pb-safe md:relative md:border-b md:border-t-0 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-          <div class="max-w-4xl mx-auto flex justify-around md:justify-center md:gap-16 p-3 md:p-4">
+        <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 pb-safe md:relative md:border-b md:border-t-0 z-50 shadow-[0_-4px_15px_-3px_rgba(0,0,0,0.05)]">
+          <div class="max-w-4xl mx-auto flex justify-around md:justify-center md:gap-20 p-3 md:p-5">
             <button onclick="window.changeView('dashboard')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'dashboard' ? 'text-pink-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
-              <i data-lucide="home" class="w-6 h-6"></i>
-              <span class="text-[10px] md:text-xs font-extrabold uppercase tracking-wide">Map</span>
+              <i data-lucide="map" class="w-6 h-6 md:w-7 md:h-7"></i>
+              <span class="text-[10px] md:text-xs font-black uppercase tracking-widest">Journey</span>
             </button>
             <button onclick="window.changeView('library')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'library' ? 'text-pink-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
-              <i data-lucide="library" class="w-6 h-6"></i>
-              <span class="text-[10px] md:text-xs font-extrabold uppercase tracking-wide">Guide</span>
+              <i data-lucide="book-marked" class="w-6 h-6 md:w-7 md:h-7"></i>
+              <span class="text-[10px] md:text-xs font-black uppercase tracking-widest">Guide</span>
             </button>
             <button onclick="window.changeView('profile')" class="flex flex-col items-center gap-1 transition-all ${state.currentView === 'profile' ? 'text-pink-600 scale-110' : 'text-gray-400 hover:text-gray-800'}">
-              <i data-lucide="user" class="w-6 h-6"></i>
-              <span class="text-[10px] md:text-xs font-extrabold uppercase tracking-wide">Profile</span>
+              <i data-lucide="circle-user-round" class="w-6 h-6 md:w-7 md:h-7"></i>
+              <span class="text-[10px] md:text-xs font-black uppercase tracking-widest">Profile</span>
             </button>
           </div>
         </nav>
@@ -640,33 +712,38 @@
 
     const renderDashboard = () => {
       let html = `
-      <div class="max-w-4xl mx-auto pb-20">
-        <header class="bg-gradient-to-r from-pink-500 to-orange-400 text-white rounded-3xl p-6 md:p-8 mb-8 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 class="text-3xl md:text-4xl font-black mb-2 tracking-tight">Konnichi-WOW! 🌸</h1>
-            <p class="text-pink-100 text-lg font-medium">Your 30-Day Path to Conversational Japanese.</p>
+      <div class="max-w-4xl mx-auto pb-20 relative">
+        <div class="kanji-watermark">旅</div>
+        
+        <header class="bg-gradient-to-br from-rose-400 to-orange-400 text-white rounded-[2rem] p-8 md:p-10 mb-10 japanese-shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+          <div class="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4">
+             <i data-lucide="sun" class="w-48 h-48"></i>
           </div>
-          <div class="flex gap-4 w-full md:w-auto">
-            <div class="flex-1 md:flex-none flex flex-col items-center justify-center bg-white/20 p-3 rounded-2xl backdrop-blur-sm shadow-inner">
-              <i data-lucide="award" class="text-yellow-300 mb-1 w-7 h-7"></i>
-              <span class="font-bold text-sm">${state.completedDays.length} / 30 Days</span>
+          <div class="z-10">
+            <h1 class="text-4xl md:text-5xl font-black mb-3 tracking-tight">Konnichi-WOW! 🌸</h1>
+            <p class="text-rose-50 text-xl font-bold">Your 30-Day Path to Conversational Japanese.</p>
+          </div>
+          <div class="flex gap-4 w-full md:w-auto z-10">
+            <div class="flex-1 md:flex-none flex flex-col items-center justify-center bg-white/20 p-4 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner">
+              <i data-lucide="award" class="text-yellow-300 mb-1 w-8 h-8"></i>
+              <span class="font-black text-sm">${state.completedDays.length} / 30 Days</span>
             </div>
-            <button onclick="window.changeView('profile')" class="flex-1 md:flex-none flex flex-col items-center justify-center bg-white/20 hover:bg-white/30 transition p-3 rounded-2xl backdrop-blur-sm shadow-inner">
-              <i data-lucide="user" class="text-white mb-1 w-7 h-7"></i>
-              <span class="font-bold text-sm truncate max-w-[80px]">${state.profileName}</span>
+            <button onclick="window.changeView('profile')" class="flex-1 md:flex-none flex flex-col items-center justify-center bg-white/20 hover:bg-white/30 transition p-4 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner">
+              <i data-lucide="user" class="text-white mb-1 w-8 h-8"></i>
+              <span class="font-black text-sm truncate max-w-[80px]">${state.profileName}</span>
             </button>
           </div>
         </header>
 
-        <div class="bg-white rounded-3xl shadow-lg p-5 md:p-8 mb-8 border border-gray-100">
-          <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <h2 class="text-2xl font-black text-gray-800 flex items-center gap-2">
-              <i data-lucide="map" class="text-blue-500 w-6 h-6"></i> Syllabus Map
+        <div class="bg-white rounded-[2rem] japanese-shadow p-6 md:p-10 mb-8 border border-gray-50 relative z-10">
+          <div class="flex justify-between items-center mb-8 border-b-2 border-gray-100 pb-4">
+            <h2 class="text-3xl font-black text-gray-800 flex items-center gap-3">
+              <i data-lucide="map" class="text-rose-400 w-8 h-8"></i> Syllabus Map
             </h2>
           </div>
-          <p class="text-gray-500 mb-8 font-medium">Dedicate 15-20 minutes daily. The AI adjusts the exercises to build your fluency.</p>
+          <p class="text-gray-500 mb-10 font-bold text-lg">Dedicate 15 minutes daily. Auto-save is active.</p>
 
-          <div class="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-1 before:bg-gradient-to-b before:from-pink-300 before:to-blue-300">
+          <div class="space-y-8 relative before:absolute before:inset-0 before:ml-6 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-1.5 before:bg-gradient-to-b before:from-rose-200 before:via-orange-200 before:to-gray-200 before:rounded-full">
       `;
 
       COURSE_DATA.forEach(dayData => {
@@ -675,33 +752,33 @@
         const dayMistakes = state.mistakesRecord[dayData.day] || [];
         const needsReview = isCompleted && dayMistakes.length > 0;
 
-        let circleClass = "bg-pink-500 text-white transform scale-110 shadow-lg shadow-pink-500/50";
+        let circleClass = "bg-rose-500 text-white transform scale-110 shadow-lg shadow-rose-500/40 border-4 border-white";
         let circleContent = dayData.day;
-        if (isCompleted) { circleClass = "bg-green-500 text-white shadow-md"; circleContent = `<i data-lucide="check-circle" class="w-5 h-5"></i>`; }
-        else if (isLocked) { circleClass = "bg-gray-200 text-gray-400 border-gray-300"; }
+        if (isCompleted) { circleClass = "bg-green-500 text-white shadow-md border-4 border-green-100"; circleContent = `<i data-lucide="check" class="w-6 h-6"></i>`; }
+        else if (isLocked) { circleClass = "bg-gray-200 text-gray-400 border-4 border-white"; }
 
         let badgeHtml = '';
-        if (isCompleted && !needsReview) badgeHtml += `<span class="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-md">Completed</span>`;
-        if (needsReview) badgeHtml += `<span class="text-xs font-bold text-orange-700 bg-orange-100 px-2 py-1 rounded-md flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Review Needed</span>`;
-        if (isLocked) badgeHtml += `<span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Locked</span>`;
+        if (isCompleted && !needsReview) badgeHtml += `<span class="text-xs font-black text-green-700 bg-green-100 px-3 py-1 rounded-full uppercase tracking-wider">Completed</span>`;
+        if (needsReview) badgeHtml += `<span class="text-xs font-black text-orange-700 bg-orange-100 px-3 py-1 rounded-full flex items-center gap-1 uppercase tracking-wider"><i data-lucide="alert-circle" class="w-3 h-3"></i> Review</span>`;
+        if (isLocked) badgeHtml += `<span class="text-xs font-black text-gray-400 bg-gray-100 px-3 py-1 rounded-full uppercase tracking-wider">Locked</span>`;
 
         let btnHtml = '';
         if (!isLocked) {
-          const btnClass = isCompleted ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' : 'bg-green-500 text-white hover:bg-green-600';
-          const icon = needsReview ? `<i data-lucide="refresh-cw" class="w-5 h-5"></i>` : `<i data-lucide="play" class="w-5 h-5 ml-1"></i>`;
-          btnHtml = `<button onclick="window.startDay(${dayData.day})" class="p-3 rounded-full shadow-md transition-transform hover:scale-110 shrink-0 ${btnClass}">${icon}</button>`;
+          const btnClass = isCompleted ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100' : 'bg-rose-500 text-white hover:bg-rose-600 shadow-md shadow-rose-500/30';
+          const icon = needsReview ? `<i data-lucide="rotate-ccw" class="w-6 h-6"></i>` : `<i data-lucide="play" class="w-6 h-6 ml-1"></i>`;
+          btnHtml = `<button onclick="window.startDay(${dayData.day})" class="p-4 rounded-full transition-all hover:scale-110 shrink-0 ${btnClass}">${icon}</button>`;
         }
 
         html += `
-          <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group ${isLocked ? 'opacity-60 grayscale-[50%]' : ''}">
-            <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white shadow-sm shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 font-black transition-transform ${circleClass}">
+          <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group ${isLocked ? 'opacity-60 grayscale-[30%]' : ''}">
+            <div class="flex items-center justify-center w-12 h-12 rounded-full shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 font-black text-lg transition-transform ${circleClass}">
               ${circleContent}
             </div>
-            <div class="w-[calc(100%-3.5rem)] md:w-[calc(50%-2.5rem)] bg-white p-5 rounded-2xl shadow-sm border border-gray-100 transition-all hover:shadow-lg hover:-translate-y-1">
-              <div class="flex justify-between items-start gap-2">
+            <div class="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] bg-white p-6 rounded-[1.5rem] shadow-sm border-2 border-gray-50 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-rose-100">
+              <div class="flex justify-between items-center gap-4">
                 <div class="flex-1">
-                  <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest block mb-1">${dayData.topic}</span>
-                  <h3 class="font-bold text-gray-800 leading-tight mb-2 text-lg">${dayData.title}</h3>
+                  <span class="text-[11px] font-black text-rose-500 uppercase tracking-widest block mb-1">${dayData.topic}</span>
+                  <h3 class="font-black text-gray-800 leading-tight mb-3 text-xl">${dayData.title}</h3>
                   <div class="flex flex-wrap gap-2 mt-2">${badgeHtml}</div>
                 </div>
                 ${btnHtml}
@@ -719,65 +796,67 @@
       const lesson = COURSE_DATA.find(d => d.day === state.activeDay);
       
       let examplesHtml = lesson.theory.examples.map(ex => `
-        <div class="bg-white border-2 border-gray-100 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm hover:border-blue-300 transition-colors">
+        <div class="bg-white border-2 border-gray-100 p-6 rounded-[1.5rem] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all group">
           <div>
-            <p class="text-2xl font-black text-gray-900 mb-1">${ex.kana}</p>
-            <p class="text-blue-600 font-bold mb-1">${ex.romaji}</p>
-            <p class="text-gray-700 font-semibold">"${ex.eng}"</p>
-            ${ex.context ? `<p class="text-sm text-gray-500 mt-2 bg-gray-50 p-2 rounded-lg font-medium border border-gray-100">${ex.context}</p>` : ''}
+            <p class="text-3xl font-black text-gray-900 mb-2 group-hover:text-indigo-700 transition-colors">${ex.kana}</p>
+            <p class="text-indigo-500 font-bold mb-1 tracking-wide">${ex.romaji}</p>
+            <p class="text-gray-700 font-black text-lg mb-2">"${ex.eng}"</p>
+            ${ex.context ? `<p class="text-sm text-gray-500 bg-gray-50 p-3 rounded-xl font-bold border border-gray-100 inline-block">${ex.context}</p>` : ''}
           </div>
-          <button onclick="window.playAudio(event, '${ex.kana}')" class="flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 px-5 py-3 rounded-full transition-colors shrink-0 shadow-sm">
-            <i data-lucide="volume-2" class="w-5 h-5"></i><span class="font-bold text-sm">Listen</span>
+          <button onclick="window.playAudio(event, '${ex.kana}')" class="flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-100 text-indigo-700 px-6 py-4 rounded-2xl transition-transform hover:scale-105 shrink-0 shadow-sm w-full sm:w-auto mt-4 sm:mt-0">
+            <i data-lucide="volume-2" class="w-6 h-6"></i><span class="font-black">Listen</span>
           </button>
         </div>
       `).join('');
 
       return `
-      <div class="max-w-3xl mx-auto pb-20 mt-4 md:mt-8">
-        <button onclick="window.changeView('dashboard')" class="text-gray-500 mb-6 flex items-center hover:text-gray-800 font-bold transition-colors">
-          <i data-lucide="chevron-left" class="w-6 h-6 mr-1"></i> Back to Map
+      <div class="max-w-3xl mx-auto pb-20 mt-2 md:mt-6">
+        <button onclick="window.changeView('dashboard')" class="text-gray-500 mb-6 flex items-center hover:text-gray-800 font-black transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 w-fit">
+          <i data-lucide="arrow-left" class="w-6 h-6 mr-2"></i> Back to Map
         </button>
 
-        <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-gray-100">
-          <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8 md:p-10">
-            <span class="bg-white/20 px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-4 inline-block shadow-sm">
+        <div class="bg-white rounded-[2rem] japanese-shadow overflow-hidden border border-gray-50">
+          <div class="bg-gradient-to-r from-indigo-600 to-blue-700 text-white p-8 md:p-12 relative overflow-hidden">
+            <i data-lucide="book-open" class="absolute right-0 bottom-0 w-48 h-48 opacity-10 transform translate-x-10 translate-y-10"></i>
+            <span class="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-xs font-black tracking-widest uppercase mb-6 inline-block shadow-sm border border-white/30">
               Day ${lesson.day} • Theory
             </span>
-            <h2 class="text-3xl md:text-4xl font-black leading-tight">${lesson.title}</h2>
+            <h2 class="text-3xl md:text-5xl font-black leading-tight relative z-10">${lesson.title}</h2>
           </div>
           
-          <div class="p-6 md:p-10 space-y-10 text-gray-700 text-lg">
-            <div class="flex gap-4 items-start bg-pink-50 p-6 rounded-2xl border border-pink-100 shadow-sm">
-              <i data-lucide="message-circle" class="text-pink-500 shrink-0 mt-1 w-8 h-8"></i>
-              <p class="leading-relaxed font-semibold text-pink-900">${lesson.theory.intro}</p>
+          <div class="p-6 md:p-12 space-y-12 text-gray-700 text-lg">
+            <div class="flex gap-5 items-start bg-rose-50 p-8 rounded-[1.5rem] border border-rose-100 shadow-sm">
+              <i data-lucide="quote" class="text-rose-500 shrink-0 mt-1 w-10 h-10"></i>
+              <p class="leading-relaxed font-bold text-rose-900 text-xl">${lesson.theory.intro}</p>
             </div>
 
             <div>
-              <h3 class="font-black text-gray-800 mb-4 flex items-center gap-2 text-2xl border-b pb-3">
-                <i data-lucide="book-open" class="text-blue-500 w-7 h-7"></i> The Core Concept
+              <h3 class="font-black text-gray-800 mb-6 flex items-center gap-3 text-2xl">
+                <div class="p-2 bg-indigo-100 rounded-xl text-indigo-600"><i data-lucide="brain" class="w-6 h-6"></i></div> 
+                The Core Concept
               </h3>
-              <p class="text-gray-600 font-medium leading-relaxed">${lesson.theory.concept}</p>
+              <p class="text-gray-600 font-bold leading-relaxed text-xl">${lesson.theory.concept}</p>
             </div>
 
             <div>
-              <h3 class="font-black text-gray-800 mb-5 border-b pb-3 text-2xl">Vocabulary & Phrases</h3>
-              <div class="space-y-4">
+              <h3 class="font-black text-gray-800 mb-6 text-2xl border-b-2 pb-3 border-gray-100">Vocabulary & Phrases</h3>
+              <div class="space-y-6">
                 ${examplesHtml}
               </div>
             </div>
 
-            <div class="bg-green-50 rounded-2xl p-6 border border-green-100 flex gap-4 items-start shadow-sm">
-              <i data-lucide="star" class="text-green-500 shrink-0 mt-1 w-8 h-8"></i>
+            <div class="bg-green-50 rounded-[1.5rem] p-8 border border-green-100 flex gap-5 items-start shadow-sm">
+              <i data-lucide="leaf" class="text-green-600 shrink-0 mt-1 w-10 h-10"></i>
               <div>
-                <h3 class="font-black text-green-900 mb-2">Culture Note</h3>
-                <p class="text-green-800 font-medium leading-relaxed">${lesson.theory.culture}</p>
+                <h3 class="font-black text-green-900 mb-2 text-xl">Culture Note</h3>
+                <p class="text-green-800 font-bold leading-relaxed">${lesson.theory.culture}</p>
               </div>
             </div>
           </div>
 
-          <div class="p-6 md:p-8 bg-gray-50 border-t border-gray-200 flex justify-end">
-            <button onclick="window.startGame()" class="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-lg flex items-center gap-2 transition-transform transform hover:scale-105 w-full md:w-auto justify-center">
-              Start Practice (${lesson.exercises.length} Ex) <i data-lucide="arrow-right" class="w-6 h-6"></i>
+          <div class="p-6 md:p-10 bg-gray-50 border-t-2 border-gray-100 flex justify-end">
+            <button onclick="window.startGame()" class="bg-rose-500 hover:bg-rose-600 text-white px-10 py-5 rounded-2xl font-black text-xl shadow-lg shadow-rose-500/30 flex items-center justify-center gap-3 transition-transform transform hover:scale-105 w-full md:w-auto">
+              Start Practice (${lesson.exercises.length} Ex) <i data-lucide="play-circle" class="w-7 h-7"></i>
             </button>
           </div>
         </div>
@@ -795,114 +874,121 @@
       else if (exercise.type === 'speak') isCorrect = isAnswered && state.selectedAnswer === true;
 
       const progressWidth = (state.gameStep / lesson.exercises.length) * 100;
-      const typeLabel = exercise.type === 'speak' ? 'Speaking Exercise' : exercise.type === 'listen' ? 'Listening Exercise' : 'Translation Check';
+      const typeLabel = exercise.type === 'speak' ? 'Speaking Exercise' : exercise.type === 'listen' ? 'Listening Check' : 'Translation Challenge';
 
       let exerciseHtml = '';
       if (exercise.type === 'multiple_choice' || exercise.type === 'listen') {
-        exerciseHtml = `<div class="space-y-4">` + exercise.options.map((opt, i) => {
-          let btnClass = "bg-white border-2 border-gray-200 text-gray-700 hover:border-pink-400 hover:bg-pink-50";
+        exerciseHtml = `<div class="space-y-5">` + exercise.options.map((opt, i) => {
+          let btnClass = "bg-white border-2 border-gray-200 text-gray-700 hover:border-indigo-400 hover:bg-indigo-50";
           let iconHtml = '';
           if (isAnswered) {
             if (i === exercise.answer) {
-              btnClass = "bg-green-50 border-2 border-green-500 text-green-800 shadow-md transform scale-[1.02]";
-              iconHtml = `<i data-lucide="check-circle" class="text-green-500 w-6 h-6"></i>`;
+              btnClass = "bg-green-50 border-2 border-green-500 text-green-900 shadow-md transform scale-[1.02] z-10";
+              iconHtml = `<i data-lucide="check-circle-2" class="text-green-500 w-8 h-8 animate-pop"></i>`;
             } else if (i === state.selectedAnswer) {
-              btnClass = "bg-red-50 border-2 border-red-500 text-red-800";
-              iconHtml = `<i data-lucide="x-circle" class="text-red-500 w-6 h-6"></i>`;
+              btnClass = "bg-rose-50 border-2 border-rose-500 text-rose-900";
+              iconHtml = `<i data-lucide="x-circle" class="text-rose-500 w-8 h-8"></i>`;
             } else {
-              btnClass = "bg-gray-50 border-2 border-gray-200 text-gray-400 opacity-50";
+              btnClass = "bg-gray-50 border-2 border-gray-100 text-gray-400 opacity-60";
             }
           }
 
-          // AUDIO PLAYBACK ON OPTIONS
           let optionAudioBtn = '';
           if (exercise.optionsKana && exercise.optionsKana[i]) {
             optionAudioBtn = `
-              <button onclick="window.playAudio(event, '${exercise.optionsKana[i]}')" class="p-2 md:p-3 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-200 transition-colors shrink-0 z-10 border border-blue-100">
-                 <i data-lucide="volume-2" class="w-5 h-5"></i>
+              <button onclick="window.playAudio(event, '${exercise.optionsKana[i]}')" class="p-3 md:p-4 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-200 transition-colors shrink-0 z-10 border border-indigo-100 mr-2">
+                 <i data-lucide="volume-2" class="w-6 h-6"></i>
               </button>
             `;
           }
 
           return `
-            <div class="relative w-full rounded-2xl transition-all cursor-pointer shadow-sm hover:shadow-md ${btnClass}" onclick="if(!${isAnswered}) window.handleMultipleChoiceAnswer(${i})">
-              <div class="flex justify-between items-center w-full p-4 md:p-5 h-full">
-                <span class="font-bold text-lg pr-4">${opt}</span>
-                <div class="flex items-center gap-3">
+            <div class="relative w-full rounded-[1.2rem] transition-all cursor-pointer shadow-sm hover:shadow-md ${btnClass}" onclick="if(!${isAnswered}) window.handleMultipleChoiceAnswer(${i})">
+              <div class="flex items-center w-full p-4 md:p-6 h-full">
+                ${optionAudioBtn}
+                <span class="font-black text-xl md:text-2xl flex-grow">${opt}</span>
+                <div class="flex items-center gap-3 shrink-0 ml-4">
                   ${iconHtml}
-                  ${optionAudioBtn}
                 </div>
               </div>
             </div>
           `;
         }).join('') + `</div>`;
       } else if (exercise.type === 'speak') {
-        const btnClasses = state.isRecording ? 'bg-red-500 scale-110 shadow-xl shadow-red-500/50 animate-pulse' : isAnswered ? 'bg-gray-200 text-gray-400' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-xl hover:scale-105';
-        const msg = state.isRecording ? "Listening... Speak clearly now!" : isAnswered ? "Analysis complete." : "Tap to speak the Japanese phrase";
+        const btnClasses = state.isRecording ? 'bg-rose-500 scale-110 shadow-2xl shadow-rose-500/50 animate-pulse border-white border-4' : isAnswered ? 'bg-gray-200 text-gray-400' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl hover:scale-105 border-4 border-indigo-200';
+        const msg = state.isRecording ? "Listening... Speak clearly!" : isAnswered ? "Analysis complete." : "Tap to speak the Japanese phrase";
         exerciseHtml = `
-          <div class="flex flex-col items-center justify-center mt-10 space-y-8">
+          <div class="flex flex-col items-center justify-center mt-12 space-y-8 bg-gray-50 p-10 rounded-[2rem] border-2 border-dashed border-gray-200">
             <button ${isAnswered || state.isRecording ? 'disabled' : ''} 
               onmousedown="window.handleSpeechRecognition(event)" 
               ontouchstart="window.handleSpeechRecognition(event)" 
-              class="relative w-36 h-36 rounded-full flex items-center justify-center transition-all ${btnClasses} no-select">
-              <i data-lucide="mic" class="w-14 h-14"></i>
+              class="relative w-40 h-40 rounded-full flex items-center justify-center transition-all ${btnClasses} no-select">
+              <i data-lucide="mic" class="w-16 h-16"></i>
             </button>
-            <p class="text-gray-500 font-bold text-center text-lg">${msg}</p>
+            <p class="text-gray-600 font-black text-center text-xl">${msg}</p>
           </div>
         `;
       }
 
-      const feedbackClass = isCorrect ? 'bg-green-50 border border-green-200' : 'bg-orange-50 border border-orange-200';
-      const iconClass = isCorrect ? 'bg-green-500' : 'bg-orange-500';
-      const iconType = isCorrect ? 'check-circle' : 'message-circle';
-      const headingClass = isCorrect ? 'text-green-800' : 'text-orange-800';
-      const textClass = isCorrect ? 'text-green-700 font-medium' : 'text-orange-700 font-medium';
-      const btnFeedClass = isCorrect ? 'bg-green-500 hover:bg-green-600 shadow-green-500/30' : 'bg-pink-500 hover:bg-pink-600 shadow-pink-500/30';
+      const feedbackClass = isCorrect ? 'bg-green-50 border-green-200 text-green-900' : 'bg-rose-50 border-rose-200 text-rose-900';
+      const iconClass = isCorrect ? 'bg-green-500' : 'bg-rose-500';
+      const iconType = isCorrect ? 'check' : 'message-circle-warning';
+      const headingText = isCorrect ? 'Excellent!' : 'Sensei Advice';
+      const btnFeedClass = isCorrect ? 'bg-green-500 hover:bg-green-600 shadow-green-500/30' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/30';
       const btnText = state.gameStep === lesson.exercises.length - 1 ? 'Finish Lesson' : 'Next Question';
 
       return `
-      <div class="max-w-2xl mx-auto pb-20 mt-4 md:mt-8">
-        <div class="mb-8 flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-          <div class="flex-grow bg-gray-100 h-4 rounded-full overflow-hidden shadow-inner">
-            <div class="bg-gradient-to-r from-green-400 to-green-500 h-full transition-all duration-500" style="width: ${progressWidth}%"></div>
-          </div>
-          <span class="font-black text-gray-500 text-sm whitespace-nowrap">${state.gameStep + 1} / ${lesson.exercises.length}</span>
+      <div class="max-w-2xl mx-auto pb-20 mt-2 md:mt-6">
+        
+        <!-- Gamification Header -->
+        <div class="flex justify-between items-center mb-6 px-2">
+            <div class="flex items-center gap-2">
+                <i data-lucide="flame" class="w-8 h-8 ${state.combo > 1 ? 'text-orange-500 animate-pulse' : 'text-gray-300'}"></i>
+                <span class="font-black text-xl ${state.combo > 1 ? 'text-orange-600' : 'text-gray-400'}">${state.combo} Streak</span>
+            </div>
+            <span class="font-black text-gray-500 text-lg bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">${state.gameStep + 1} / ${lesson.exercises.length}</span>
         </div>
 
-        <div class="bg-white rounded-[2rem] shadow-xl p-6 md:p-10 min-h-[500px] flex flex-col border border-gray-100 relative overflow-hidden">
+        <div class="mb-8 flex items-center gap-4 bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+          <div class="flex-grow bg-gray-100 h-5 rounded-xl overflow-hidden shadow-inner">
+            <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-full transition-all duration-700 ease-out" style="width: ${progressWidth}%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] japanese-shadow p-6 md:p-12 min-h-[550px] flex flex-col border border-gray-50 relative overflow-hidden">
           <div class="flex-grow z-10">
-            <div class="flex justify-center mb-8">
-               <span class="bg-blue-100 text-blue-800 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-sm border border-blue-200">
+            <div class="flex justify-center mb-10">
+               <span class="bg-indigo-50 text-indigo-700 text-sm font-black px-6 py-2 rounded-full uppercase tracking-widest shadow-sm border border-indigo-100">
                  ${typeLabel}
                </span>
             </div>
 
             ${exercise.type === 'listen' ? `
-              <div class="flex justify-center mb-10">
-                <button onclick="window.playAudio(event, '${exercise.audioKana}')" class="flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-full transition-transform hover:scale-105 shadow-lg shadow-blue-500/30">
-                  <i data-lucide="volume-2" class="w-6 h-6"></i><span class="font-black text-lg">Play Audio</span>
+              <div class="flex justify-center mb-12">
+                <button onclick="window.playAudio(event, '${exercise.audioKana}')" class="flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-5 rounded-full transition-transform hover:scale-105 shadow-xl shadow-indigo-600/30">
+                  <i data-lucide="volume-2" class="w-8 h-8 animate-pulse"></i><span class="font-black text-xl">Play Audio</span>
                 </button>
               </div>
             ` : ''}
             
-            <h2 class="text-2xl md:text-3xl font-black text-gray-800 mb-10 text-center leading-snug">
+            <h2 class="text-3xl md:text-4xl font-black text-gray-800 mb-12 text-center leading-snug">
               ${exercise.question}
             </h2>
 
             ${exerciseHtml}
           </div>
 
-          <div class="mt-10 transition-all duration-500 z-10 ${isAnswered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 hidden'}">
-            <div class="p-6 rounded-2xl flex gap-4 items-start shadow-sm ${feedbackClass}">
+          <div class="mt-12 transition-all duration-500 z-10 ${isAnswered ? 'opacity-100 translate-y-0 block' : 'opacity-0 translate-y-4 hidden'}">
+            <div class="p-6 md:p-8 rounded-[1.5rem] flex gap-5 items-start shadow-sm border-2 ${feedbackClass}">
               <div class="p-3 rounded-full text-white shrink-0 shadow-md ${iconClass}">
-                  <i data-lucide="${iconType}" class="w-6 h-6"></i>
+                  <i data-lucide="${iconType}" class="w-8 h-8"></i>
               </div>
-              <div>
-                <h4 class="font-black text-xl mb-1 ${headingClass}">${isCorrect ? 'Excellent!' : 'Sensei AI Feedback'}</h4>
-                <p class="${textClass}">${isCorrect ? "Perfectly executed!" : exercise.feedback_incorrect}</p>
+              <div class="flex-grow">
+                <h4 class="font-black text-2xl mb-2">${headingText}</h4>
+                <p class="font-bold text-lg">${isCorrect ? "Perfectly executed!" : exercise.feedback_incorrect}</p>
               </div>
             </div>
-            <button onclick="window.nextQuestion()" class="w-full mt-6 py-5 rounded-full font-black text-xl text-white shadow-lg transition-transform transform hover:scale-105 ${btnFeedClass}">
+            <button onclick="window.nextQuestion()" class="w-full mt-6 py-6 rounded-2xl font-black text-2xl text-white shadow-xl transition-transform transform hover:scale-[1.02] ${btnFeedClass}">
               ${btnText}
             </button>
           </div>
@@ -917,32 +1003,35 @@
       const isPerfect = state.score === total;
 
       const mistakesHtml = state.currentMistakes.length > 0 
-        ? `<div class="bg-orange-50 border border-orange-200 text-orange-800 p-5 rounded-2xl mb-8 text-sm shadow-sm">
-             <span class="font-black block mb-2 text-base"><i data-lucide="alert-circle" class="inline w-5 h-5 mr-1 align-text-bottom"></i> Concepts to review:</span>
-             <ul class="list-disc pl-5 font-medium space-y-1">
+        ? `<div class="bg-rose-50 border-2 border-rose-200 text-rose-900 p-6 rounded-2xl mb-10 text-left shadow-sm">
+             <span class="font-black block mb-3 text-lg flex items-center gap-2"><i data-lucide="book-open" class="w-6 h-6"></i> Concepts to review:</span>
+             <ul class="list-disc pl-6 font-bold space-y-2 text-rose-800">
                ${[...new Set(state.currentMistakes)].map(m => `<li>${m}</li>`).join('')}
              </ul>
            </div>` 
         : '';
 
       return `
-      <div class="max-w-md mx-auto mt-16 text-center px-4">
-        <div class="bg-white rounded-[2rem] shadow-2xl p-10 border border-gray-100">
-          <div class="w-28 h-28 bg-gradient-to-br from-yellow-300 to-yellow-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-yellow-500/40">
-            <i data-lucide="award" class="w-14 h-14"></i>
-          </div>
-          <h2 class="text-4xl font-black text-gray-800 mb-2">Complete!</h2>
-          <p class="text-gray-500 mb-8 font-bold uppercase tracking-wider text-sm">Day ${state.activeDay}: ${lesson.topic}</p>
+      <div class="max-w-lg mx-auto mt-12 text-center px-4">
+        <div class="bg-white rounded-[3rem] japanese-shadow p-10 md:p-16 border border-gray-50 relative overflow-hidden">
           
-          <div class="text-7xl font-black text-pink-500 mb-4 drop-shadow-sm">${state.score}/${total}</div>
+          <div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0iI2QxZDVkYiIvPjwvc3ZnPg==')]"></div>
+
+          <div class="w-32 h-32 bg-gradient-to-br from-yellow-300 via-yellow-400 to-orange-500 text-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-yellow-500/40 relative z-10 animate-pop">
+            <i data-lucide="trophy" class="w-16 h-16"></i>
+          </div>
+          <h2 class="text-5xl font-black text-gray-900 mb-3 relative z-10">Complete!</h2>
+          <p class="text-indigo-500 mb-10 font-black uppercase tracking-widest text-sm relative z-10">Day ${state.activeDay}: ${lesson.topic}</p>
+          
+          <div class="text-[5rem] font-black text-rose-500 mb-6 drop-shadow-md relative z-10 leading-none">${state.score}<span class="text-4xl text-gray-400">/${total}</span></div>
           
           ${mistakesHtml}
 
-          <p class="text-lg font-bold text-gray-700 mb-10 leading-relaxed">
-            ${isPerfect ? "Flawless victory! You maintained perfect accuracy. 🌸" : "Great effort! Consistency is the true key to fluency."}
+          <p class="text-xl font-bold text-gray-600 mb-12 leading-relaxed relative z-10">
+            ${isPerfect ? "Flawless victory! You are a natural. 🌸" : "Great effort! Consistency is the true key to fluency."}
           </p>
-          <button onclick="window.changeView('dashboard')" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-5 rounded-full font-black text-xl shadow-lg shadow-blue-500/30 transition-transform transform hover:scale-105">
-            Return to Map
+          <button onclick="window.changeView('dashboard')" class="w-full bg-gray-900 hover:bg-black text-white py-6 rounded-2xl font-black text-2xl shadow-xl transition-transform transform hover:scale-[1.02] relative z-10 flex justify-center items-center gap-3">
+            <i data-lucide="map" class="w-7 h-7"></i> Return to Map
           </button>
         </div>
       </div>
@@ -951,57 +1040,65 @@
 
     const renderLibrary = () => {
       let html = `
-      <div class="max-w-5xl mx-auto pb-24 mt-4 md:mt-8">
+      <div class="max-w-5xl mx-auto pb-24 mt-2 md:mt-6">
         
-        <!-- TRANSLATOR WIDGET -->
-        <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-xl border border-gray-100 mb-10">
-          <h2 class="text-2xl font-black text-gray-800 mb-2 flex items-center gap-2">
-            <i data-lucide="bot" class="text-blue-500 w-8 h-8"></i> AI Sensei Translator
+        <!-- AI TRANSLATOR WIDGET -->
+        <div class="bg-white p-8 md:p-10 rounded-[2.5rem] japanese-shadow border border-gray-50 mb-12 relative overflow-hidden">
+          <div class="absolute right-0 top-0 w-64 h-64 bg-gradient-to-bl from-indigo-50 to-transparent rounded-bl-full -z-10"></div>
+          
+          <h2 class="text-3xl font-black text-gray-900 mb-3 flex items-center gap-3">
+            <div class="p-3 bg-indigo-100 text-indigo-600 rounded-2xl"><i data-lucide="bot" class="w-8 h-8"></i></div> 
+            AI Sensei Translator
           </h2>
-          <p class="text-gray-500 font-medium mb-6 text-sm">Type an English phrase to translate it, then listen to the correct Japanese pronunciation.</p>
-          <div class="flex flex-col md:flex-row gap-3 mb-2">
-            <input type="text" id="transInput" value="${state.transInput}" onchange="state.transInput = this.value" placeholder="e.g., Where is the train station?" class="flex-grow border-2 border-gray-200 rounded-2xl p-4 font-medium focus:border-blue-500 outline-none transition-colors" />
-            <button onclick="window.runTranslation()" class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-2xl font-black transition-transform hover:scale-105 shadow-md flex justify-center items-center gap-2">
-              ${state.transLoading ? `<i data-lucide="refresh-cw" class="animate-spin w-5 h-5"></i>` : `Translate`}
+          <p class="text-gray-500 font-bold mb-8 text-lg">Type any English phrase to get the Japanese translation, Romaji, and pronunciation.</p>
+          
+          <div class="flex flex-col md:flex-row gap-4 mb-4 z-10 relative">
+            <input type="text" id="transInput" value="${state.transInput}" onchange="state.transInput = this.value" placeholder="e.g., Where is the train station?" class="flex-grow border-2 border-gray-200 rounded-2xl p-5 text-xl font-bold text-gray-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all shadow-sm" />
+            <button onclick="window.runTranslation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-5 rounded-2xl font-black text-xl transition-transform hover:scale-105 shadow-xl shadow-indigo-500/30 flex justify-center items-center gap-3">
+              ${state.transLoading ? `<i data-lucide="loader-2" class="animate-spin w-6 h-6"></i>` : `<i data-lucide="languages" class="w-6 h-6"></i> Translate`}
             </button>
           </div>
           
           ${state.transResult ? `
-            <div class="mt-6 bg-blue-50 p-5 rounded-2xl border border-blue-100 flex justify-between items-center shadow-inner">
-              <span class="text-xl md:text-2xl font-black text-gray-800">${state.transResult}</span>
-              <button onclick="window.playAudio(event, '${state.transResult}')" class="bg-pink-500 hover:bg-pink-600 shadow-md text-white p-4 rounded-full transition-transform hover:scale-110 shrink-0">
-                <i data-lucide="volume-2" class="w-6 h-6"></i>
+            <div class="mt-8 bg-gray-900 p-8 rounded-[1.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-2xl animate-pop">
+              <div>
+                 <span class="text-3xl md:text-4xl font-black text-white block mb-2">${state.transResult}</span>
+                 <span class="text-xl font-bold text-indigo-300 tracking-wide">${state.transRomaji}</span>
+              </div>
+              <button onclick="window.playAudio(event, '${state.transResult}')" class="bg-rose-500 hover:bg-rose-400 shadow-lg text-white p-5 rounded-full transition-transform hover:scale-110 shrink-0 w-full md:w-auto flex justify-center">
+                <i data-lucide="volume-2" class="w-8 h-8"></i>
               </button>
             </div>
           ` : ''}
         </div>
 
-        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-[2rem] p-8 md:p-10 mb-10 shadow-lg text-center md:text-left">
-          <h1 class="text-3xl md:text-4xl font-black mb-3 flex items-center justify-center md:justify-start gap-3">
-            <i data-lucide="book-marked" class="w-10 h-10"></i> Survival Guide
+        <div class="bg-gradient-to-r from-rose-400 to-orange-400 text-white rounded-[2.5rem] p-10 md:p-12 mb-12 shadow-xl text-center md:text-left relative overflow-hidden">
+          <i data-lucide="book-marked" class="absolute right-0 bottom-0 w-64 h-64 opacity-10 transform translate-x-10 translate-y-10"></i>
+          <h1 class="text-4xl md:text-5xl font-black mb-4 flex items-center justify-center md:justify-start gap-4 relative z-10">
+             Survival Guide
           </h1>
-          <p class="text-indigo-100 text-lg font-medium">Master these words to navigate 90% of basic interactions.</p>
+          <p class="text-rose-50 text-xl font-bold relative z-10">Master these 90% of basic interactions.</p>
         </div>
-        <div class="space-y-12">
+        <div class="space-y-16">
       `;
 
       LIBRARY_DATA.forEach(section => {
         let itemsHtml = section.items.map(item => `
-          <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-xl transition-shadow group">
+          <div class="bg-white p-8 rounded-[1.5rem] shadow-sm border-2 border-gray-50 flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 hover:border-indigo-100 transition-all group">
             <div class="mb-4">
-              <div class="flex justify-between items-start mb-3">
+              <div class="flex justify-between items-start mb-4 gap-4">
                 <div>
-                  <p class="text-2xl md:text-3xl font-black text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">${item.kana}</p>
-                  <p class="text-sm font-bold text-blue-500 uppercase tracking-widest">${item.romaji}</p>
+                  <p class="text-3xl font-black text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">${item.kana}</p>
+                  <p class="text-sm font-black text-indigo-500 uppercase tracking-widest">${item.romaji}</p>
                 </div>
-                <button onclick="window.playAudio(event, '${item.kana}')" class="shrink-0 flex items-center justify-center gap-2 bg-gray-50 hover:bg-blue-100 border border-gray-200 hover:border-blue-300 text-gray-700 hover:text-blue-700 px-4 py-3 rounded-full transition-all shadow-sm">
-                  <i data-lucide="volume-2" class="w-5 h-5"></i>
+                <button onclick="window.playAudio(event, '${item.kana}')" class="shrink-0 flex items-center justify-center gap-2 bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 text-gray-700 hover:text-indigo-700 p-4 rounded-full transition-all shadow-sm">
+                  <i data-lucide="volume-2" class="w-6 h-6"></i>
                 </button>
               </div>
-              <p class="text-gray-800 font-bold text-lg mb-4">"${item.eng}"</p>
-              <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                <span class="text-[10px] font-black text-pink-500 uppercase tracking-widest block mb-1">Teacher's Note</span>
-                <p class="text-gray-600 text-sm font-medium leading-relaxed">${item.context}</p>
+              <p class="text-gray-700 font-black text-xl mb-5">"${item.eng}"</p>
+              <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                <span class="text-[11px] font-black text-rose-500 uppercase tracking-widest block mb-2 flex items-center gap-1"><i data-lucide="info" class="w-4 h-4"></i> Note</span>
+                <p class="text-gray-600 text-base font-bold leading-relaxed">${item.context}</p>
               </div>
             </div>
           </div>
@@ -1009,10 +1106,11 @@
 
         html += `
           <section>
-            <h2 class="text-2xl md:text-3xl font-black text-gray-800 mb-6 flex items-center gap-3 border-b-2 border-gray-100 pb-3">
-              <i data-lucide="${section.icon}" class="${section.iconColor} w-8 h-8"></i> ${section.category}
+            <h2 class="text-3xl font-black text-gray-800 mb-8 flex items-center gap-3 border-b-4 border-gray-100 pb-4 inline-flex">
+              <div class="p-2 bg-gray-100 rounded-xl"><i data-lucide="${section.icon}" class="${section.iconColor} w-8 h-8"></i></div>
+              ${section.category}
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
               ${itemsHtml}
             </div>
           </section>
@@ -1024,34 +1122,35 @@
     };
 
     const renderProfile = () => `
-      <div class="max-w-md mx-auto mt-8 md:mt-16 px-4 pb-20">
-        <div class="bg-white rounded-[2rem] shadow-xl p-8 border border-gray-100 text-center">
-          <div class="w-24 h-24 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-blue-100 shadow-inner">
-            <i data-lucide="user" class="w-12 h-12"></i>
+      <div class="max-w-md mx-auto mt-10 md:mt-20 px-4 pb-20">
+        <div class="bg-white rounded-[3rem] japanese-shadow p-10 border border-gray-50 text-center relative overflow-hidden">
+          
+          <div class="w-32 h-32 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-8 border-8 border-white shadow-xl relative z-10">
+            <i data-lucide="user" class="w-16 h-16"></i>
           </div>
-          <h2 class="text-3xl font-black text-gray-800 mb-2">Student Profile</h2>
-          <p class="text-gray-500 mb-10 font-medium">Your progress is saved securely.</p>
+          <h2 class="text-4xl font-black text-gray-900 mb-2">Student Profile</h2>
+          <p class="text-gray-500 mb-12 font-bold text-lg">Your progress is saved automatically.</p>
           
           <div class="text-left mb-10">
-            <label class="block text-sm font-black text-gray-700 mb-3 uppercase tracking-wider">Nickname</label>
+            <label class="block text-sm font-black text-gray-500 mb-3 uppercase tracking-widest">Nickname</label>
             <input 
               type="text" 
               value="${state.profileName}"
               onchange="window.updateProfileName(this.value)"
-              class="w-full border-2 border-gray-200 rounded-2xl p-4 text-xl font-black text-gray-800 focus:border-pink-500 outline-none transition-colors shadow-sm"
+              class="w-full border-2 border-gray-200 rounded-2xl p-5 text-2xl font-black text-gray-800 focus:border-indigo-500 outline-none transition-colors shadow-inner bg-gray-50 focus:bg-white"
             />
           </div>
 
-          <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-3xl mb-10 flex justify-between items-center text-left border border-gray-200 shadow-inner">
+          <div class="bg-gray-900 p-8 rounded-3xl mb-12 flex justify-between items-center text-left shadow-xl">
             <div>
-              <p class="text-gray-500 text-xs font-black uppercase tracking-widest mb-1">Days Mastered</p>
-              <p class="text-4xl font-black text-green-500">${state.completedDays.length}</p>
+              <p class="text-gray-400 text-xs font-black uppercase tracking-widest mb-1">Days Mastered</p>
+              <p class="text-5xl font-black text-green-400">${state.completedDays.length}</p>
             </div>
-            <i data-lucide="award" class="text-yellow-400 w-12 h-12 drop-shadow-sm"></i>
+            <i data-lucide="award" class="text-yellow-400 w-16 h-16"></i>
           </div>
 
-          <button onclick="window.handleSwitchAccount()" class="w-full bg-white border-2 border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-gray-700 py-4 rounded-full font-bold shadow-sm transition-all flex justify-center items-center gap-2">
-            <i data-lucide="log-out" class="w-5 h-5"></i> Switch Account / Start Fresh
+          <button onclick="window.handleSwitchAccount()" class="w-full bg-white border-2 border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-gray-800 py-5 rounded-2xl font-black text-lg shadow-sm transition-all flex justify-center items-center gap-3">
+            <i data-lucide="log-out" class="w-6 h-6"></i> Clear / Reset Progress
           </button>
         </div>
       </div>
