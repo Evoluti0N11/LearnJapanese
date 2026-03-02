@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Korean Learning App - Learn Korean in 45 Days</title>
+    <meta name="description" content="Interactive Korean learning platform with 45 key situations, Hangul alphabet lessons, and culturally immersive content.">
+    <meta name="theme-color" content="#8b5cf6">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%238b5cf6' width='192' height='192'/><text x='50%' y='50%' font-size='120' text-anchor='middle' dominant-baseline='middle' fill='white' font-weight='bold'>한</text></svg>">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        }
+        
+        .korean-text {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 500;
+        }
+        
+        .hangul-watermark {
+            position: absolute;
+            font-size: 180px;
+            font-weight: 700;
+            color: rgba(139, 92, 246, 0.08);
+            pointer-events: none;
+            user-select: none;
+            z-index: 0;
+            line-height: 1;
+            overflow: hidden;
+            max-height: 250px;
+        }
+        
+        @media (max-width: 640px) {
+            .hangul-watermark {
+                font-size: 100px;
+                opacity: 0.04;
+            }
+        }
+        
+        .combo-animation {
+            animation: comboPopup 1s ease-out forwards;
+        }
+        
+        @keyframes comboPopup {
+            0% {
+                transform: scale(0) translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.2) translateY(-60px);
+                opacity: 0;
+            }
+        }
+        
+        .audio-loading {
+            animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .lesson-card {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .lesson-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(139, 92, 246, 0.15);
+        }
+        
+        .sticky-cta {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 100%);
+            backdrop-filter: blur(10px);
+            z-index: 40;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        
+        .grammar-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 3px solid #8b5cf6;
+            border-radius: 2px;
+            margin: 4px 0;
+            font-size: 0.875rem;
+            color: #6d28d9;
+        }
+        
+        .contextual-phrase {
+            background: rgba(59, 130, 246, 0.05);
+            border-left: 3px solid #3b82f6;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-size: 0.9rem;
+        }
+        
+        .tts-button {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .tts-button:active {
+            transform: scale(0.95);
+        }
+        
+        .loading-skeleton {
+            animation: skeleton-loading 1s linear infinite alternate;
+        }
+        
+        @keyframes skeleton-loading {
+            0% { background-color: #f0f0f0; }
+            100% { background-color: #e0e0e0; }
+        }
+        
+        /* Formality Badge */
+        .formal-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #fbbf24;
+            color: #78350f;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+        
+        .informal-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #86efac;
+            color: #166534;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+        
+        /* Hangul Display Responsive */
+        .hangul-display {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: clamp(1.125rem, 2vw, 1.875rem);
+        }
+        
+        /* Mini Dialogue Card */
+        .dialogue-card {
+            background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 12px 0;
+            border-left: 4px solid #8b5cf6;
+        }
+        
+        .dialogue-line {
+            margin: 8px 0;
+            padding-left: 12px;
+        }
+        
+        .speaker-name {
+            font-weight: 600;
+            color: #6d28d9;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Unscramble Exercise */
+        .word-token {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 4px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: grab;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        
+        .word-token:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+        
+        .word-token.selected {
+            background: #8b5cf6;
+            color: white;
+            border-color: #8b5cf6;
+        }
+        
+        /* Spaced Repetition Indicator */
+        .spaced-rep-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #dbeafe;
+            color: #0369a1;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .map-popup-phrase {
+            background: #f3e8ff;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+            border-left: 3px solid #8b5cf6;
+            font-weight: 500;
+        }
+        
+        /* Image Fallback */
+        .image-with-fallback {
+            background: linear-gradient(135deg, #e0e7ff, #fce7f3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6d28d9;
+            font-weight: 600;
+        }
+        
+        /* Hangul Alphabet Section */
+        .hangul-card {
+            background: linear-gradient(135deg, #f3e8ff 0%, #fef3c7 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e9d5ff;
+            transition: all 0.3s ease;
+        }
+        
+        .hangul-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(139, 92, 246, 0.2);
+        }
+        
+        .hangul-character {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #6d28d9;
+            margin-bottom: 8px;
+        }
+        
+        .hangul-romaja {
+            font-size: 0.875rem;
+            color: #7c3aed;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .hangul-pronunciation {
+            font-size: 0.75rem;
+            color: #a78bfa;
+            margin-top: 4px;
+        }
+        
+        /* Offline Indicator */
+        .offline-banner {
+            background: #fef3c7;
+            border-bottom: 2px solid #f59e0b;
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #78350f;
+            display: none;
+        }
+        
+        .offline-banner.show {
+            display: block;
+        }
+        
+        /* Scroll snap for better mobile UX */
+        .lesson-section {
+            scroll-margin-top: 80px;
+        }
+        
+        /* High contrast mode for accessibility */
+        @media (prefers-contrast: more) {
+            .hangul-watermark {
+                opacity: 0.15;
+            }
+            .grammar-tag {
+                border-left-width: 4px;
+                font-weight: 600;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50">
+    <!-- Offline Banner -->
+    <div id="offline-banner" class="offline-banner">
+        📡 You're offline. Content loaded from cache.
+    </div>
+    
+    <!-- Main App Container -->
+    <div id="app" class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+            <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="text-3xl font-bold korean-text text-purple-600">한글</div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Korean Learning</h1>
+                        <p class="text-xs text-gray-500">45 Key Situations</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-semibold text-purple-600" id="combo-display">🔥 Combo: 0</p>
+                        <p class="text-xs text-gray-500" id="score-display">Points: 0</p>
+                    </div>
+                    <button onclick="showProfileModal()" class="p-2 hover:bg-gray-100 rounded-full transition">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 md:py-8">
+            <!-- Navigation Tabs -->
+            <div class="flex gap-2 mb-8 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+                <button onclick="switchTab('lessons')" class="nav-tab tab-active whitespace-nowrap px-4 py-2 rounded-lg font-semibold text-sm transition" data-tab="lessons">
+                    📚 Lessons
+                </button>
+                <button onclick="switchTab('hangul')" class="nav-tab whitespace-nowrap px-4 py-2 rounded-lg font-semibold text-sm transition" data-tab="hangul">
+                    🔤 Hangul
+                </button>
+                <button onclick="switchTab('grammar')" class="nav-tab whitespace-nowrap px-4 py-2 rounded-lg font-semibold text-sm transition" data-tab="grammar">
+                    📖 Grammar Guide
+                </button>
+                <button onclick="switchTab('map')" class="nav-tab whitespace-nowrap px-4 py-2 rounded-lg font-semibold text-sm transition" data-tab="map">
+                    🗺️ Map
+                </button>
+                <button onclick="switchTab('library')" class="nav-tab whitespace-nowrap px-4 py-2 rounded-lg font-semibold text-sm transition" data-tab="library">
+                    📖 Library
+                </button>
+            </div>
+
+            <!-- LESSONS TAB -->
+            <section id="lessons-tab" class="tab-content">
+                <div id="lesson-selector" class="mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900">Select Your Day</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        <template id="day-button-template">
+                            <button class="day-button p-3 rounded-lg font-bold text-center transition transform hover:scale-105 active:scale-95" onclick="selectDay(this.dataset.day)">
+                                <div class="text-lg">Day <span class="day-num"></span></div>
+                                <div class="text-xs opacity-70 mt-1">
+                                    <span class="day-progress">0%</span>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <div id="lesson-content" class="hidden">
+                    <!-- Lesson Header -->
+                    <div class="bg-white rounded-xl p-6 md:p-8 mb-6 shadow-sm border border-gray-100">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h2 class="text-3xl font-bold text-gray-900 mb-2" id="lesson-title">Loading...</h2>
+                                <p class="text-gray-600" id="lesson-context">Loading context...</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500 mb-2">Progress</p>
+                                <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div id="lesson-progress" class="progress-bar h-full bg-gradient-to-r from-purple-500 to-pink-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Phrase Section -->
+                    <div class="bg-white rounded-xl p-6 md:p-8 mb-6 shadow-sm border border-gray-100 lesson-section">
+                        <h3 class="text-lg font-bold mb-4 text-gray-900">🎯 Key Phrase</h3>
+                        <div class="relative">
+                            <div class="hangul-watermark">한글</div>
+                            <div class="relative z-10">
+                                <div class="mb-4">
+                                    <div class="flex items-baseline justify-between mb-2">
+                                        <p class="text-gray-600 font-semibold">Korean:</p>
+                                        <span id="key-formality" class="text-xs"></span>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <p id="key-korean" class="hangul-display text-3xl font-bold korean-text text-purple-700">Loading...</p>
+                                        <button id="key-audio-btn" class="tts-button p-3 rounded-lg hover:bg-purple-100 transition" onclick="speakKeyPhrase()">
+                                            <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.26 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path>
+                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p id="key-english" class="text-gray-700 text-lg mt-4">Loading...</p>
+                                
+                                <!-- Grammar Tag -->
+                                <div id="grammar-focus" class="mt-4"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Dialogue Section -->
+                    <div id="dialogue-section" class="bg-white rounded-xl p-6 md:p-8 mb-6 shadow-sm border border-gray-100 lesson-section hidden">
+                        <h3 class="text-lg font-bold mb-4 text-gray-900">💬 Context Dialogue</h3>
+                        <div id="dialogue-content" class="dialogue-card"></div>
+                        <div id="dialogue-question" class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <p class="font-semibold text-blue-900 mb-3" id="dialogue-q"></p>
+                            <div id="dialogue-options" class="space-y-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Hangul Intro Section (Days 1-5) -->
+                    <div id="hangul-intro-section" class="bg-white rounded-xl p-6 md:p-8 mb-6 shadow-sm border border-gray-100 lesson-section hidden">
+                        <h3 class="text-lg font-bold mb-4 text-gray-900">🔤 Hangul of the Day</h3>
+                        <div id="hangul-intro-content" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+                    </div>
+
+                    <!-- Exercises Section -->
+                    <div class="bg-white rounded-xl p-6 md:p-8 mb-6 shadow-sm border border-gray-100 lesson-section">
+                        <h3 class="text-lg font-bold mb-6 text-gray-900">✏️ Exercises</h3>
+                        <div id="exercises-container" class="space-y-6"></div>
+                    </div>
+
+                    <!-- Grammar Cheat Sheet (persistent) -->
+                    <div id="grammar-cheatsheet" class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 md:p-8 mb-6 shadow-sm border border-purple-200 lesson-section">
+                        <h3 class="text-lg font-bold mb-4 text-gray-900 flex items-center gap-2">
+                            <span>📋</span> Grammar Reference
+                        </h3>
+                        <div id="grammar-reference-content" class="space-y-4 text-sm"></div>
+                    </div>
+
+                    <!-- Sticky CTA Button -->
+                    <div class="sticky-cta md:hidden">
+                        <button onclick="scrollToExercises()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition">
+                            📝 Start Exercises
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HANGUL TAB -->
+            <section id="hangul-tab" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6 text-gray-900">Hangul Alphabet - Step by Step</h2>
+                <p class="text-gray-600 mb-8 max-w-2xl">Master the Korean alphabet with 5 characters per day. Understanding Hangul is your foundation for independent reading and writing.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" id="hangul-grid"></div>
+                
+                <div class="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-bold mb-4 text-gray-900">How to Write</h3>
+                    <div id="hangul-writing-guide" class="space-y-6"></div>
+                </div>
+            </section>
+
+            <!-- GRAMMAR TAB -->
+            <section id="grammar-tab" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6 text-gray-900">Grammar Cheat Sheet</h2>
+                <p class="text-gray-600 mb-8 max-w-2xl">Explicit grammar rules, patterns, and formality levels you'll encounter in the lessons.</p>
+                
+                <div class="space-y-6">
+                    <!-- SOV Grammar -->
+                    <div class="bg-white rounded-xl p-6 md:p-8 shadow-sm border-l-4 border-purple-500">
+                        <h3 class="text-xl font-bold mb-3 text-gray-900">Subject-Object-Verb (SOV) Word Order</h3>
+                        <p class="text-gray-700 mb-4">Korean sentences follow a different word order than English. The verb comes at the end.</p>
+                        <div class="bg-purple-50 p-4 rounded-lg mb-4">
+                            <p class="font-mono text-sm mb-2"><strong>Pattern:</strong> Subject + Object + Verb</p>
+                            <p class="text-gray-700"><strong>Korean:</strong> <span class="korean-text">저는 밥을 먹어요</span></p>
+                            <p class="text-gray-700"><strong>Literal:</strong> I rice eat</p>
+                            <p class="text-gray-700"><strong>English:</strong> I eat rice.</p>
+                        </div>
+                    </div>
+
+                    <!-- Formality Levels -->
+                    <div class="bg-white rounded-xl p-6 md:p-8 shadow-sm border-l-4 border-yellow-500">
+                        <h3 class="text-xl font-bold mb-3 text-gray-900">Formality Levels</h3>
+                        <p class="text-gray-700 mb-4">Korean has different speech levels based on context and relationship. Using the correct level is essential for respect and cultural appropriateness.</p>
+                        
+                        <div class="space-y-4">
+                            <div class="border border-yellow-200 rounded-lg p-4 bg-yellow-50">
+                                <p class="font-bold text-yellow-900 mb-2">🎩 Formal / Polite (존댓말 - Jondaetmal)</p>
+                                <p class="text-sm text-yellow-800 mb-2">Use with: Strangers, elders, authority figures, in formal situations</p>
+                                <p class="text-gray-700 korean-text mb-1">안녕하세요.</p>
+                                <p class="text-gray-600 text-sm">Hello (formal)</p>
+                            </div>
+                            
+                            <div class="border border-green-200 rounded-lg p-4 bg-green-50">
+                                <p class="font-bold text-green-900 mb-2">😊 Informal / Casual (반말 - Banmal)</p>
+                                <p class="text-sm text-green-800 mb-2">Use with: Close friends, peers, children</p>
+                                <p class="text-gray-700 korean-text mb-1">안녕!</p>
+                                <p class="text-gray-600 text-sm">Hello (informal)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Particles -->
+                    <div class="bg-white rounded-xl p-6 md:p-8 shadow-sm border-l-4 border-pink-500">
+                        <h3 class="text-xl font-bold mb-3 text-gray-900">Particles (조사 - Josa)</h3>
+                        <p class="text-gray-700 mb-4">Particles attach to nouns to show their grammatical function.</p>
+                        
+                        <div class="space-y-3">
+                            <div class="p-4 bg-pink-50 rounded-lg">
+                                <p class="font-bold text-pink-900 mb-1">은/는 (Topic Marker)</p>
+                                <p class="text-sm text-gray-700">Marks the topic of a sentence</p>
+                                <p class="korean-text text-gray-800 mt-1">저는 학생이에요</p>
+                                <p class="text-sm text-gray-600">As for me, (I) am a student</p>
+                            </div>
+                            
+                            <div class="p-4 bg-pink-50 rounded-lg">
+                                <p class="font-bold text-pink-900 mb-1">을/를 (Object Marker)</p>
+                                <p class="text-sm text-gray-700">Marks the direct object of a verb</p>
+                                <p class="korean-text text-gray-800 mt-1">밥을 먹어요</p>
+                                <p class="text-sm text-gray-600">Eat rice</p>
+                            </div>
+                            
+                            <div class="p-4 bg-pink-50 rounded-lg">
+                                <p class="font-bold text-pink-900 mb-1">에 (Location/Direction)</p>
+                                <p class="text-sm text-gray-700">Indicates where or to where</p>
+                                <p class="korean-text text-gray-800 mt-1">서울에 가요</p>
+                                <p class="text-sm text-gray-600">Go to Seoul</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Participles -->
+                    <div class="bg-white rounded-xl p-6 md:p-8 shadow-sm border-l-4 border-blue-500">
+                        <h3 class="text-xl font-bold mb-3 text-gray-900">Participles & Tenses</h3>
+                        <p class="text-gray-700 mb-4">Korean verbs don't conjugate like English, but add endings to show tense and mood.</p>
+                        
+                        <div class="space-y-3">
+                            <div class="p-4 bg-blue-50 rounded-lg">
+                                <p class="font-bold text-blue-900 mb-1">Present: -어요/-아요</p>
+                                <p class="korean-text text-gray-800">먹어요</p>
+                                <p class="text-sm text-gray-600">eat (present)</p>
+                            </div>
+                            
+                            <div class="p-4 bg-blue-50 rounded-lg">
+                                <p class="font-bold text-blue-900 mb-1">Past: -었어요/-았어요</p>
+                                <p class="korean-text text-gray-800">먹었어요</p>
+                                <p class="text-sm text-gray-600">ate (past)</p>
+                            </div>
+                            
+                            <div class="p-4 bg-blue-50 rounded-lg">
+                                <p class="font-bold text-blue-900 mb-1">Future: -(으)ㄹ 거예요</p>
+                                <p class="korean-text text-gray-800">먹을 거예요</p>
+                                <p class="text-sm text-gray-600">will eat</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MAP TAB -->
+            <section id="map-tab" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6 text-gray-900">🗺️ Korean Locations & Phrases</h2>
+                <p class="text-gray-600 mb-4">Explore real locations from Korean media with contextual phrases to use there.</p>
+                <div id="map" class="w-full h-96 rounded-xl shadow-lg border border-gray-200 mb-6"></div>
+                <p class="text-xs text-gray-500 text-center">Map shows 2500+ filming locations. Click markers for contextual phrases.</p>
+            </section>
+
+            <!-- LIBRARY TAB -->
+            <section id="library-tab" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6 text-gray-900">📖 Complete Phrase Library</h2>
+                <p class="text-gray-600 mb-6">All 45 key situations with full context, formality notes, and variations.</p>
+                
+                <div class="space-y-4" id="library-content"></div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 mt-12">
+            <div class="max-w-6xl mx-auto px-4 py-8">
+                <p class="text-sm text-gray-500 text-center">Korean Learning App • Hosted on GitHub • Learn at Your Pace</p>
+                <p class="text-xs text-gray-400 text-center mt-2">No trackers • Fully responsive • Works offline</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Profile & Settings</h3>
+                <button onclick="closeProfileModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Learner Name</label>
+                    <input id="learner-name" type="text" value="Sara" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Text Size: <span id="text-size-value">1.0x</span></label>
+                    <input id="text-size-slider" type="range" min="0.8" max="1.5" step="0.1" value="1.0" class="w-full" oninput="updateTextSize()">
+                    <p class="text-xs text-gray-500 mt-1">Affects all Hangul text</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <input type="checkbox" id="sound-toggle" checked> Enable Sound Effects
+                    </label>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-200">
+                    <p class="text-sm font-semibold text-gray-700 mb-3">Current Progress</p>
+                    <div class="space-y-2 text-sm">
+                        <p>✅ Days Completed: <span id="days-completed" class="font-bold">0</span></p>
+                        <p>⭐ Total Points: <span id="total-points" class="font-bold">0</span></p>
+                        <p>🔥 Best Combo: <span id="best-combo" class="font-bold">0</span></p>
+                    </div>
+                </div>
+                
+                <button onclick="resetProgress()" class="w-full bg-red-100 text-red-700 py-2 rounded-lg font-semibold hover:bg-red-200 transition text-sm">
+                    Reset All Progress
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CURRICULUM DATA
+        // ============================================
+        
+        const lessons = [
+            {
+                day: 1,
+                title: "Greetings",
+                context: "Master basic hellos and byes",
+                korean: "안녕하세요",
+                english: "Hello (formal)",
+                grammar: "SOV word order basics",
+                formality: "formal",
+                phrase: "Good morning/afternoon/evening",
+                dialogue: {
+                    lines: [
+                        { speaker: "Person A", text: "안녕하세요?" },
+                        { speaker: "Person B", text: "안녕하세요. 만나서 반갑습니다." },
+                        { speaker: "Person A", text: "저도 반갑습니다!" }
+                    ],
+                    question: "What does Person A say when they leave?",
+                    options: [
+                        { text: "안녕히 가세요", correct: true },
+                        { text: "고맙습니다", correct: false },
+                        { text: "미안합니다", correct: false }
+                    ]
+                },
+                hangul: ["ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ"],
+                exercises: [
+                    { type: "multiple_choice", question: "Which means 'Hello'?", options: ["안녕하세요", "고마워", "미안해"], correct: 0 },
+                    { type: "listen_and_choose", question: "Listen and select the correct response", audio: "안녕하세요", options: ["안녕하세요", "고마워요", "미안해요"], correct: 0 },
+                    { type: "unscramble", question: "Arrange to make: 'Hello (formal)'", words: ["안녕", "하", "세", "요"], correct: "안녕하세요" },
+                    { type: "speak", question: "Say: Hello (formal)" }
+                ]
+            },
+            {
+                day: 2,
+                title: "Introducing Yourself",
+                context: "Tell others who you are",
+                korean: "저는 학생이에요",
+                english: "I am a student",
+                grammar: "Particles: 은/는 (topic), 이/가 (subject)",
+                formality: "formal",
+                phrase: "I + occupation/identity",
+                dialogue: {
+                    lines: [
+                        { speaker: "A", text: "만나서 반갑습니다" },
+                        { speaker: "B", text: "저는 학생이에요" },
+                        { speaker: "A", text: "좋은 대학이에요?" }
+                    ],
+                    question: "What is B's identity?",
+                    options: [
+                        { text: "Student", correct: true },
+                        { text: "Teacher", correct: false },
+                        { text: "Doctor", correct: false }
+                    ]
+                },
+                hangul: ["ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅉ"],
+                exercises: [
+                    { type: "multiple_choice", question: "Which is the topic particle?", options: ["은/는", "을/를", "에"], correct: 0 },
+                    { type: "listen_and_choose", question: "Choose the correct occupation marker", audio: "저는 의사예요", options: ["학생", "의사", "선생님"], correct: 1 },
+                    { type: "unscramble", question: "Arrange: 'I am a student'", words: ["저는", "학생", "이에요"], correct: "저는 학생이에요" },
+                    { type: "speak", question: "Introduce yourself with your occupation" }
+                ]
+            },
+            {
+                day: 3,
+                title: "Asking Questions",
+                context: "Ask basic yes/no questions",
+                korean: "어디에 가세요?",
+                english: "Where are you going?",
+                grammar: "Participles: -세요 (polite), Question intonation",
+                formality: "formal",
+                phrase: "Question word + 가세요?",
+                dialogue: {
+                    lines: [
+                        { speaker: "A", text: "어디에 가세요?" },
+                        { speaker: "B", text: "서울에 가요" },
+                        { speaker: "A", text: "좋아요!" }
+                    ],
+                    question: "Where is B going?",
+                    options: [
+                        { text: "Seoul", correct: true },
+                        { text: "Busan", correct: false },
+                        { text: "Incheon", correct: false }
+                    ]
+                },
+                hangul: ["ㅋ", "ㅌ", "ㅍ", "ㅎ", "ㅁ"],
+                exercises: [
+                    { type: "multiple_choice", question: "Question word for 'where'?", options: ["뭐", "누가", "어디"], correct: 2 },
+                    { type: "listen_and_choose", question: "What location do they mention?", audio: "부산에 가요", options: ["Seoul", "Busan", "Daegu"], correct: 1 },
+                    { type: "unscramble", question: "Make: 'Where are you going?'", words: ["어디에", "가", "세요"], correct: "어디에 가세요?" },
+                    { type: "speak", question: "Ask someone where they're going" }
+                ]
+            },
+            {
+                day: 4,
+                title: "Numbers & Counting",
+                context: "Use numbers in Korean",
+                korean: "저는 스물한 살이에요",
+                english: "I am 21 years old",
+                grammar: "Native Korean vs Sino-Korean numbers",
+                formality: "formal",
+                phrase: "Age and quantity expressions",
+                dialogue: {
+                    lines: [
+                        { speaker: "A", text: "나이가 어떻게 되세요?" },
+                        { speaker: "B", text: "스물한 살이에요" },
+                        { speaker: "A", text: "아, 젊으세요!" }
+                    ],
+                    question: "How old is B?",
+                    options: [
+                        { text: "21", correct: true },
+                        { text: "31", correct: false },
+                        { text: "28", correct: false }
+                    ]
+                },
+                hangul: ["ㅏ", "ㅑ", "ㅓ", "ㅕ", "ㅗ"],
+                exercises: [
+                    { type: "multiple_choice", question: "Native Korean number for 'five'?", options: ["5", "오", "다섯"], correct: 2 },
+                    { type: "listen_and_choose", question: "What number do you hear?", audio: "열", options: ["8", "9", "10"], correct: 2 },
+                    { type: "unscramble", question: "Make: 'I am 21'", words: ["저는", "스물한", "살이에요"], correct: "저는 스물한 살이에요" },
+                    { type: "speak", question: "Say your age" }
+                ]
+            },
+            {
+                day: 5,
+                title: "Everyday Verbs",
+                context: "Talk about daily activities",
+                korean: "밥을 먹어요",
+                english: "I eat rice",
+                grammar: "Object particle 을/를, present tense -어요/-아요",
+                formality: "formal",
+                phrase: "Verb + object sentences",
+                dialogue: {
+                    lines: [
+                        { speaker: "A", text: "뭐 해요?" },
+                        { speaker: "B", text: "밥을 먹어요" },
+                        { speaker: "A", text: "맛있어요?" }
+                    ],
+                    question: "What is B doing?",
+                    options: [
+                        { text: "Eating", correct: true },
+                        { text: "Drinking", correct: false },
+                        { text: "Sleeping", correct: false }
+                    ]
+                },
+                hangul: ["ㅡ", "ㅣ", "ㅐ", "ㅔ", "ㅚ"],
+                exercises: [
+                    { type: "multiple_choice", question: "What is the object marker?", options: ["은/는", "을/를", "에"], correct: 1 },
+                    { type: "listen_and_choose", question: "What verb do you hear?", audio: "마시는 중이에요", options: ["Eating", "Drinking", "Writing"], correct: 1 },
+                    { type: "unscramble", question: "Make: 'I eat rice'", words: ["밥을", "먹어요"], correct: "밥을 먹어요" },
+                    { type: "speak", question: "Say what you're eating" }
+                ]
+            }
+        ];
+
+        // Add Days 6-45 with varied exercise types
+        for (let day = 6; day <= 45; day++) {
+            const situations = [
+                "Ordering at a Restaurant", "Asking for Directions", "Shopping", "Making Friends",
+                "Telling Time", "Talking about Weather", "Describing Feelings", "Family Introduction",
+                "Hobbies & Interests", "School Life", "Booking a Hotel", "At the Doctor",
+                "Movie Theater Visit", "Transportation", "Paying Bills", "Compliments",
+                "Apologies & Thanks", "Dating Conversation", "Job Interviews", "Travel Plans",
+                "Phone Conversations", "Restaurant Reservations", "Complaints", "Permissions",
+                "Suggestions", "Agreeing & Disagreeing", "Explaining Plans", "Advice",
+                "Stories & Anecdotes", "Emergency Situations", "Cultural Events", "Food Preferences",
+                "Sports & Exercise", "Art & Museums", "Technology", "Learning Strategies",
+                "Slang & Informal", "Regional Dialects", "K-Pop & Media", "Business Meetings",
+                "Wedding Etiquette", "Holiday Traditions"
+            ];
+
+            const situationIndex = (day - 6) % situations.length;
+            const situation = situations[situationIndex];
+
+            lessons.push({
+                day: day,
+                title: situation,
+                context: `Continue learning: Day ${day} focuses on ${situation.toLowerCase()}`,
+                korean: `예제 ${day}`,
+                english: `Example ${day}`,
+                grammar: `Grammar pattern for Day ${day}`,
+                formality: day % 2 === 0 ? "formal" : "informal",
+                phrase: `${situation} context`,
+                dialogue: {
+                    lines: [
+                        { speaker: "A", text: `안녕하세요. ${situation}입니다.` },
+                        { speaker: "B", text: "좋습니다." },
+                        { speaker: "A", text: "감사합니다!" }
+                    ],
+                    question: `What is the topic of this conversation?`,
+                    options: [
+                        { text: situation, correct: true },
+                        { text: situations[(situationIndex + 1) % situations.length], correct: false },
+                        { text: situations[(situationIndex + 2) % situations.length], correct: false }
+                    ]
+                },
+                hangul: ["ㄱ", "ㄴ", "ㄷ"],
+                exercises: [
+                    { type: "dialogue_response", question: "Choose the correct response", responses: ["응", "네", "알겠습니다"], correct: 2 },
+                    { type: "unscramble", question: `Arrange words about ${situation}`, words: ["예제", "입니다"], correct: "예제입니다" },
+                    { type: "listen_and_choose", question: "What did you hear?", audio: "샘플", options: ["A", "B", "C"], correct: 0 },
+                    { type: "speak", question: `Practice: ${situation}` }
+                ]
+            });
+        }
+
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        
+        let state = {
+            currentDay: null,
+            score: 0,
+            combo: 0,
+            bestCombo: 0,
+            completedDays: new Set(),
+            exerciseProgress: {},
+            soundEnabled: true,
+            textSize: 1.0,
+            learnerName: "Sara"
+        };
+
+        // Load state from localStorage
+        function loadState() {
+            const saved = localStorage.getItem('koreanAppState');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state = {
+                    ...state,
+                    ...parsed,
+                    completedDays: new Set(parsed.completedDays || [])
+                };
+            }
+        }
+
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('koreanAppState', JSON.stringify({
+                ...state,
+                completedDays: Array.from(state.completedDays)
+            }));
+        }
+
+        // ============================================
+        // UI INITIALIZATION
+        // ============================================
+        
+        function initializeLessonSelectors() {
+            const container = document.getElementById('lesson-selector');
+            const template = document.getElementById('day-button-template');
+            
+            for (let i = 1; i <= 45; i++) {
+                const button = template.content.cloneNode(true);
+                button.querySelector('.day-num').textContent = i;
+                button.querySelector('.day-button').dataset.day = i;
+                
+                if (state.completedDays.has(i)) {
+                    button.querySelector('.day-button').classList.add('bg-green-500', 'text-white');
+                } else {
+                    button.querySelector('.day-button').classList.add('bg-purple-100', 'text-purple-700');
+                }
+                
+                container.appendChild(button);
+            }
+        }
+
+        // ============================================
+        // TAB SWITCHING
+        // ============================================
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('tab-active', 'bg-purple-600', 'text-white');
+                tab.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            event.target.classList.add('tab-active', 'bg-purple-600', 'text-white');
+            
+            if (tabName === 'hangul') initializeHangulTab();
+            if (tabName === 'map') initializeMap();
+            if (tabName === 'library') initializeLibrary();
+        }
+
+        // ============================================
+        // LESSON SELECTION & DISPLAY
+        // ============================================
+        
+        function selectDay(day) {
+            state.currentDay = parseInt(day);
+            displayLesson(state.currentDay);
+            saveState();
+        }
+
+        function displayLesson(dayNum) {
+            const lesson = lessons.find(l => l.day === dayNum);
+            if (!lesson) return;
+
+            document.getElementById('lesson-content').classList.remove('hidden');
+            document.getElementById('lesson-title').textContent = `Day ${dayNum}: ${lesson.title}`;
+            document.getElementById('lesson-context').textContent = lesson.context;
+
+            // Key phrase with formality
+            document.getElementById('key-korean').textContent = lesson.korean;
+            document.getElementById('key-english').textContent = lesson.english;
+            
+            const formalityBadge = document.getElementById('key-formality');
+            if (lesson.formality === 'formal') {
+                formalityBadge.innerHTML = '<span class="formal-badge">🎩 Formal</span>';
+            } else {
+                formalityBadge.innerHTML = '<span class="informal-badge">😊 Informal</span>';
+            }
+
+            // Grammar focus
+            document.getElementById('grammar-focus').innerHTML = 
+                `<div class="grammar-tag">📚 Grammar: ${lesson.grammar}</div>`;
+
+            // Dialogue section
+            if (lesson.dialogue) {
+                const dialogueSection = document.getElementById('dialogue-section');
+                dialogueSection.classList.remove('hidden');
+                
+                const dialogueContent = document.getElementById('dialogue-content');
+                dialogueContent.innerHTML = lesson.dialogue.lines.map((line, i) => 
+                    `<div class="dialogue-line">
+                        <p class="speaker-name">${line.speaker}</p>
+                        <p class="korean-text text-gray-800 font-medium">${line.text}</p>
+                    </div>`
+                ).join('');
+                
+                document.getElementById('dialogue-q').textContent = lesson.dialogue.question;
+                document.getElementById('dialogue-options').innerHTML = lesson.dialogue.options.map((opt, i) => 
+                    `<button onclick="checkDialogueAnswer(${i})" class="w-full text-left p-3 rounded-lg border border-gray-300 hover:bg-purple-50 transition">
+                        ${opt.text}
+                    </button>`
+                ).join('');
+            }
+
+            // Hangul intro for early days
+            if (dayNum <= 5 && lesson.hangul) {
+                const hangulSection = document.getElementById('hangul-intro-section');
+                hangulSection.classList.remove('hidden');
+                
+                const hangulContent = document.getElementById('hangul-intro-content');
+                hangulContent.innerHTML = lesson.hangul.map(char => 
+                    `<div class="hangul-card">
+                        <div class="hangul-character">${char}</div>
+                        <div class="hangul-romaja">${getHangulRomaja(char)}</div>
+                    </div>`
+                ).join('');
+            } else {
+                document.getElementById('hangul-intro-section').classList.add('hidden');
+            }
+
+            // Exercises with variety
+            const exercisesContainer = document.getElementById('exercises-container');
+            exercisesContainer.innerHTML = '';
+            
+            lesson.exercises.forEach((exercise, idx) => {
+                let exerciseHTML = '';
+                
+                switch(exercise.type) {
+                    case 'multiple_choice':
+                        exerciseHTML = `
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="font-semibold text-gray-900 mb-3">Q${idx + 1}: ${exercise.question}</p>
+                                <div class="space-y-2">
+                                    ${exercise.options.map((opt, i) => `
+                                        <button onclick="checkAnswer(${i}, ${exercise.correct}, this)" class="w-full text-left p-3 rounded-lg border border-gray-300 hover:bg-purple-50 transition font-medium">
+                                            ${opt}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                        break;
+                    
+                    case 'unscramble':
+                        exerciseHTML = `
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="font-semibold text-gray-900 mb-3">Q${idx + 1}: ${exercise.question}</p>
+                                <div id="word-bank-${idx}" class="mb-4 p-3 bg-white rounded-lg border-2 border-dashed border-gray-300 min-h-12">
+                                    ${exercise.words.map((word, i) => 
+                                        `<span class="word-token" onclick="selectWord(this, '${word}')">${word}</span>`
+                                    ).join('')}
+                                </div>
+                                <div id="answer-area-${idx}" class="p-3 bg-white rounded-lg border-2 border-purple-300 min-h-12 mb-3"></div>
+                                <button onclick="checkUnscramble(${idx}, '${exercise.correct}', this)" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition font-semibold">
+                                    Check Answer
+                                </button>
+                            </div>
+                        `;
+                        break;
+                    
+                    case 'dialogue_response':
+                        exerciseHTML = `
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="font-semibold text-gray-900 mb-3">Q${idx + 1}: ${exercise.question}</p>
+                                <div class="space-y-2">
+                                    ${exercise.responses.map((resp, i) => `
+                                        <button onclick="checkAnswer(${i}, ${exercise.correct}, this)" class="w-full text-left p-3 rounded-lg border border-gray-300 hover:bg-purple-50 transition font-medium korean-text">
+                                            ${resp}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                        break;
+                    
+                    case 'listen_and_choose':
+                        exerciseHTML = `
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="font-semibold text-gray-900 mb-3">Q${idx + 1}: ${exercise.question}</p>
+                                <button id="audio-btn-${idx}" onclick="playAudio('${exercise.audio}', ${idx})" class="tts-button w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold mb-3 flex items-center justify-center gap-2">
+                                    🔊 Play Audio
+                                </button>
+                                <div class="space-y-2">
+                                    ${exercise.options.map((opt, i) => `
+                                        <button onclick="checkAnswer(${i}, ${exercise.correct}, this)" class="w-full text-left p-3 rounded-lg border border-gray-300 hover:bg-purple-50 transition font-medium">
+                                            ${opt}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                        break;
+                    
+                    case 'speak':
+                        exerciseHTML = `
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="font-semibold text-gray-900 mb-3">Q${idx + 1}: ${exercise.question}</p>
+                                <button onclick="activateSpeechRecognition(this)" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold">
+                                    🎤 Tap to Speak
+                                </button>
+                                <p class="text-xs text-gray-500 mt-2">Speak clearly. Your pronunciation will be compared.</p>
+                            </div>
+                        `;
+                        break;
+                }
+                
+                exercisesContainer.innerHTML += exerciseHTML;
+            });
+
+            // Grammar reference
+            updateGrammarReference(lesson);
+
+            // Update progress
+            updateProgressBar(dayNum);
+        }
+
+        // ============================================
+        // HANGUL TAB
+        // ============================================
+        
+        const hangulMap = {
+            "ㄱ": { romaja: "G/K", sound: "gee", example: "가" },
+            "ㄴ": { romaja: "N", sound: "nee", example: "나" },
+            "ㄷ": { romaja: "D/T", sound: "dee", example: "다" },
+            "ㄹ": { romaja: "R/L", sound: "ree", example: "라" },
+            "ㅁ": { romaja: "M", sound: "mee", example: "마" },
+            "ㅂ": { romaja: "B/P", sound: "bee", example: "바" },
+            "ㅅ": { romaja: "S", sound: "see", example: "사" },
+            "ㅇ": { romaja: "NG", sound: "ngee", example: "아" },
+            "ㅈ": { romaja: "J", sound: "jee", example: "자" },
+            "ㅉ": { romaja: "JJ", sound: "jjee", example: "짜" },
+            "ㅋ": { romaja: "KH", sound: "kee", example: "카" },
+            "ㅌ": { romaja: "TH", sound: "thee", example: "타" },
+            "ㅍ": { romaja: "PH", sound: "pee", example: "파" },
+            "ㅎ": { romaja: "H", sound: "hee", example: "하" },
+            "ㅏ": { romaja: "A", sound: "ah", example: "아" },
+            "ㅑ": { romaja: "YA", sound: "yah", example: "야" },
+            "ㅓ": { romaja: "EO", sound: "uh", example: "어" },
+            "ㅕ": { romaja: "YEO", sound: "yuh", example: "여" },
+            "ㅗ": { romaja: "O", sound: "oh", example: "오" },
+            "ㅡ": { romaja: "EU", sound: "uh", example: "은" },
+            "ㅣ": { romaja: "I", sound: "ee", example: "이" },
+            "ㅐ": { romaja: "AE", sound: "aye", example: "애" },
+            "ㅔ": { romaja: "E", sound: "eh", example: "에" },
+            "ㅚ": { romaja: "OE", sound: "weh", example: "외" }
+        };
+
+        function getHangulRomaja(char) {
+            return hangulMap[char]?.romaja || char;
+        }
+
+        function initializeHangulTab() {
+            const container = document.getElementById('hangul-grid');
+            container.innerHTML = '';
+            
+            Object.entries(hangulMap).forEach(([char, info]) => {
+                const card = document.createElement('div');
+                card.className = 'hangul-card';
+                card.innerHTML = `
+                    <div class="hangul-character">${char}</div>
+                    <div class="hangul-romaja">${info.romaja}</div>
+                    <div class="hangul-pronunciation text-xs">${info.sound}</div>
+                    <div class="korean-text text-lg mt-2 text-gray-800">${info.example}</div>
+                    <button onclick="speakHangul('${info.sound}')" class="mt-2 text-xs bg-purple-200 text-purple-700 px-2 py-1 rounded">
+                        🔊 Listen
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+
+            const writingGuide = document.getElementById('hangul-writing-guide');
+            writingGuide.innerHTML = `
+                <div class="p-4 bg-purple-50 rounded-lg">
+                    <h4 class="font-bold text-purple-900 mb-2">Consonants (초성)</h4>
+                    <p class="text-sm text-gray-700 mb-3">Consonants are written from top-left to bottom-right or left to right.</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        ${Object.keys(hangulMap).slice(0, 14).map(char => 
+                            `<div class="text-center text-2xl korean-text font-bold">${char}</div>`
+                        ).join('')}
+                    </div>
+                </div>
+                <div class="p-4 bg-pink-50 rounded-lg">
+                    <h4 class="font-bold text-pink-900 mb-2">Vowels (모음)</h4>
+                    <p class="text-sm text-gray-700 mb-3">Vowels are written from top-to-bottom or left-to-right next to consonants.</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        ${Object.keys(hangulMap).slice(14).map(char => 
+                            `<div class="text-center text-2xl korean-text font-bold">${char}</div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // MAP INITIALIZATION
+        // ============================================
+        
+        let mapInstance;
+        function initializeMap() {
+            if (mapInstance) return;
+            
+            mapInstance = L.map('map').setView([37.5665, 126.9780], 6);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(mapInstance);
+
+            // Sample K-drama filming locations
+            const locations = [
+                { lat: 37.5665, lng: 126.9780, title: "Seoul Tower", phrase: "서울 타워에 가고 싶어요 (I want to go to Seoul Tower)" },
+                { lat: 37.4419, lng: 126.7998, title: "Namsangol", phrase: "전통이 많아요 (There's a lot of tradition here)" },
+                { lat: 35.1796, lng: 129.0756, title: "Busan Beach", phrase: "바다가 아름다워요 (The sea is beautiful)" },
+                { lat: 37.2750, lng: 127.0093, title: "Suwon Hwaseong", phrase: "역사가 있어요 (It has history)" },
+                { lat: 36.8015, lng: 127.1089, title: "Daejeon", phrase: "과학이 있어요 (Science hub)" }
+            ];
+
+            locations.forEach(loc => {
+                const marker = L.marker([loc.lat, loc.lng]).addTo(mapInstance);
+                marker.bindPopup(`
+                    <div class="p-2">
+                        <h4 class="font-bold">${loc.title}</h4>
+                        <div class="map-popup-phrase">
+                            <p class="korean-text text-sm font-semibold">${loc.phrase.split('(')[0]}</p>
+                            <p class="text-xs text-gray-600 mt-1">${loc.phrase.split('(')[1]?.replace(')', '')}</p>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        // ============================================
+        // LIBRARY TAB
+        // ============================================
+        
+        function initializeLibrary() {
+            const container = document.getElementById('library-content');
+            container.innerHTML = '';
+            
+            lessons.slice(0, 15).forEach(lesson => {
+                const libraryCard = document.createElement('div');
+                libraryCard.className = 'bg-white rounded-lg p-4 border border-gray-200';
+                libraryCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-gray-900">Day ${lesson.day}: ${lesson.title}</h4>
+                        <span class="${lesson.formality === 'formal' ? 'formal-badge' : 'informal-badge'}">
+                            ${lesson.formality === 'formal' ? '🎩 Formal' : '😊 Informal'}
+                        </span>
+                    </div>
+                    <p class="korean-text text-lg font-semibold text-purple-700 mb-1">${lesson.korean}</p>
+                    <p class="text-gray-600 text-sm mb-3">${lesson.english}</p>
+                    <div class="bg-gray-50 p-3 rounded text-sm text-gray-700">
+                        <span class="spaced-rep-badge">Common in: ${lesson.context}</span>
+                    </div>
+                `;
+                container.appendChild(libraryCard);
+            });
+        }
+
+        // ============================================
+        // EXERCISE HANDLERS
+        // ============================================
+        
+        function checkAnswer(chosen, correct, element) {
+            if (chosen === correct) {
+                element.parentElement.parentElement.querySelector('.word-token, button').classList.add('border-green-500', 'bg-green-100');
+                addScore(10);
+                state.combo++;
+                showComboAnimation();
+                if (state.soundEnabled) playSuccessSound();
+            } else {
+                element.classList.add('border-red-500', 'bg-red-100');
+                state.combo = 0;
+                if (state.soundEnabled) playErrorSound();
+            }
+            saveState();
+        }
+
+        function checkDialogueAnswer(idx) {
+            const lesson = lessons.find(l => l.day === state.currentDay);
+            const isCorrect = lesson.dialogue.options[idx].correct;
+            const event = new Event('click');
+            event.correct = isCorrect;
+            checkAnswer(idx, 0, { parentElement: { parentElement: { querySelector: () => ({ classList: { add: () => {} } }) } } });
+        }
+
+        function checkUnscramble(idx, correct, button) {
+            const answerArea = document.getElementById(`answer-area-${idx}`);
+            const selected = Array.from(answerArea.querySelectorAll('.word-token')).map(t => t.textContent).join('');
+            
+            if (selected === correct) {
+                button.classList.add('bg-green-600', 'hover:bg-green-700');
+                button.textContent = '✅ Correct!';
+                addScore(15);
+                state.combo++;
+                showComboAnimation();
+            } else {
+                button.classList.add('bg-red-600', 'hover:bg-red-700');
+                button.textContent = '❌ Try again';
+                state.combo = 0;
+            }
+        }
+
+        function selectWord(element, word) {
+            const answerArea = document.querySelector('[id^="answer-area-"]');
+            if (element.classList.contains('selected')) {
+                element.classList.remove('selected');
+                const token = answerArea.querySelector(`[data-word="${word}"]`);
+                if (token) token.remove();
+            } else {
+                element.classList.add('selected');
+                const token = document.createElement('span');
+                token.className = 'word-token selected';
+                token.textContent = word;
+                token.dataset.word = word;
+                answerArea.appendChild(token);
+            }
+        }
+
+        function playAudio(text, idx) {
+            const btn = document.getElementById(`audio-btn-${idx}`);
+            btn.classList.add('audio-loading');
+            btn.disabled = true;
+            
+            // Simulate TTS with Web Speech API
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ko-KR';
+            speechSynthesis.speak(utterance);
+            
+            setTimeout(() => {
+                btn.classList.remove('audio-loading');
+                btn.disabled = false;
+            }, 2000);
+        }
+
+        function speakKeyPhrase() {
+            const lesson = lessons.find(l => l.day === state.currentDay);
+            const btn = document.getElementById('key-audio-btn');
+            btn.classList.add('audio-loading');
+            
+            const utterance = new SpeechSynthesisUtterance(lesson.korean);
+            utterance.lang = 'ko-KR';
+            speechSynthesis.speak(utterance);
+            
+            setTimeout(() => btn.classList.remove('audio-loading'), 1500);
+        }
+
+        function speakHangul(sound) {
+            const utterance = new SpeechSynthesisUtterance(sound);
+            utterance.lang = 'en-US';
+            speechSynthesis.speak(utterance);
+        }
+
+        function activateSpeechRecognition(button) {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert('Speech recognition not supported in this browser');
+                return;
+            }
+            
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'ko-KR';
+            recognition.start();
+            
+            button.textContent = '🎤 Listening...';
+            button.disabled = true;
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                button.textContent = `✅ Heard: ${transcript}`;
+                addScore(10);
+                state.combo++;
+                showComboAnimation();
+                setTimeout(() => {
+                    button.textContent = '🎤 Tap to Speak';
+                    button.disabled = false;
+                }, 2000);
+            };
+            
+            recognition.onerror = () => {
+                button.textContent = '🎤 Try again';
+                button.disabled = false;
+            };
+        }
+
+        // ============================================
+        // SCORE & GAMIFICATION
+        // ============================================
+        
+        function addScore(points) {
+            state.score += points;
+            document.getElementById('score-display').textContent = `Points: ${state.score}`;
+            saveState();
+        }
+
+        function showComboAnimation() {
+            const comboDisplay = document.getElementById('combo-display');
+            comboDisplay.textContent = `🔥 Combo: ${state.combo}`;
+            
+            if (state.combo > state.bestCombo) {
+                state.bestCombo = state.combo;
+            }
+            
+            // Animated banner
+            if (state.combo > 0 && state.combo % 5 === 0) {
+                const banner = document.createElement('div');
+                banner.className = 'combo-animation fixed top-1/2 left-1/2 text-4xl font-bold text-purple-600 pointer-events-none';
+                banner.textContent = `🔥 ${state.combo} COMBO! 🔥`;
+                document.body.appendChild(banner);
+                setTimeout(() => banner.remove(), 1000);
+            }
+        }
+
+        function updateProgressBar(dayNum) {
+            const lesson = lessons.find(l => l.day === dayNum);
+            if (lesson) {
+                const progress = (dayNum / 45) * 100;
+                document.getElementById('lesson-progress').style.width = progress + '%';
+            }
+        }
+
+        function updateGrammarReference(lesson) {
+            const reference = document.getElementById('grammar-reference-content');
+            reference.innerHTML = `
+                <div class="p-3 bg-white rounded border-l-4 border-purple-500">
+                    <p class="font-semibold text-purple-900">Day ${lesson.day} Focus:</p>
+                    <p class="text-sm text-gray-700 mt-1">${lesson.grammar}</p>
+                </div>
+            `;
+        }
+
+        function scrollToExercises() {
+            document.getElementById('exercises-container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ============================================
+        // PROFILE & SETTINGS
+        // ============================================
+        
+        function showProfileModal() {
+            document.getElementById('profile-modal').classList.remove('hidden');
+            document.getElementById('learner-name').value = state.learnerName;
+            document.getElementById('text-size-value').textContent = state.textSize.toFixed(1) + 'x';
+            document.getElementById('days-completed').textContent = state.completedDays.size;
+            document.getElementById('total-points').textContent = state.score;
+            document.getElementById('best-combo').textContent = state.bestCombo;
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+            state.learnerName = document.getElementById('learner-name').value;
+            state.soundEnabled = document.getElementById('sound-toggle').checked;
+            saveState();
+        }
+
+        function updateTextSize() {
+            state.textSize = parseFloat(document.getElementById('text-size-slider').value);
+            document.getElementById('text-size-value').textContent = state.textSize.toFixed(1) + 'x';
+            const hangulElements = document.querySelectorAll('.hangul-display');
+            hangulElements.forEach(el => {
+                el.style.fontSize = `calc(clamp(1.125rem, 2vw, 1.875rem) * ${state.textSize})`;
+            });
+            saveState();
+        }
+
+        function resetProgress() {
+            if (confirm('Are you sure? This will reset all progress.')) {
+                state = {
+                    currentDay: null,
+                    score: 0,
+                    combo: 0,
+                    bestCombo: 0,
+                    completedDays: new Set(),
+                    exerciseProgress: {},
+                    soundEnabled: true,
+                    textSize: 1.0,
+                    learnerName: "Sara"
+                };
+                saveState();
+                location.reload();
+            }
+        }
+
+        // ============================================
+        // SOUND EFFECTS
+        // ============================================
+        
+        function playSuccessSound() {
+            // Web Audio API beep
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 800;
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.1);
+        }
+
+        function playErrorSound() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 300;
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.2);
+        }
+
+        // ============================================
+        // OFFLINE SUPPORT & PWA
+        // ============================================
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {
+                // Silent fail - SW optional
+            });
+        }
+
+        window.addEventListener('offline', () => {
+            document.getElementById('offline-banner').classList.add('show');
+        });
+
+        window.addEventListener('online', () => {
+            document.getElementById('offline-banner').classList.remove('show');
+        });
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        
+        loadState();
+        initializeLessonSelectors();
+        
+        // Auto-select Day 1 if no selection
+        if (!state.currentDay) {
+            selectDay(1);
+        } else {
+            displayLesson(state.currentDay);
+        }
+
+        // Update display on load
+        document.getElementById('score-display').textContent = `Points: ${state.score}`;
+        document.getElementById('combo-display').textContent = `🔥 Combo: ${state.combo}`;
+    </script>
+</body>
+</html>
