@@ -1,139 +1,218 @@
+// Funzione globale necessaria per la generazione dei testi
+window.renderHangul = (text) => {
+  return `<span class="korean-click" style="font-family: 'Noto Sans KR', sans-serif;" onclick="window.playAudio(event, '${text}')" title="Tocca per ascoltare la pronuncia">${text}</span>`;
+};
+
 window._s_k_d = Array.from({length: 46}, (_, i) => "SR" + (i * 13 + 7) + "K");
 
-// --- DAY 1 TO 5: THE CORE FOUNDATION (Unchanged from your original logic) ---
 const DETAILED_LESSONS = [
-    // ... [PASTE YOUR EXACT ORIGINAL DETAILED_LESSONS ARRAY FOR DAYS 1 TO 5 HERE] ...
+  { day: 1, title: "I Primi Incontri 👋", topic: "Saluti e Alfabeto Base", theory: { intro: "Ciao Sara! Iniziamo il nostro viaggio. In Corea, salutare bene significa fare una prima impressione perfetta, specialmente se incontri altri cosplayer o se entri nel tuo primo PC Bang (sala gaming)! Inoltre, il coreano usa l'Hangul (한글), un alfabeto a 'blocchi' logici facilissimo inventato nel 1443. Ad esempio, N+A+M = 남 (Nam, come Nam Joo-hyuk!). Iniziamo ad allenare l'orecchio e le buone maniere!", concept: "Il coreano ha vari livelli di formalità. Useremo la formalità standard (요 - 'yo' / 니다 - 'nida'), ideale per parlare con persone nuove in palestra, agli eventi cosplay o per strada. Ricorda: fai sempre un leggero inchino con la testa! Celebra ogni sillaba che riconosci, proprio come un 'level up' in League of Legends!", builderRule: `Inizia con un sorriso! La combinazione perfetta per rompere il ghiaccio è: Leggero inchino + 안녕하세요 (Ciao/Buongiorno). Usalo anche quando entri in palestra (Gym) o in fumetteria.`, examples: [ { hangul: "안녕하세요", romaji: "Annyeonghaseyo", eng: "Ciao / Buongiorno (Formale)", context: "Da usare sempre. Entrando in fiera, al PC Bang o in palestra. ☀️" }, { hangul: "감사합니다", romaji: "Gamsahamnida", eng: "Grazie", context: "Molto educato e standard. 🙏" }, { hangul: "죄송합니다", romaji: "Joesonghamnida", eng: "Mi scusi / Scusa", context: "Per chiedere perdono se si urta qualcuno facendo Cosplay o in palestra. 🙇‍♀️" }, { hangul: "안녕히 계세요", romaji: "Annyeonghi gyeseyo", eng: "Arrivederci (a chi resta)", context: "Tu te ne vai dalla fumetteria, il negoziante resta. 🚶‍♀️" }, { hangul: "안녕히 가세요", romaji: "Annyeonghi gaseyo", eng: "Arrivederci (a chi va)", context: "L'altro se ne va e tu resti. 👋" }, { hangul: "화이팅", romaji: "Hwaiting", eng: "Forza! / Dai!", context: "Il 'Fighting' usato nei K-drama, in palestra (Gym) o per caricarsi su LoL! 💪" } ], culture: "Fai attenzione a 'Gyeseyo' vs 'Gaseyo'. 'Gye' significa 'restare (in pace)', 'Ga' significa 'andare (in pace)'. Sbagliarli è il classico errore degli stranieri." }, exercises: [ { type: 'multiple_choice', question: "Entri in una palestra (Gym) a Seoul e incroci il personal trainer. Cosa dici per prima cosa?", options: ["Joesonghamnida", "Annyeonghaseyo", "Gamsahamnida"], optionsHangul: ["죄송합니다", "안녕하세요", "감사합니다"], answer: 1, conceptTag: "Saluti Palestra", feedback_incorrect: "Hai scelto male. Quando incontri qualcuno, usa sempre 'Annyeonghaseyo'.", tip: "'Annyeonghaseyo' letteralmente significa 'Sei in pace?' ed è perfetto per la palestra." }, { type: 'listen', question: "Ascolta l'audio toccando l'icona. Cosa significa questa frase usatissima nei drama (es. in 2521)?", audioHangul: "감사합니다", options: ["Grazie", "Ciao", "Forza!"], answer: 0, conceptTag: "Ascolto", feedback_incorrect: "La risposta giusta era 'Grazie'.", tip: "Ascolta il suono 'Gamsa'. Gamsahamnida è il grazie universale." }, { type: 'speak', question: "Tocca il microfono e dì 'Ciao' in coreano (Formale).", expectedRomaji: ["annyeonghaseyo", "annyeong"], expectedHangul: ["안녕하세요"], conceptTag: "Pronuncia", feedback_incorrect: "Pronuncia non riconosciuta. Prova ad articolare bene: An-nyeong-ha-se-yo.", tip: "Sei all'inizio, prenditi il tuo tempo per pronunciare ogni sillaba." }, { type: 'conversation', context: "Scenario: Stai passeggiando per Seoul e urti per sbaglio una persona. Alza lo sguardo ed è Nam Joo-hyuk (il tuo attore preferito di Start-Up!).", question: "Qual è la reazione immediata più educata prima di svenire?", options: ["Annyeonghi gaseyo", "Joesonghamnida", "Hwaiting"], optionsHangul: ["안녕히 가세요", "죄송합니다", "화이팅"], answer: 1, conceptTag: "Scuse", feedback_incorrect: "Dovevi chiedere scusa! Non incoraggiarlo a caso.", tip: "'Joesonghamnida' è perfetto." }, { type: 'multiple_choice', question: "Hai appena finito di pagare alla cassa dell'Animate Store e stai uscendo. Il commesso resta dentro. Cosa gli dici?", options: ["Annyeonghi gyeseyo", "Annyeonghi gaseyo", "Joesonghamnida"], optionsHangul: ["안녕히 계세요", "안녕히 가세요", "죄송합니다"], answer: 0, conceptTag: "Arrivederci (a chi resta)", feedback_incorrect: "Attenzione a chi va e chi resta!", tip: "Tu te ne vai, lui RESTA. Quindi gli auguri di *restare* in pace: Gye-se-yo." }, { type: 'listen', question: "Cosa sta dicendo la tua amica che sta uscendo dalla tua camera d'hotel, mentre tu resti dentro a preparare il cosplay?", audioHangul: "안녕히 계세요", options: ["Arrivederci (a te che resti)", "Grazie per l'ospitalità", "Arrivederci (a te che vai)"], answer: 0, conceptTag: "Ascolto Arrivederci", feedback_incorrect: "Ha usato 'Gyeseyo'.", tip: "Dato che tu resti in camera, lei ti dice 'Annyeonghi gyeseyo'." }, { type: 'speak', question: "Hai appena ricevuto una cura provvidenziale dal tuo Support su LoL. Dì 'Grazie' in modo formale alla chat vocale.", expectedRomaji: ["gamsahamnida", "kamsahamnida"], expectedHangul: ["감사합니다"], conceptTag: "Pronuncia LoL", feedback_incorrect: "Non era chiaro.", tip: "Pronuncia: Gam-sa-ham-ni-da." }, { type: 'conversation', context: "Il tuo compagno d'allenamento in palestra sta per alzare il suo record di peso sulla panca piana.", question: "Come lo incoraggi in stile coreano?", options: ["Annyeonghi gaseyo", "Hwaiting", "Joesonghamnida"], optionsHangul: ["안녕히 가세요", "화이팅", "죄송합니다"], answer: 1, conceptTag: "Incoraggiamento", feedback_incorrect: "Dovevi fare il tifo per lui!", tip: "Usa 'Hwaiting!' (Fighting) alzando il pugno." } ] },
+  { day: 2, title: "Passioni, Anime & Palestra 🇮🇹", topic: "Presentazioni e Hobby", theory: { intro: "Oggi impariamo a presentarti in modo unico, Sara. I coreani amano sapere chi sei e le tue passioni (palestra, cosplay, gaming).", concept: "La particella '이에요 / 예요' (ieyo / yeyo) è il verbo 'essere' e va sempre alla FINE della frase. Usa 'yeyo' se il tuo nome o la parola finisce in vocale (Sara-yeyo), e 'ieyo' se finisce in consonante (come nel tuo amato Nam Joo-hyuk-ieyo).", builderRule: `Non presentarti mai a freddo! Prima di dire 저는 사라예요 (Io sono Sara), usa sempre il saluto 안녕하세요 imparato nel Giorno 1.`, examples: [ { hangul: "저는 사라예요", romaji: "Jeoneun Sara-yeyo", eng: "Io sono Sara.", context: "La tua introduzione chiave! ✨" }, { hangul: "로마에서 왔어요", romaji: "Roma-eseo wasseoyo", eng: "Vengo da Roma.", context: "Più specifico e affascinante di 'Sono italiana'. 🏛️" }, { hangul: "제 취미는 운동이에요", romaji: "Je chwimineun undong-ieyo", eng: "Il mio hobby è la palestra (allenamento).", context: "Per trovare compagni di workout in Corea. 🏋️‍♀️" }, { hangul: "제 취미는 코스프레예요", romaji: "Je chwimineun koseupeure-yeyo", eng: "Il mio hobby è il cosplay.", context: "Usa questa frase per rompere il ghiaccio in fiera! 🎭" }, { hangul: "스타트업 봤어요?", romaji: "Seutateueop bwasseoyo?", eng: "Hai visto Start-Up?", context: "Ottimo per trovare altri fan di Kdrama e Nam Joo-hyuk! 📺" } ], culture: "In Corea, chiedere 'Quanti anni hai?' non è maleducato, anzi! Serve a capire chi è il maggiore per stabilire il livello di formalità." }, exercises: [ { type: 'multiple_choice', question: "Come ti presenti a un nuovo compagno di Duo su League of Legends dicendo 'Io sono Sara'?", options: ["Sara jeoneun-ieyo", "Jeoneun Sara-yeyo", "Yeyo Sara jeoneun"], optionsHangul: ["사라 저는이에요", "저는 사라예요", "예요 사라 저는"], answer: 1, conceptTag: "Struttura frase", feedback_incorrect: "Attenzione all'ordine delle parole (Soggetto Oggetto Verbo).", tip: "La struttura SOV impone: [Jeoneun] (Io) + [Nome] + yeyo (essere)." }, { type: 'speak', question: "Pronuncia: 'Io sono Sara.'", expectedRomaji: ["jeoneun sarayeyo", "sarayeyo"], expectedHangul: ["저는 사라예요", "사라예요"], conceptTag: "Pronuncia", feedback_incorrect: "Riprova, scandisci il tuo nome con 'yeyo'.", tip: "Dì 'Jeoneun Sara-yeyo'." }, { type: 'conversation', context: "🧑 Incontri un cosplayer ad Hongdae che ti chiede: 이름이 뭐예요? (Ireum-i mwoyeyo? - Come ti chiami?)", question: "Come rispondi alla sua domanda?", options: ["Roma-eseo wasseoyo", "Je chwimineun koseupeure-yeyo", "Jeoneun Sara-yeyo"], optionsHangul: ["로마에서 왔어요", "제 취미는 코스프레예요", "저는 사라예요"], answer: 2, conceptTag: "Risposta intro", feedback_incorrect: "Hai risposto qualcos'altro!", tip: "Ti ha chiesto il nome (Ireum). Rispondi con 'Jeoneun Sara-yeyo'." }, { type: 'listen', question: "Ascolta questa frase che userai per rompere il ghiaccio in una palestra coreana:", audioHangul: "제 취미는 운동이에요", options: ["Mi piacciono i cani", "Il mio hobby è l'allenamento", "Vengo dall'Italia"], answer: 1, conceptTag: "Ascolto GYM", feedback_incorrect: "Ascolta la parola 'Undong'.", tip: "Undong = Allenamento/Palestra!" }, { type: 'speak', question: "Rispondi a un complimento sul tuo accento dicendo da dove vieni: 'Vengo da Roma'.", expectedRomaji: ["romaeseo wasseoyo", "romaeseowasseoyo"], expectedHangul: ["로마에서 왔어요"], conceptTag: "Pronuncia", feedback_incorrect: "Prova ancora.", tip: "Ro-ma e-seo was-seo-yo." }, { type: 'multiple_choice', question: "Sei in un bar e vedi qualcuno con la spilletta di Sandbox. Come gli chiedi 'Hai visto Start-Up?'", options: ["Aenimeisyeon joahaeyo", "Seutateueop bwasseoyo?", "Jeoneun Start-Up yeyo"], optionsHangul: ["애니메이션 좋아해요", "스타트업 봤어요?", "저는 스타트업이에요"], answer: 1, conceptTag: "Hobby Kdrama", feedback_incorrect: "Usa il verbo 'guardare' al passato (bwasseoyo).", tip: "Seutateueop (Start-Up) + bwasseoyo? (hai visto?)." }, { type: 'conversation', context: "Stai chiacchierando con il gruppo della palestra in sala pesi.", question: "Qual è la sequenza perfetta per presentare te stessa a Sara?", options: ["Gamsahamnida. Sara-yeyo.", "Jeoneun Sara-yeyo. Roma-eseo wasseoyo. Bangapseumnida.", "Roma-eseo wasseoyo. Joesonghamnida."], optionsHangul: ["감사합니다. 사라예요.", "저는 사라예요. 로마에서 왔어요. 반갑습니다.", "로마에서 왔어요. 죄송합니다."], answer: 1, conceptTag: "Intro completa", feedback_incorrect: "L'ordine logico è nome, provenienza, piacere.", tip: "Nome -> Vengo da Roma -> Piacere di conoscerti (Bangapseumnida)." } ] },
+  { day: 3, title: "Dov'è il PC Bang?! 📍", topic: "Direzioni e Sopravvivenza", theory: { intro: "Sara, immagina di dover correre in palestra per la 'Leg Day' e non sai dove sia, o di cercare disperatamente un PC Bang per fare una classificata a LoL con i tuoi amici. Oggi risolviamo questo problema per orientarti nella mappa urbana.", concept: "La formula magica per trovare i luoghi è: [Luogo] + 이/가 어디예요? (i/ga eodiyeyo?). 'Eodi' significa dove, e 'yeyo' è il verbo essere.", builderRule: `È scortese fermare le persone urlando "Dov'è il bagno?". Attira l'attenzione con 저기요 (Scusi) e chiedi scusa in anticipo con 죄송합니다 (Mi dispiace) prima di fare la tua domanda.`, examples: [ { hangul: "체육관이 어디예요?", romaji: "Cheyukgwan-i eodiyeyo?", eng: "Dov'è la palestra?", context: "Cruciale per non perdere la tua routine di workout! 🏋️‍♀️" }, { hangul: "PC방이 어디예요?", romaji: "PC-bang-i eodiyeyo?", eng: "Dov'è il PC Bang?", context: "Fondamentale per la tua dose giornaliera di LoL! 💻" }, { hangul: "애니메이트 어디예요?", romaji: "Aenimeiteu eodiyeyo?", eng: "Dov'è l'Animate (Store di Anime)?", context: "Per i tuoi acquisti Cosplay e Manga. 🎌" }, { hangul: "화장실이 어디예요?", romaji: "Hwajangsil-i eodiyeyo?", eng: "Dov'è il bagno?", context: "Salva-vita assoluto nei grandi parchi. 🚽" }, { hangul: "직진 / 오른쪽 / 왼쪽", romaji: "Jikjin / Oreunjjok / Oenjjok", eng: "Dritto / Destra / Sinistra", context: "Per capire le indicazioni che ti daranno. ➡️" } ], culture: "I PC Bang coreani sono incredibili: poltrone giganti, tastiere meccaniche RGB, monitor a 240hz... e puoi ordinare ramen e hot dog direttamente dal computer!" }, exercises: [ { type: 'listen', question: "Cosa sta cercando questa persona disperatamente per fare una classificata a LoL?", audioHangul: "PC방이 어디예요?", options: ["Il bagno", "La stazione", "Il PC Bang"], answer: 2, conceptTag: "Ascolto", feedback_incorrect: "Ascolta bene la prima parola.", tip: "'PC-bang' significa sala LAN/Internet Cafe." }, { type: 'speak', question: "Non vuoi saltare il giorno di petto. Chiedi: 'Dov'è la palestra?'", expectedRomaji: ["cheyukgwani eodiyeyo", "cheyukgwanieodiyeyo"], expectedHangul: ["체육관이 어디예요"], conceptTag: "Palestra", feedback_incorrect: "Ripeti con calma: Che-yuk-gwan.", tip: "Dì: 'Che-yuk-gwan-i eo-di-ye-yo?'" }, { type: 'multiple_choice', question: "Sei vestita in cosplay e cerchi l'Animate store. Come lo chiedi?", options: ["Aenimeiteu eodiyeyo?", "PC-bang-i eodiyeyo?", "Aenimeiteu hwajangsil?"], optionsHangul: ["애니메이트 어디예요?", "PC방이 어디예요?", "애니메이트 화장실?"], answer: 0, conceptTag: "Struttura Store Anime", feedback_incorrect: "Aenimeiteu (Animate) è il nome del negozio.", tip: "La struttura è: Luogo + eodiyeyo." }, { type: 'conversation', context: "Chiedi a un gamer per strada dov'è il PC Bang più vicino. 🎮 Lui ti indica: 직진이에요. (Jikjin-ieyo).", question: "In che direzione devi andare?", options: ["Gira a Destra", "Gira a Sinistra", "Vai Dritto"], optionsHangul: ["오른쪽", "왼쪽", "직진"], answer: 2, conceptTag: "Direzioni", feedback_incorrect: "Attenzione ai vocaboli di direzione.", tip: "Jikjin significa andare dritti." }, { type: 'speak', question: "Chiedi l'attenzione di un passante prima di fare una domanda (Scusi!).", expectedRomaji: ["jeogiyo", "chogiyo"], expectedHangul: ["저기요"], conceptTag: "Parlato", feedback_incorrect: "Non è stato riconosciuto.", tip: "Dì 'Jeo-gi-yo!'" }, { type: 'multiple_choice', question: "Quale parola significa 'Sinistra'?", options: ["Oenjjok", "Oreunjjok", "Jikjin"], optionsHangul: ["왼쪽", "오른쪽", "직진"], answer: 0, conceptTag: "Direzioni", feedback_incorrect: "Hai scelto la direzione sbagliata!", tip: "Oenjjok = Sinistra. (Oreunjjok è Destra)." }, { type: 'conversation', context: "Devi chiedere dov'è il bagno durante una competizione di Cosplay.", question: "Come formuli la frase?", options: ["Hwajangsil-i eodiyeyo?", "Eodiyeyo hwajangsil-i?", "Hwajangsil-ieyo?"], optionsHangul: ["화장실이 어디예요?", "어디예요 화장실이?", "화장실리에요?"], answer: 0, conceptTag: "Applicazione Pratica", feedback_incorrect: "Ricorda la regola base SOV.", tip: "Luogo (Hwajangsil) + i (particella) + eodiyeyo (dov'è)." } ] },
+  { day: 4, title: "Sopravvivenza e Modestia Coreana 🆘", topic: "Comunicazione Genuina", theory: { intro: "Arriverà il momento in cui ti faranno complimenti e andrai in tilt. Questo è il tuo kit di sopravvivenza per mostrare la famosa modestia asiatica e tirarti fuori d'impiccio.", concept: "Usa 'Mollayo' per dire 'non lo so'. Impara a usare 'Gwaenchanayo' (va bene / sto bene). E se ti sfidano a LoL o ti chiedono se sei un'esperta di fitness, metti le mani avanti sminuendo le tue abilità!", builderRule: `Se ti danno indicazioni velocissime e ti perdi, non andare in panico. Sorridi, usa 죄송합니다 (Scusa) e poi 천천히 말해 주세요 (Parla più piano).`, examples: [ { hangul: "괜찮아요", romaji: "Gwaenchanayo", eng: "Sto bene / Non grazie / Nessun problema", context: "Il tuo coltellino svizzero. ✋" }, { hangul: "몰라요", romaji: "Mollayo", eng: "Non lo so / Non capisco", context: "Quando la chat di LoL impazzisce e non capisci nulla. 🤷‍♀️" }, { hangul: "천천히 말해 주세요", romaji: "Cheoncheonhi malhae juseyo", eng: "Parla più piano, per favore.", context: "Fondamentale per farli rallentare. 🐢" }, { hangul: "게임 잘 못해요", romaji: "Geim jal mothaeyo", eng: "Non sono brava ai videogiochi.", context: "La perfetta falsa modestia coreana prima di carryare la partita a LoL! 🎮" }, { hangul: "운동 잘 못해요", romaji: "Undong jal mothaeyo", eng: "Non sono un'esperta di palestra.", context: "Usalo per modestia, anche se sollevi più di loro! 🏋️‍♀️" }, { hangul: "코스프레 제가 만들었어요", romaji: "Koseupeure jega mandeureosseoyo", eng: "Il cosplay l'ho fatto io.", context: "Per vantarti un pochino (ma con grazia) del tuo duro lavoro! ✂️" } ], culture: "Spesso se offri qualcosa a un coreano, o se gli fai un complimento vistoso, per pura modestia rifiuterà due o tre volte dicendo 'Gwaenchanayo' o 'Anieyo', sminuendo le proprie abilità." }, exercises: [ { type: 'conversation', context: "🏪 Sei da CU (minimarket) per comprare delle proteine. Il cassiere chiede: 봉투 필요하세요? (Vuole una busta a pagamento?)", question: "Come dici educatamente 'No grazie, va bene così'?", options: ["Aniyo, Mollayo", "Gwaenchanayo", "Ne"], optionsHangul: ["아니요 몰라요", "괜찮아요", "네"], answer: 1, conceptTag: "Rifiutare Educatamente", feedback_incorrect: "In Corea un 'No' diretto (Aniyo) può sembrare duro.", tip: "'Gwaenchanayo' è il modo standard e gentile per rifiutare qualcosa." }, { type: 'multiple_choice', question: "Un gruppo al PC Bang ti vede vincere 1v9 con Jinx e ti loda. Tu vuoi fare la modesta dicendo 'Non sono brava ai giochi'.", options: ["Ne, gamsahamnida", "Geim jal mothaeyo", "Mollayo"], optionsHangul: ["네, 감사합니다", "게임 잘 못해요", "몰라요"], answer: 1, conceptTag: "Modestia LoL", feedback_incorrect: "Ricorda la frase sulla modestia nei giochi.", tip: "'Geim' (Gioco) + 'jal mothaeyo' (non so fare bene)." }, { type: 'listen', question: "In palestra ti fanno i complimenti per il tuo sollevamento pesi. Ascolta come rispondi con modestia:", audioHangul: "운동 잘 못해요", options: ["Non mi piace la palestra", "Non sono brava con la palestra (modestia)", "Dov'è la palestra?"], answer: 1, conceptTag: "Ascolto Modestia", feedback_incorrect: "Undong (palestra/allenamento) + jal mothaeyo (non so fare bene).", tip: "Anche se sei bravissima, in Corea si usa dire 'Undong jal mothaeyo'." }, { type: 'speak', question: "Fai sfoggio delle tue abilità artigianali: 'Il cosplay l'ho fatto io'.", expectedRomaji: ["koseupeure jega mandeureosseoyo", "koseupeurejegamandeureosseoyo"], expectedHangul: ["코스프레 제가 만들었어요"], conceptTag: "Cosplay", feedback_incorrect: "Prova a pronunciare bene Mandeureosseoyo (ho creato).", tip: "Koseupeure je-ga man-deu-reos-seo-yo." }, { type: 'speak', question: "Metti in pratica per la tua sopravvivenza in metro se ti danno direzioni troppo veloci: 'Parla più piano, per favore.'", expectedRomaji: ["cheoncheonhi malhae juseyo", "cheoncheonhimalhaejuseyo"], expectedHangul: ["천천히 말해 주세요", "천천히 말해주세요"], conceptTag: "Parlato", feedback_incorrect: "La pronuncia è un po' ostica, fai attenzione.", tip: "Cheon-cheon-hi mal-hae ju-se-yo." }, { type: 'conversation', context: "🧑 Il jungler nemico su LoL ti scrive in chat all chat: 블라블라블라 (Ti sta provocando ma non sai leggere i caratteri).", question: "Tu vuoi rispondergli in chat vocale sorridendo: 'Non capisco / Non lo so'.", options: ["Hwajangsil-i eodiyeyo?", "Mollayo", "Gwaenchanayo"], optionsHangul: ["화장실이 어디예요?", "몰라요", "괜찮아요"], answer: 1, conceptTag: "Ignorare i tossici", feedback_incorrect: "Usa l'ignoranza tattica!", tip: "Usa 'Mollayo' (non so/non capisco)." }, { type: 'speak', question: "Stai bene così e vuoi rifiutare un altro drink: 'Sto bene (Gwaenchanayo)'.", expectedRomaji: ["gwaenchanayo", "gwenchanayo"], expectedHangul: ["괜찮아요"], conceptTag: "Pronuncia", feedback_incorrect: "Gwaen-chan-a-yo.", tip: "Gwaen-chan-a-yo." } ] },
+  { day: 5, title: "Al Ristorante e Cibo Proteico 🌶️🥩", topic: "Ristoranti e Alimenti", theory: { intro: "Eccoci alla parte vitale: il cibo coreano! Dato che ti alleni tanto (Gym rat!), dovrai saper chiedere proteine o pollo, ed evitare cibi distruggi-stomaco troppo piccanti. Se hai fame post-partita, il PC bang ti salverà.", concept: "La parola d'oro è '주세요' (Ju-se-yo), che significa 'per favore mi dia'. Indica quello che vuoi nel menù e dì 'Igeo juseyo' (Questo, per favore).", builderRule: `Quando la cameriera (Ajumma) porta il cibo, fai una splendida figura dicendo 감사합니다 (Grazie) seguito da 맛있어요 (È delizioso!).`, examples: [ { hangul: "이거 주세요", romaji: "Igeo juseyo", eng: "Questo, per favore.", context: "La base per ordinare tutto dal menù. 👈" }, { hangul: "닭가슴살 있어요?", romaji: "Dakgaseumsal isseoyo?", eng: "Avete petto di pollo?", context: "Essenziale per i macros dopo la palestra! 🍗" }, { hangul: "단백질 많은 거 주세요", romaji: "Danbaekjil maneun geo juseyo", eng: "Mi dia qualcosa con molte proteine.", context: "Per veri appassionati di fitness. 🥩" }, { hangul: "안 맵게 해주세요", romaji: "An maepge haejuseyo", eng: "Non lo faccia piccante, per favore.", context: "FONDAMENTALE per sopravvivere in Corea! 🚫🌶️" }, { hangul: "맛있어요", romaji: "Masisseoyo", eng: "È delizioso!", context: "Fai felice chi cucina. 😋" }, { hangul: "이 영화 너무 슬퍼요", romaji: "I yeonghwa neomu seulpeoyo", eng: "Questo film è troppo triste.", context: "Da usare dopo aver pianto per 'Even if this love disappears'. 😭" } ], culture: "Nei ristoranti coreani l'acqua e i contorni (Banchan) sono quasi sempre gratuiti e ricaricabili all'infinito. Mangiare pollo fritto e birra (Chimaek) è il rito del venerdì sera post-lavoro o post-LoL." }, exercises: [ { type: 'multiple_choice', question: "Hai appena finito un workout pesante. Come chiedi se hanno del petto di pollo al ristorante per riprendere energie?", options: ["Igeo juseyo?", "Dakgaseumsal isseoyo?", "Masisseoyo?"], optionsHangul: ["이거 주세요?", "닭가슴살 있어요?", "맛있어요?"], answer: 1, conceptTag: "Pollo Gym", feedback_incorrect: "Sbagliato. Hai chiesto un'altra cosa.", tip: "'Dakgaseumsal' = petto di pollo, 'isseoyo' = ce l'hai/avete?" }, { type: 'conversation', context: "Il cameriere del PC Bang si avvicina alla tua postazione gaming. Tu vuoi ordinare un Iced Americano dal menu a schermo.", question: "Indicando il monitor, cosa dici?", options: ["Igeo juseyo", "Gangaji gansik", "Mollayo"], optionsHangul: ["이거 주세요", "강아지 간식", "몰라요"], answer: 0, conceptTag: "Ordinare PC Bang", feedback_incorrect: "Non rispondere a caso, indica lo schermo!", tip: "'Igeo juseyo' significa letteralmente 'Questo (Igeo) per favore dia a me (juseyo)'." }, { type: 'listen', question: "Il cuoco ti guarda sorridendo dopo il tuo primo morso di tteokbokki. Tu esclami questo per farlo felice:", audioHangul: "맛있어요", options: ["Quanto costa?", "Non è piccante", "È delizioso!"], answer: 2, conceptTag: "Ascolto Complimenti", feedback_incorrect: "Hai capito male la parola.", tip: "Ha detto 'Masisseoyo!' (Delicious!)." }, { type: 'speak', question: "Ordina tu stessa la cena: 'Questo per favore.'", expectedRomaji: ["igeo juseyo", "igeojuseyo"], expectedHangul: ["이거 주세요"], conceptTag: "Ordinare Pronuncia", feedback_incorrect: "La pronuncia non era chiara.", tip: "Dì 'I-geo ju-se-yo'." }, { type: 'multiple_choice', question: "Vuoi il ramen, ma sai che la roba coreana potrebbe distruggerti lo stomaco. Come chiedi di NON farlo piccante?", options: ["Gyesanseo juseyo", "An maepge haejuseyo", "Masisseoyo"], optionsHangul: ["계산서 주세요", "안 맵게 해주세요", "맛있어요"], answer: 1, conceptTag: "Sopravvivenza Cibo", feedback_incorrect: "Attenta o finirai a bere litri d'acqua in lacrime!", tip: "'An' (Non) + 'Maepge' (in modo piccante) + 'Haejuseyo' (per favore lo faccia)." }, { type: 'speak', question: "Stai guardando 'Even if this love disappears' con gli amici e sei in lacrime. Come dici 'Questo film è troppo triste'?", expectedRomaji: ["i yeonghwa neomu seulpeoyo", "iyeonghwaneomuseulpeoyo"], expectedHangul: ["이 영화 너무 슬퍼요"], conceptTag: "Emozioni Kdrama", feedback_incorrect: "Attenzione a 'seulpeoyo' (triste).", tip: "I yeong-hwa neo-mu seul-peo-yo." }, { type: 'conversation', context: "Non hai ascoltato il consiglio precedente, il cibo è infernale, la tua bocca brucia.", question: "Come implori che ti portino dell'acqua?", options: ["Mul jom juseyo", "Yeok-i eodiyeyo?", "Gwaenchanayo"], optionsHangul: ["물 좀 주세요", "역이 어디예요?", "괜찮아요"], answer: 0, conceptTag: "Acqua", feedback_incorrect: "Devi chiedere l'acqua, non la stazione!", tip: "Mul = Acqua. Jom juseyo = Per favore me ne dia un po'." } ] }
 ];
 
 const ADVANCED_TOPICS = [
-    // ... [PASTE YOUR EXACT ORIGINAL ADVANCED_TOPICS ARRAY FOR DAYS 6 TO 45 HERE] ...
+  { name: "Start-Up Quotes", hangul: "지도 없는 항해를 떠나는 거예요", romaji: "Jido eomneun hanghaereul tteonaneun geoyeyo", eng: "Partiamo per un viaggio senza mappa", scenario: "Vuoi citare la famosa frase di Start-Up per incoraggiare un amico.", clue: "항해 (hanghae) = viaggio/navigazione" },
+  { name: "Gym Rat: Workout", hangul: "몇 세트 남았어요?", romaji: "Myeot sete namasseoyo?", eng: "Quante serie ti mancano?", scenario: "Vuoi usare un macchinario occupato in palestra.", clue: "세트 (sete) = set/serie in palestra" },
+  { name: "Even If This Love Disappears", hangul: "내일의 너를 잊는다 해도", romaji: "Naeirui neoreul inneunda haedo", eng: "Anche se dovessi dimenticarti domani", scenario: "Parli del film super triste con le tue amiche.", clue: "잊다 (itda) = dimenticare" },
+  { name: "LoL: Gankami!", hangul: "갱 와주세요!", romaji: "Gaeng wajuseyo!", eng: "Vieni a gankarmi per favore!", scenario: "Sei sotto torre in Mid e chiedi aiuto al Jungler.", clue: "갱 (gaeng) = gank (arrivo a sorpresa)" },
+  { name: "Cosplay: Parrucca", hangul: "이 가발 어디서 샀어요?", romaji: "I gabal eodiseo sasseoyo?", eng: "Dove hai comprato questa parrucca?", scenario: "Sei in fiera e ammiri l'acconciatura di un'altra cosplayer.", clue: "가발 (gabal) = parrucca" },
+  { name: "Fangirl di Nam Joo-hyuk", hangul: "남주혁 진짜 멋있어", romaji: "Nam Ju-hyeok jinjja meosisseo", eng: "Nam Joo-hyuk è davvero bellissimo/figo", scenario: "Stai guardando il suo ultimo Drama e commenti con entusiasmo.", clue: "멋있어 (meosisseo) = essere figo/bello (informale)" },
+  { name: "Proteine e Macro", hangul: "단백질 보충제 추천해 주세요", romaji: "Danbaekjil bochungje chucheonhae juseyo", eng: "Mi consigli un integratore proteico?", scenario: "Sei in farmacia sportiva e cerchi nuove proteine.", clue: "보충제 (bochungje) = integratore" },
+  { name: "Passione LoL: Mid Lane", hangul: "미드 차이", romaji: "Mideu chai", eng: "Mid diff (Differenza in mid lane)", scenario: "Stai flammando (scherzosamente) in chat perché il mid nemico è scarso.", clue: "차이 (chai) = differenza (usato come 'diff' su LoL)" },
+  { name: "Parlar di 2521! 📺", hangul: "스물다섯 스물하나 봤어요?", romaji: "Seumuldaseot seumulhana bwasseoyo?", eng: "Hai visto 2521?", scenario: "Vuoi parlare della tua serie preferita.", clue: "봤어요? (bwasseoyo) = Hai visto/guardato?" },
+  { name: "Natura e Relax", hangul: "산책 갈까요?", romaji: "Sanchaek galkkayo?", eng: "Andiamo a fare una passeggiata?", scenario: "Vuoi esplorare il parco del fiume Han come nei Drama.", clue: "산책 (sanchaek) = passeggiata" },
+  { name: "Cosplay Shopping", hangul: "이거 입어봐도 돼요?", romaji: "Igeo ibeobwado dwaeyo?", eng: "Posso provarlo?", scenario: "Sei da Animate o in un negozio di costumi.", clue: "입어보다 (ibeoboda) = provare un vestito" },
+  { name: "Foto Ricordo Cosplay", hangul: "사진 같이 찍을까요?", romaji: "Sajin gachi jjigeulkkayo?", eng: "Facciamo una foto insieme?", scenario: "Incontri un cosplayer pazzesco e vuoi un ricordo.", clue: "사진 (sajin) = foto, 같이 (gachi) = insieme" },
+  { name: "Barbecue per la Massa (K-BBQ)", hangul: "삼겹살 이 인분 주세요", romaji: "Samgyeopsal i inbun juseyo", eng: "Due porzioni di pancetta, per favore", scenario: "Giorno di sgarro dietetico e carico proteico post fiera.", clue: "인분 (inbun) = porzione a persona" },
+  { name: "Stanchezza post-Leg Day", hangul: "너무 피곤해요", romaji: "Neomu pigonhaeyo", eng: "Sono troppo stanca", scenario: "Hai fatto troppi squat in palestra e non senti più le gambe.", clue: "피곤하다 (pigonhada) = essere stanco" },
+  { name: "Sconti Stoffe Cosplay", hangul: "조금만 깎아주세요~", romaji: "Jogeumman kkakajuseyo~", eng: "Fammi un piccolo sconto~", scenario: "Al mercato di Dongdaemun stai comprando stoffe costose.", clue: "깎다 (kkakta) = tagliare il prezzo. Si usa con voce dolce!" },
+  { name: "Gamer Terminology: Support", hangul: "힐 좀 주세요", romaji: "Hil jom juseyo", eng: "Dammi un po' di cure (heal) per favore", scenario: "Sei in team fight e stai per morire su LoL.", clue: "힐 (Hil) = Heal/Cure" },
+  { name: "Richiesta Foto Personale", hangul: "사진 좀 찍어주시겠어요?", romaji: "Sajin jom jjigeojusigesseoyo?", eng: "Potrebbe scattarmi una foto?", scenario: "Vuoi la foto perfetta in posa Cosplay.", clue: "사진 (sajin) = foto" },
+  { name: "Complimenti Estremi", hangul: "대박!", romaji: "Daebak!", eng: "Incredibile! / Wow!", scenario: "Vedi una pentakill assurda durante un match di LoL.", clue: "대박 (daebak) = grande successo/wow" },
+  { name: "In Metropolitana", hangul: "다음 역은 어디예요?", romaji: "Daeum yeogeun eodiyeyo?", eng: "Qual è la prossima stazione?", scenario: "Devi andare all'evento e hai perso l'annuncio vocale.", clue: "다음 (daeum) = prossimo" },
+  { name: "Prendere il Taxi per il PC Bang", hangul: "PC방으로 가주세요", romaji: "PC-bang-euro gajuseyo", eng: "Al PC Bang, per favore", scenario: "Piove a dirotto ma l'addestramento rankato chiama.", clue: "으로 가주세요 (euro gajuseyo) = vada verso..." },
+  { name: "Ricevere Complimenti in Game", hangul: "게임 정말 잘하시네요!", romaji: "Geim jeongmal jalhasineyo!", eng: "Sei davvero brava ai giochi!", scenario: "Il tuo compagno è impressionato dai tuoi riflessi.", clue: "잘하다 (jalhada) = essere bravi a fare qualcosa" },
+  { name: "Rispondere Umilmente (Gym)", hangul: "아니에요, 아직 멀었어요", romaji: "Anieyo, ajik meoreosseoyo", eng: "No, ho ancora molto da imparare/migliorare", scenario: "Ti dicono che hai un fisico perfetto, metti in atto la modestia coreana!", clue: "아직 (ajik) = ancora" },
+  { name: "Gamer Toxicity (Soft)", hangul: "트롤 하지마", romaji: "Teurol hajima", eng: "Non trollare", scenario: "Il tuo compagno sta suicidandosi di proposito in bot lane.", clue: "트롤 (teurol) = troll" },
+  { name: "Gym Rat: Sudore", hangul: "땀이 많이 났어요", romaji: "Ttami mani nasseoyo", eng: "Ho sudato molto", scenario: "Hai appena concluso 40 minuti di cardio intenso.", clue: "땀 (ttam) = sudore" },
+  { name: "Emergenza Bagno", hangul: "여기에 휴지 있어요?", romaji: "Yeogie hyuji isseoyo?", eng: "C'è della carta igienica qui?", scenario: "I bagni della metropolitana ti colgono di sprovvista.", clue: "휴지 (hyuji) = carta igienica / fazzoletti" },
+  { name: "Inviti Formali/Informali", hangul: "언제 밥 한번 먹자!", romaji: "Eonje bap hanbeon meokja!", eng: "Mangiamo insieme qualche volta!", scenario: "Un cosplayer si congeda. È un modo di salutare comune!", clue: "밥 (bap) = riso / pasto" },
+  { name: "Al Pub post-LoL", hangul: "건배!", romaji: "Geonbae!", eng: "Salute! / Brindisi!", scenario: "I tuoi nuovi amici versano il Soju per festeggiare.", clue: "건배 (geonbae) = brindisi (vuotare il bicchiere)" },
+  { name: "In Farmacia (Yakguk)", hangul: "근육통 약 있어요?", romaji: "Geunyuktong yak isseoyo?", eng: "Avete medicine per dolori muscolari?", scenario: "La leg day ti ha distrutto i quadricipiti.", clue: "근육통 (geunyuktong) = dolori muscolari (DOMS)" },
+  { name: "Saluti tra Amici Gamers", hangul: "나중에 봐요!", romaji: "Najunge bwayo!", eng: "Ci vediamo dopo!", scenario: "Fai log-out dal client di League of Legends.", clue: "나중에 (najunge) = più tardi" },
+  { name: "Quote da 2521 (Iconica)", hangul: "널 가져야겠어", romaji: "Neol gajyeoyagesseo", eng: "Devo averti (Ti farò mio/a)", scenario: "La famosissima frase che Na Hee-do dice. Usala scherzosamente!", clue: "가지다 (gajida) = avere/possedere" },
+  { name: "Al Salone di Bellezza (Acconciature)", hangul: "머리 다듬어 주세요", romaji: "Meori dadeumeo juseyo", eng: "Mi spunti i capelli, per favore", scenario: "Sei in un parrucchiere a Gangnam prima di un photoset cosplay.", clue: "머리 (meori) = testa/capelli" },
+  { name: "In Farmacia (Digestione)", hangul: "소화제 있어요?", romaji: "Sohwaje isseoyo?", eng: "Avete qualcosa per la digestione?", scenario: "Troppe proteine e pollo ti hanno bloccato.", clue: "소화제 (sohwaje) = digestivo" },
+  { name: "Al Noraebang (Karaoke)", hangul: "애니 노래 부를까요?", romaji: "Aeni norae bureulkkayo?", eng: "Cantiamo canzoni anime?", scenario: "Siete al karaoke e l'atmosfera è al top per le opening.", clue: "부르다 (bureuda) = cantare" },
+  { name: "Sentimenti & Amicizia", hangul: "보고 싶어요", romaji: "Bogo sipeoyo", eng: "Mi manchi / Voglio vederti", scenario: "Guardi un poster di Nam Joo-hyuk o pensi alle tue amiche.", clue: "보고 싶다 (bogo sipda) = mancare/voler vedere" },
+  { name: "Incontri Nerd/Gym", hangul: "주말에 시간 있어요?", romaji: "Jumare sigan isseoyo?", eng: "Hai tempo questo fine settimana?", scenario: "Vuoi invitare qualcuno al PC Bang o in palestra.", clue: "주말 (jumal) = fine settimana" },
+  { name: "Cosplay Crafting", hangul: "밤새서 만들었어요", romaji: "Bamsaeseo mandeureosseoyo", eng: "L'ho fatto restando sveglia tutta la notte", scenario: "Qualcuno loda l'armatura del tuo Cosplay pazzesco.", clue: "밤새다 (bamsaeda) = fare le ore piccole" },
+  { name: "Dichiarazione (Start-Up Style)", hangul: "좋아해요", romaji: "Joahaeyo", eng: "Mi piaci / Ti amo", scenario: "La confessione classica e dolcissima dei Kdrama.", clue: "좋아하다 (joahada) = piacere/amare" },
+  { name: "Frustrazione in Ranked", hangul: "진짜 짜증나요", romaji: "Jinjja jjajeungnayo", eng: "È davvero snervante", scenario: "Il tuo team in ranked sta perdendo miseramente e feeda.", clue: "짜증나다 (jjajeungnada) = essere irritato" },
+  { name: "Incoraggiamento (Gym/Life)", hangul: "포기하지 마세요", romaji: "Pogihaji maseyo", eng: "Non arrenderti", scenario: "Incoraggi un'amica a fare l'ultima ripetizione sotto il bilanciere.", clue: "포기하다 (pogihada) = arrendersi" },
+  { name: "Fame Nera post-fiera", hangul: "배고파 죽겠어요", romaji: "Baegopa jukgesseoyo", eng: "Muoio di fame", scenario: "Hai saltato il pranzo in fiera per farti fare foto.", clue: "죽겠다 (jukgetda) = morire (usato come esagerazione)" }
 ];
 
 const MAP_REGIONS = [
-    // ... [PASTE YOUR EXACT ORIGINAL MAP_REGIONS ARRAY HERE] ...
+  { name: "Palazzo Gyeongbokgung (Seoul)", unlocksAtDay: 1, image: "https://images.unsplash.com/photo-1546874177-9e664107314e?w=600&q=80", icon: "🏯", emoji: "🤴", desc: "Il palazzo reale più iconico della Corea. Indossa l'Hanbok (abito tradizionale) per entrare gratis!", keywords: ["Storia", "Hanbok", "Seoul Tour"], lat: 37.5796, lng: 126.9770, unlockMsg: "🏯 Hai sbloccato il Palazzo Gyeongbokgung!", phrases: [ { hangul: "한복 입어봐도 돼요?", romaji: "Hanbok ibeobwado dwaeyo?", eng: "Posso provare l'Hanbok?" }, { hangul: "사진 같이 찍을까요?", romaji: "Sajin gachi jjigeulkkayo?", eng: "Facciamo una foto insieme?" } ] },
+  { name: "N Seoul Tower (Namsan)", unlocksAtDay: 3, image: "https://www.agoda.com/wp-content/uploads/2024/08/Namsan-Tower-during-autumn-in-Seoul-South-Korea.jpg", icon: "🗼", emoji: "🌇", desc: "Il punto panoramico più alto di Seoul, famoso per la funivia e i lucchetti dell'amore.", keywords: ["Seoul", "Panorama", "Romance"], lat: 37.5512, lng: 126.9882, unlockMsg: "🗼 N Seoul Tower sbloccata!", phrases: [ { hangul: "케이블카 어디서 타요?", romaji: "Keibeulka eodiseo tayo?", eng: "Dove si prende la funivia?" }, { hangul: "여기서 사진 찍어도 돼요?", romaji: "Yeogiseo sajin jjigeodo dwaeyo?", eng: "Posso fare foto qui?" } ] },
+  { name: "Bukchon Hanok Village", unlocksAtDay: 5, image: "https://southkoreahallyu.com/wp-content/uploads/2025/08/bukchon-3.jpg", icon: "🏘️", emoji: "🏮", desc: "Un villaggio tradizionale nel cuore della città moderna.", keywords: ["Tradizione", "Foto", "Hanok"], lat: 37.5826, lng: 126.9836, unlockMsg: "🏘️ Bukchon Hanok Village sbloccato!", phrases: [ { hangul: "조용히 해주세요", romaji: "Joyonghi haejuseyo", eng: "Silenzio per favore" }, { hangul: "이 골목이 2521에 나와요?", romaji: "I golmogi 2521e nawayo?", eng: "Questo vicolo appare in 2521?" } ] },
+  { name: "Daehak-ro Park (2521)", unlocksAtDay: 9, image: "https://seeanyplaces.com/wp-content/uploads/2021/05/DaeHak-ro-8.jpg", icon: "🏙️", emoji: "🎭", desc: "Al Marronnier Park hanno girato una scena in '2521'.", keywords: ["Seoul", "2521", "Arte"], lat: 37.5821, lng: 127.0021, unlockMsg: "🎭 Daehak-ro Park sbloccato!", phrases: [ { hangul: "스물다섯 스물하나 촬영지예요?", romaji: "Seumuldaseot seumulhana chwaryeongjiyeyo?", eng: "È un luogo delle riprese di 2521?" } ] },
+  { name: "Casa di Na Hee-do", unlocksAtDay: 12, image: "https://english.visitkorea.or.kr/public/images/2024/08/02/a8510d8630ea4007847cda5144a5933e.png", icon: "🏠", emoji: "🤺", desc: "La famosa casa in salita (Jeonju) di Na Hee-do.", keywords: ["2521", "Nostalgia", "Jeonju"], lat: 35.8145, lng: 127.1522, unlockMsg: "🏠 Casa di Na Hee-do sbloccata!", phrases: [ { hangul: "드라마 촬영지 맞아요?", romaji: "Deurama chwaryeongji majayo?", eng: "È davvero il set del drama?" } ] },
+  { name: "Tunnel Hanbyeokgul", unlocksAtDay: 15, image: "https://i0.wp.com/wanderwithjin.com/wp-content/uploads/2022/02/2521_tunnel.jpg?resize=800%2C800&ssl=1", icon: "🚇", emoji: "🏃‍♀️", desc: "L'iconico tunnel in mattoni dove Hee-do e Yi-jin scappano correndo.", keywords: ["2521", "Fuga", "Romance"], lat: 35.8105, lng: 127.1585, unlockMsg: "🚇 Tunnel di 2521 sbloccato!", phrases: [ { hangul: "2521 터널 맞죠?", romaji: "2521 teonel matjyo?", eng: "È il tunnel di 2521, giusto?" } ] },
+  { name: "Fumetteria Myeongjin", unlocksAtDay: 18, image: "https://lynntop.com/wp-content/uploads/2024/05/Image-5-4-24-at-10.55%E2%80%AFPM-1-1024x689.jpeg.webp", icon: "📚", emoji: "📖", desc: "L'esterno della fumetteria dove Yi-jin lavorava part-time.", keywords: ["2521", "Full House", "Yi-jin"], lat: 35.8115, lng: 127.1485, unlockMsg: "📚 Fumetteria Myeongjin sbloccata!", phrases: [ { hangul: "만화책 있어요?", romaji: "Manhwachaek isseoyo?", eng: "Avete fumetti/manhwa?" } ] },
+  { name: "Spiaggia di Haeundae", unlocksAtDay: 22, image: "https://guidacorea.it/wp-content/uploads/2023/06/Guida-Completa-Spiagge-Busan-1.jpg", icon: "🏖️", emoji: "🏄‍♀️", desc: "La spiaggia più famosa della Corea a Busan.", keywords: ["Busan", "Mare", "Relax"], lat: 35.1587, lng: 129.1604, unlockMsg: "🏖️ Haeundae sbloccata!", phrases: [ { hangul: "선크림 있어요?", romaji: "Seonkeurim isseoyo?", eng: "Hai la crema solare?" }, { hangul: "해운대역 어떻게 가요?", romaji: "Haeundaeyeok eotteoke gayo?", eng: "Come si arriva alla stazione Haeundae?" } ] },
+  { name: "Gamcheon Culture Village", unlocksAtDay: 25, image: "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_728/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/xbxsizde9f8qchwmbnnh/BusanHighlightCityTourwithSkyCapsule,Gamcheon,Yachtmore.webp", icon: "🎨", emoji: "🖌️", desc: "Un labirinto coloratissimo di case e opere di street art in collina a Busan.", keywords: ["Busan", "Arte", "Colori"], lat: 35.0975, lng: 129.0106, unlockMsg: "🎨 Gamcheon Village sbloccato!", phrases: [ { hangul: "입장료가 얼마예요?", romaji: "Ipjangnyo-ga eolmayeyo?", eng: "Quanto costa l'ingresso?" }, { hangul: "지도 있어요?", romaji: "Jido isseoyo?", eng: "Avete una mappa?" } ] },
+  { name: "Spiaggia di Geumjin", unlocksAtDay: 30, image: "https://i0.wp.com/wanderwithjin.com/wp-content/uploads/2022/02/2521_SB2.jpg?resize=840%2C536&ssl=1", icon: "🌊", emoji: "📸", desc: "Il luogo dello stupendo e nostalgico viaggio estivo della squadra di 2521.", keywords: ["2521", "Amici", "Estate"], lat: 37.6450, lng: 129.0436, unlockMsg: "🌊 Spiaggia di Geumjin sbloccata!", phrases: [ { hangul: "여기가 금진 해변이에요?", romaji: "Yeogiga Geumjin haebyeonieyo?", eng: "È questa la spiaggia di Geumjin?" }, { hangul: "파도 진짜 예뻐요", romaji: "Pado jinjja yeppeoyo", eng: "Le onde sono davvero belle" } ] },
+  { name: "Tempio di Bulguksa", unlocksAtDay: 37, image: "https://guidacorea.it/wp-content/uploads/2023/04/Tempio-Bulguksa-Grotta-Seokguram.jpg", icon: "🛕", emoji: "🙏", desc: "Patrimonio mondiale UNESCO nell'antica capitale di Silla.", keywords: ["Gyeongju", "Storia", "Tempio"], lat: 35.7900, lng: 129.3320, unlockMsg: "🛕 Bulguksa sbloccato!", phrases: [ { hangul: "몇 시에 닫아요?", romaji: "Myeot sie dadayo?", eng: "A che ora chiude?" }, { hangul: "여기가 유네스코예요?", romaji: "Yeogiga Yuneskoyeyo?", eng: "Questo è patrimonio UNESCO?" } ] },
+  { name: "Isola di Jeju", unlocksAtDay: 45, image: "https://www.viaggioincorea.it/wp-content/uploads/2021/04/%E1%84%89%E1%85%A5%E1%86%BC%E1%84%89%E1%85%A1%E1%86%AB%E1%84%8B%E1%85%B5%E1%86%AF%E1%84%8E%E1%85%AE%E1%86%AF%E1%84%87%E1%85%A9%E1%86%BC-from-news.chosun.gif", icon: "🌋", emoji: "🍊", desc: "Le Hawaii della Corea. Un'isola vulcanica famosa per la natura.", keywords: ["Jeju", "Natura", "Vacanze"], lat: 33.3617, lng: 126.5292, unlockMsg: "🌋 JEJU SBLOCCATA!", phrases: [ { hangul: "한라산 등반 코스 추천해 주세요", romaji: "Hallasan deungban koseu chucheonhae juseyo", eng: "Consigliami un sentiero per il Monte Halla" }, { hangul: "귤 한 봉지 얼마예요?", romaji: "Gyul han bongji eolmayeyo?", eng: "Quanto costa un sacchetto di mandarini?" } ] }
 ];
 
 const LIBRARY_DATA = [
-    // ... [PASTE YOUR EXACT ORIGINAL LIBRARY_DATA ARRAY HERE] ...
+  { category: "🆘 Carta d'Emergenza — 10 Frasi Salvavita", icon: "zap", iconColor: "text-yellow-500", items: [ { hangul: "저기요!", romaji: "Jeogiyo!", eng: "Scusi! (per chiamare chiunque)", context: "La frase più utile in assoluto. Funziona al ristorante, per strada, in negozio." }, { hangul: "이거 주세요", romaji: "Igeo juseyo", eng: "Questo, per favore", context: "Indica il menu o l'oggetto. Non serve altro." }, { hangul: "얼마예요?", romaji: "Eolmayeyo?", eng: "Quanto costa?", context: "Universal shopping phrase. Usala ovunque." }, { hangul: "화장실이 어디예요?", romaji: "Hwajangsili eodiyeyo?", eng: "Dov'è il bagno?", context: "Salva la vita. Impararla a memoria." }, { hangul: "한국어 잘 못해요", romaji: "Hangugeo jal mothaeyo", eng: "Non parlo bene il coreano", context: "Usala subito se parlano troppo veloce. I coreani ti aiuteranno." }, { hangul: "몰라요", romaji: "Mollayo", eng: "Non lo so / Non capisco", context: "Breve, chiaro, salva dai silenzi imbarazzanti." }, { hangul: "도와주세요", romaji: "Dowajuseyo", eng: "Aiutatemi, per favore", context: "Solo per emergenze vere. Funziona sempre." }, { hangul: "괜찮아요", romaji: "Gwaenchanayo", eng: "Sto bene / Va bene / No grazie", context: "Tre usi in una parola sola. Potentissima." }, { hangul: "영어 할 줄 아세요?", romaji: "Yeongeo hal jul aseyo?", eng: "Sa parlare inglese?", context: "Per situazioni complicate, mai vergognarsi di chiederlo." }, { hangul: "안녕하세요 / 감사합니다", romaji: "Annyeonghaseyo / Gamsahamnida", eng: "Ciao / Grazie", context: "Le due parole magiche. Un sorriso + queste due → conquisti chiunque." } ] },
+  { category: "Alfabeto Coreano (Hangul) 🔠", icon: "type", iconColor: "text-indigo-500", items: [ { hangul: "ㅏ, ㅓ, ㅗ, ㅜ, ㅡ, ㅣ", romaji: "a, eo, o, u, eu, i", eng: "Vocali Base", context: "Le vocali sono il cuore della sillaba. Stanno a destra (ㅏ) o sotto (ㅗ) la consonante." }, { hangul: "ㄱ, ㄴ, ㄷ, ㄹ, ㅁ, ㅂ, ㅅ, ㅇ, ㅈ", romaji: "g/k, n, d/t, r/l, m, b/p, s, ng, j", eng: "Consonanti Base", context: "Combinate con le vocali formano i blocchi. Es: ㄱ (g) + ㅏ (a) = 가 (Ga)." }, { hangul: "운동", romaji: "Undong", eng: "Palestra / Allenamento", context: "Costruito con i blocchi: ㅇ+ㅜ+ㄴ (un) e ㄷ+ㅗ+ㅇ (dong). Lo userai tanto per i tuoi workout!" }, { hangul: "남주혁", romaji: "Nam Ju-hyeok", eng: "Nam Joo-hyuk", context: "Il tuo attore preferito di 2521 e Start-Up! Inizia con la consonante N (ㄴ) + A (ㅏ) + M (ㅁ) = 남 (Nam)." } ] },
+  { category: "Passioni: Gym, LoL & Cosplay 🎮", icon: "dumbbell", iconColor: "text-blue-500", items: [ { hangul: "제 취미는 운동이에요", romaji: "Je chwimineun undong-ieyo", eng: "Il mio hobby è allenarmi/palestra.", context: "Per i veri gym rat che non saltano il Leg Day." }, { hangul: "제 취미는 코스프레예요", romaji: "Je chwimineun koseupeure-yeyo", eng: "Il mio hobby è il cosplay.", context: "Fondamentale per rompere il ghiaccio in fiera." }, { hangul: "리그 오브 레전드 좋아해요?", romaji: "Rigeu obeu lejeondeu joahaeyo?", eng: "Ti piace League of Legends?", context: "Domanda base al PC Bang." }, { hangul: "단백질 많은 거 주세요", romaji: "Danbaekjil maneun geo juseyo", eng: "Mi dia qualcosa di ricco di proteine.", context: "Massimizza i macro dopo l'allenamento." }, { hangul: "사진 같이 찍을까요?", romaji: "Sajin gachi jjigeulkkayo?", eng: "Facciamo una foto insieme?", context: "Utile per i photoshoot in fiera." } ] },
+  { category: "K-Drama Vibes: 2521 & Start-Up 📺", icon: "tv", iconColor: "text-purple-500", items: [ { hangul: "스물다섯 스물하나 봤어요?", romaji: "Seumuldaseot seumulhana bwasseoyo?", eng: "Hai visto 2521?", context: "La serie amatissima da Sara! Usalo per rompere il ghiaccio." }, { hangul: "스타트업 봤어요?", romaji: "Seutateueop bwasseoyo?", eng: "Hai visto Start-Up?", context: "Cerca altri fan di Nam Joo-hyuk." }, { hangul: "이 영화 너무 슬퍼요", romaji: "I yeonghwa neomu seulpeoyo", eng: "Questo film è troppo triste.", context: "Da usare dopo 'Even if this love disappears'." }, { hangul: "남주혁 진짜 멋있어", romaji: "Nam Ju-hyeok jinjja meosisseo", eng: "Nam Joo-hyuk è bellissimo/figo", context: "Esclamazione da fangirl pura." }, { hangul: "화이팅!", romaji: "Hwaiting!", eng: "Forza! / Buona fortuna!", context: "Il classico incitamento coreano per dare supporto morale a chi è in difficoltà." } ] },
+  { category: "Emergenze & Sopravvivenza 🆘", icon: "alert-circle", iconColor: "text-red-500", items: [ { hangul: "몰라요", romaji: "Mollayo", eng: "Non lo so / Non capisco", context: "Molto informale, ma utile per tirarsi fuori d'impiccio." }, { hangul: "괜찮아요", romaji: "Gwaenchanayo", eng: "Va bene / Sto bene", context: "Perfetto per dire 'No grazie' o 'Nessun problema'." }, { hangul: "한국어 잘 못해요", romaji: "Hangugeo jal mothaeyo", eng: "Non parlo bene il coreano", context: "Usalo per chiedere clemenza se i locali parlano a raffica." }, { hangul: "도와주세요", romaji: "Dowajuseyo", eng: "Aiutatemi / Per favore aiutami", context: "Se ti sei persa o hai un'emergenza vera e propria." }, { hangul: "아파요", romaji: "Apayo", eng: "Mi fa male / Sono malata", context: "Punta la parte del corpo che fa male (o i muscoli dopo la palestra) e dì 'Apayo'." } ] },
+  { category: "Ristorante & Cibo 🥘", icon: "utensils", iconColor: "text-orange-500", items: [ { hangul: "저기요!", romaji: "Jeogiyo!", eng: "Scusi! (Per chiamare il cameriere)", context: "Alza la mano o premi il campanello al tavolo e grida questo." }, { hangul: "이거 주세요", romaji: "Igeo juseyo", eng: "Questo, per favore.", context: "Indica la foto nel menu." }, { hangul: "안 맵게 해주세요", romaji: "An maepge haejuseyo", eng: "Non piccante, per favore", context: "Per salvarti lo stomaco." }, { hangul: "물 좀 주세요", romaji: "Mul jom juseyo", eng: "Acqua, per favore", context: "A volte il distributore d'acqua è self-service (scritto 'Self')." }, { hangul: "맥주 / 소주", romaji: "Maekju / Soju", eng: "Birra / Soju", context: "Le due bevande alcoliche più consumate in Corea (Somaek se le mischi!)." } ] }
 ];
 
 const WOTD_POOL = [
-    // ... [PASTE YOUR EXACT ORIGINAL WOTD_POOL ARRAY HERE] ...
+  { hangul: "단백질", romaji: "danbaekjil", eng: "Proteine", category: "💪 Gym" },
+  { hangul: "코스프레", romaji: "koseupeure", eng: "Cosplay", category: "🎭 Cosplay" },
+  { hangul: "스쿼트", romaji: "seukwoteu", eng: "Squat", category: "💪 Gym" },
+  { hangul: "만화", romaji: "manhwa", eng: "Fumetto/Manhwa", category: "📚 Anime" },
+  { hangul: "롤", romaji: "rol", eng: "LoL (League of Legends)", category: "🎮 Gaming" },
+  { hangul: "갱킹", romaji: "gaengking", eng: "Ganking", category: "🎮 Gaming" },
+  { hangul: "한복", romaji: "hanbok", eng: "Abito tradizionale coreano", category: "🏯 Cultura" },
+  { hangul: "드라마", romaji: "deurama", eng: "Drama (serie TV)", category: "📺 K-Drama" },
+  { hangul: "주인공", romaji: "juingong", eng: "Protagonista", category: "📺 K-Drama" },
+  { hangul: "파이팅", romaji: "paiting", eng: "Dai! / Forza!", category: "🌟 Espressioni" },
+  { hangul: "대박", romaji: "daebak", eng: "Incredibile! / Wow!", category: "🌟 Espressioni" },
+  { hangul: "귀여워", romaji: "gwiyeowo", eng: "Carino/a!", category: "🌟 Espressioni" },
+  { hangul: "피씨방", romaji: "pissibang", eng: "PC Bang (sala gaming)", category: "🎮 Gaming" },
+  { hangul: "노래방", romaji: "noraebang", eng: "Karaoke privato", category: "🎵 Musica" },
+  { hangul: "고양이", romaji: "goyangi", eng: "Gatto", category: "🐱 Vita" },
+  { hangul: "삼겹살", romaji: "samgyeopsal", eng: "Pancetta grigliata (K-BBQ)", category: "🍖 Cibo" },
+  { hangul: "소주", romaji: "soju", eng: "Soju (alcolico coreano)", category: "🍶 Cibo" },
+  { hangul: "운동", romaji: "undong", eng: "Allenamento/Esercizio", category: "💪 Gym" },
+  { hangul: "남자친구", romaji: "namjachingu", eng: "Fidanzato", category: "❤️ Kdrama" },
 ];
 
-// --- PROCEDURAL GENERATOR WITH NEW EXERCISE TYPES ---
 const generateFullMonth = () => {
-    // Note: We need completedDays from local storage to know which map regions to inject
-    let savedData = { completedDays: [] };
-    try { savedData = JSON.parse(localStorage.getItem('sara_korean_save_v3')) || savedData; } catch(e) {}
-    const unlockedDays = savedData.completedDays || [];
+  const fullCourse = [...DETAILED_LESSONS];
 
-    const fullCourse = [...DETAILED_LESSONS];
+  // Logic to load saved data for map reviews
+  let savedData = { completedDays: [] };
+  try { savedData = JSON.parse(localStorage.getItem('sara_korean_save_v3')) || savedData; } catch(e) {}
+  const unlockedDays = savedData.completedDays || [];
 
-    for (let i = 6; i <= 45; i++) {
-        const t = ADVANCED_TOPICS[i - 6];
-        const clueWord = t.clue.split('=')[0].trim().replace(/[()]/g, '');
-        const clueEng = t.clue.split('=')[1] ? t.clue.split('=')[1].trim() : t.clue;
+  for (let i = 6; i <= 45; i++) {
+    const t = ADVANCED_TOPICS[i - 6];
+    const clueWord = t.clue.split('=')[0].trim().replace(/[()]/g, '');
+    const clueEng = t.clue.split('=')[1] ? t.clue.split('=')[1].trim() : t.clue;
 
-        let dailyExercises = [];
+    let dailyExercises = [];
 
-        // 1. Standard Concept Intro
+    // 1. Standard Multiple Choice
+    dailyExercises.push({
+      type: 'multiple_choice',
+      question: `Situazione: ${t.scenario}. Cosa significa "${t.romaji}"?`,
+      options: [t.eng, "Non capisco bene", "Dov'è il bagno?"],
+      optionsHangul: [t.hangul, "몰라요", "화장실이 어디예요"],
+      answer: 0,
+      conceptTag: "Vocabolario Nuovo",
+      tip: `Ricorda: ${t.clue}`
+    });
+
+    // 2. NEW: Sentence Builder (or Listen se è una parola sola)
+    const words = t.hangul.split(' ');
+    if (words.length > 1) {
+        const distractors = ["요", "는", "가", "입니다", "안녕"].sort(() => 0.5 - Math.random()).slice(0, 2);
+        const options = [...words, ...distractors].sort(() => 0.5 - Math.random());
         dailyExercises.push({
-            type: 'multiple_choice',
-            question: `Situazione: ${t.scenario}. Cosa significa "${t.romaji}"?`,
-            options: [t.eng, "Non capisco bene", "Dov'è il bagno?"],
-            optionsHangul: [t.hangul, "몰라요", "화장실이 어디예요"],
+            type: 'sentence_builder',
+            question: `Costruisci la frase: "${t.eng}"`,
+            expected: words,
+            options: options,
+            conceptTag: "Costruzione Frase",
+            tip: "Tocca le parole nell'ordine corretto per formare la frase coreana."
+        });
+    } else {
+        dailyExercises.push({
+            type: 'listen',
+            question: "Ascolta l'audio e seleziona la traduzione:",
+            audioHangul: t.hangul,
+            options: [t.eng, "Vado in Palestra", "Quanto costa?"],
             answer: 0,
-            conceptTag: "Vocabolario Nuovo",
-            tip: `Ricorda: ${t.clue}`
-        });
-
-        // 2. NEW: Sentence Builder (Tap-to-build for mobile)
-        const words = t.hangul.split(' ');
-        if (words.length > 1) {
-            const distractors = ["요", "는", "가", "입니다", "안녕"].sort(() => 0.5 - Math.random()).slice(0, 2);
-            const options = [...words, ...distractors].sort(() => 0.5 - Math.random());
-            dailyExercises.push({
-                type: 'sentence_builder',
-                question: `Costruisci la frase: "${t.eng}"`,
-                expected: words,
-                options: options,
-                conceptTag: "Costruzione Frase",
-                tip: "Tocca le parole nell'ordine corretto per formare la frase."
-            });
-        } else {
-             // Fallback to listening if it's a single word
-             dailyExercises.push({
-                type: 'listen',
-                question: "Ascolta l'audio e seleziona la traduzione:",
-                audioHangul: t.hangul,
-                options: [t.eng, "Vado in Palestra", "Quanto costa?"],
-                answer: 0,
-                conceptTag: "Ascolto Nuovo",
-                tip: "Ascolta attentamente la pronuncia."
-            });
-        }
-
-        // 3. NEW: Map Contextualization Review
-        const availableMapRegions = MAP_REGIONS.filter(r => r.unlocksAtDay < i && unlockedDays.includes(r.unlocksAtDay));
-        if (availableMapRegions.length > 0) {
-            const randomRegion = availableMapRegions[Math.floor(Math.random() * availableMapRegions.length)];
-            const randomPhrase = randomRegion.phrases[Math.floor(Math.random() * randomRegion.phrases.length)];
-            dailyExercises.push({
-                type: 'multiple_choice',
-                question: `[Korea Tour Review] Ti trovi a ${randomRegion.name}. Come dici: "${randomPhrase.eng}"?`,
-                options: [randomPhrase.romaji, "Mollayo", "Gwaenchanayo"],
-                optionsHangul: [randomPhrase.hangul, "몰라요", "괜찮아요"],
-                answer: 0,
-                conceptTag: `Tour: ${randomRegion.name}`,
-                tip: `Hai sbloccato questa frase al Giorno ${randomRegion.unlocksAtDay}!`
-            });
-        }
-
-        // 4. NEW: Matching Pairs (Vocabulary recall)
-        // Grab 2 random previously learned items to match alongside the new one
-        const previousTopics = ADVANCED_TOPICS.slice(0, Math.max(1, i - 6)).sort(() => 0.5 - Math.random()).slice(0, 2);
-        const matchPairs = [
-            {ko: t.hangul, it: t.eng},
-            ...previousTopics.map(pt => ({ko: pt.hangul, it: pt.eng}))
-        ];
-        dailyExercises.push({
-            type: 'matching',
-            question: "Abbina i concetti Coreani alla traduzione Italiana:",
-            pairs: matchPairs,
-            conceptTag: "Ripasso Vocaboli",
-            tip: "Tocca un blocco coreano e poi la sua traduzione."
-        });
-
-        // 5. Speech Practice
-        dailyExercises.push({
-            type: 'speak',
-            question: `Pronuncia ad alta voce: '${t.eng}'`,
-            expectedRomaji: [t.romaji.toLowerCase().replace(/[^a-z]/g, '')],
-            expectedHangul: [t.hangul],
-            conceptTag: "Pronuncia",
-            feedback_incorrect: `Prova a dire '${t.romaji}' ad alta voce in modo chiaro.`,
-            tip: "Non avere paura di sbagliare l'accento."
-        });
-
-        fullCourse.push({
-            day: i,
-            title: `Giorno ${i}: ${t.name}`,
-            topic: "Conversazione Intermedia",
-            theory: {
-                intro: `Benvenuta al Giorno ${i}, Sara! Oggi affrontiamo uno scenario per te essenziale: "${t.name}". Impareremo una frase nuova e faremo tanto ripasso attivo.`,
-                concept: `Studia bene la frase chiave. Negli esercizi troverai domande ripetitive e sfide di costruzione frasi!`,
-                builderRule: `🔗 Chain link: Prova a concatenare mentalmente ${t.hangul} con una presentazione o un saluto.`,
-                buildingBlocks: `💡 Mattoncini: <strong>${clueWord}</strong> = <em>${clueEng}</em>.`,
-                examples: [{ hangul: t.hangul, romaji: t.romaji, eng: t.eng, context: "Frase Focus del Giorno ✨" }],
-                culture: t.clue
-            },
-            exercises: dailyExercises
+            conceptTag: "Ascolto Nuovo",
+            tip: "Ascolta attentamente la pronuncia."
         });
     }
-    return fullCourse;
+
+    // 3. NEW: Map Contextualization Review
+    const availableMapRegions = MAP_REGIONS.filter(r => r.unlocksAtDay < i);
+    if (availableMapRegions.length > 0) {
+        const randomRegion = availableMapRegions[Math.floor(Math.random() * availableMapRegions.length)];
+        const randomPhrase = randomRegion.phrases[Math.floor(Math.random() * randomRegion.phrases.length)];
+        dailyExercises.push({
+            type: 'multiple_choice',
+            question: `[Korea Tour Review] Ti trovi a ${randomRegion.name}. Come dici: "${randomPhrase.eng}"?`,
+            options: [randomPhrase.romaji, "Mollayo", "Gwaenchanayo"],
+            optionsHangul: [randomPhrase.hangul, "몰라요", "괜찮아요"],
+            answer: 0,
+            conceptTag: `Tour Review: ${randomRegion.name}`,
+            tip: `Hai sbloccato questa frase turistica in precedenza!`
+        });
+    }
+
+    // 4. NEW: Matching Pairs (Review)
+    const previousTopics = ADVANCED_TOPICS.slice(0, Math.max(1, i - 6)).sort(() => 0.5 - Math.random()).slice(0, 2);
+    const matchPairs = [
+        {ko: t.hangul, it: t.eng},
+        ...previousTopics.map(pt => ({ko: pt.hangul, it: pt.eng}))
+    ];
+    dailyExercises.push({
+        type: 'matching',
+        question: "Abbina i concetti Coreani alla traduzione Italiana:",
+        pairs: matchPairs,
+        conceptTag: "Ripasso Vocaboli",
+        tip: "Tocca un blocco coreano e poi la sua traduzione esatta."
+    });
+
+    // 5. Speak / Shadowing
+    dailyExercises.push({
+      type: 'speak',
+      question: `Pronuncia ad alta voce: '${t.eng}'`,
+      expectedRomaji: [t.romaji.toLowerCase().replace(/[^a-z]/g, '')],
+      expectedHangul: [t.hangul],
+      conceptTag: "Pronuncia",
+      feedback_incorrect: `Prova a dire '${t.romaji}' ad alta voce in modo chiaro.`,
+      tip: "Non avere paura di sbagliare l'accento."
+    });
+
+    fullCourse.push({
+      day: i,
+      title: `Giorno ${i}: ${t.name}`,
+      topic: "Conversazione Intermedia",
+      theory: {
+        intro: `Benvenuta al Giorno ${i}, Sara! Oggi affrontiamo uno scenario per te essenziale: "${t.name}". Impareremo una frase nuova e faremo tanto ripasso attivo.`,
+        concept: `Studia bene la frase chiave. Negli esercizi troverai nuove meccaniche di costruzione della frase e ripassi dei tuoi luoghi turistici preferiti!`,
+        builderRule: `🔗 Chain link: Prova a concatenare mentalmente ${window.renderHangul(t.hangul)} (${t.eng}) con una presentazione di te stessa come ${window.renderHangul('저는 사라예요')} (Io sono Sara).`,
+        buildingBlocks: `💡 Mattoncini: <strong>${clueWord}</strong> = <em>${clueEng}</em>. Riconosci questa parola all'interno di <span style="font-family:'Noto Sans KR'">${t.hangul}</span> (${t.romaji}).`,
+        examples: [{ hangul: t.hangul, romaji: t.romaji, eng: t.eng, context: "Frase Focus del Giorno ✨" }],
+        culture: t.clue
+      },
+      exercises: dailyExercises
+    });
+  }
+  return fullCourse;
 };
 
+// Esporta i dati per app.js
 window.COURSE_DATA = generateFullMonth();
 window.MAP_REGIONS = MAP_REGIONS;
 window.LIBRARY_DATA = LIBRARY_DATA;
