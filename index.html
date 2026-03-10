@@ -30,6 +30,7 @@
     :root {
       --korean-pink: #f472b6; 
       --korean-blue: #60a5fa; 
+      --korean-nature: #34d399;
       --hanbok-cream: #fdfbf7;
       --hangul-scale: 1;
     }
@@ -78,55 +79,27 @@
     input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #ec4899; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
     input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #fbcfe8; border-radius: 4px; }
 
-    /* DARK MODE FIX COMPLETO */
     html.dark body { background-color: #0f172a; color: #f8fafc; }
     html.dark .bg-pattern { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e293b' fill-opacity='0.8'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
     html.dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; }
     html.dark nav, html.dark header.app-top-bar { background-color: rgba(15, 23, 42, 0.95) !important; border-color: #334155 !important; }
     html.dark .leaflet-popup-content-wrapper { background-color: #1e293b !important; color: #f8fafc !important; }
-    html.dark .border-gray-100, html.dark .border-gray-200 { border-color: #334155 !important; }
-    html.dark .bg-gray-50, html.dark .bg-gray-100 { background-color: #0f172a !important; border-color: #1e293b !important; }
-    html.dark .text-gray-900, html.dark .text-gray-800 { color: #f1f5f9 !important; }
-    html.dark .text-gray-700, html.dark .text-gray-600 { color: #cbd5e1 !important; }
-    html.dark .text-gray-500, html.dark .text-gray-400 { color: #94a3b8 !important; }
-    
-    /* Fix Colori per i Box di Teoria e Feedback in Dark Mode */
-    html.dark .bg-amber-50, html.dark .bg-yellow-50 { background-color: #422006 !important; border-color: #78350f !important; }
-    html.dark .text-amber-900, html.dark .text-yellow-900, html.dark .text-yellow-800, html.dark .text-amber-800, html.dark .text-yellow-700 { color: #fde047 !important; }
-    html.dark .bg-pink-50 { background-color: #311326 !important; border-color: #831843 !important; }
-    html.dark .text-pink-900, html.dark .text-pink-800, html.dark .text-pink-700 { color: #fbcfe8 !important; }
-    html.dark .bg-blue-50 { background-color: #172554 !important; border-color: #1e3a8a !important; }
-    html.dark .text-blue-900, html.dark .text-blue-800, html.dark .text-blue-700 { color: #bfdbfe !important; }
-    html.dark .bg-indigo-50 { background-color: #1e1b4b !important; border-color: #312e81 !important; }
-    html.dark .text-indigo-900, html.dark .text-indigo-800, html.dark .text-indigo-700 { color: #c7d2fe !important; }
-    html.dark .bg-green-50 { background-color: #052e16 !important; border-color: #14532d !important; }
-    html.dark .text-green-900, html.dark .text-green-800, html.dark .text-green-700 { color: #bbf7d0 !important; }
-    html.dark .bg-rose-50 { background-color: #4c0519 !important; border-color: #881337 !important; }
-    html.dark .text-rose-900, html.dark .text-rose-800 { color: #fecdd3 !important; }
-    html.dark .bg-purple-50 { background-color: #2e1065 !important; border-color: #4c1d95 !important; }
-    html.dark .text-purple-900, html.dark .text-purple-700 { color: #e9d5ff !important; }
-    html.dark .bg-teal-50 { background-color: #042f2e !important; border-color: #134e4a !important; }
-    html.dark .text-teal-900, html.dark .text-teal-700 { color: #99f6e4 !important; }
-
     .map-icon-locked div { filter: grayscale(1); opacity: 0.5; border-color: #94a3b8 !important; cursor: not-allowed; }
-    
     @keyframes xp-fill { from { width: 0%; } }
     .xp-bar { animation: xp-fill 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes unlock-glow { 0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.8); } 50% { box-shadow: 0 0 30px 15px rgba(236, 72, 153, 0.3); } 100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); } }
+    .unlock-glow { animation: unlock-glow 1.5s ease-out; }
     .wotd-card { background: linear-gradient(135deg, #fdf2f8 0%, #eff6ff 100%); }
     html.dark .wotd-card { background: linear-gradient(135deg, #2d0a1e 0%, #1e1b4b 100%) !important; }
 
-    /* Mechanics */
     .word-chip { cursor: pointer; transition: all 0.2s; user-select: none; }
     .word-chip:active { transform: scale(0.95); }
-    
-    /* Netflix Style Setup */
-    .netflix-bg { background-color: #141414; }
+    .matching-col { flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
   </style>
 </head>
 <body class="text-slate-800 selection:bg-blue-200 h-[100dvh] w-screen overflow-hidden flex flex-col bg-pattern">
   <div id="root" class="flex flex-col h-full w-full relative"></div>
 
-  <!-- Load Data and Logic in the Correct Order -->
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
