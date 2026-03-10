@@ -30,7 +30,6 @@
     :root {
       --korean-pink: #f472b6; 
       --korean-blue: #60a5fa; 
-      --korean-nature: #34d399;
       --hanbok-cream: #fdfbf7;
       --hangul-scale: 1;
     }
@@ -86,22 +85,21 @@
     html.dark nav, html.dark header.app-top-bar { background-color: rgba(15, 23, 42, 0.95) !important; border-color: #334155 !important; }
     html.dark .leaflet-popup-content-wrapper { background-color: #1e293b !important; color: #f8fafc !important; }
     .map-icon-locked div { filter: grayscale(1); opacity: 0.5; border-color: #94a3b8 !important; cursor: not-allowed; }
+    
     @keyframes xp-fill { from { width: 0%; } }
     .xp-bar { animation: xp-fill 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes unlock-glow { 0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.8); } 50% { box-shadow: 0 0 30px 15px rgba(236, 72, 153, 0.3); } 100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); } }
-    .unlock-glow { animation: unlock-glow 1.5s ease-out; }
     .wotd-card { background: linear-gradient(135deg, #fdf2f8 0%, #eff6ff 100%); }
     html.dark .wotd-card { background: linear-gradient(135deg, #2d0a1e 0%, #1e1b4b 100%) !important; }
 
-    /* New mechanics styles */
+    /* Mechanics */
     .word-chip { cursor: pointer; transition: all 0.2s; user-select: none; }
     .word-chip:active { transform: scale(0.95); }
-    .matching-col { flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
   </style>
 </head>
 <body class="text-slate-800 selection:bg-blue-200 h-[100dvh] w-screen overflow-hidden flex flex-col bg-pattern">
   <div id="root" class="flex flex-col h-full w-full relative"></div>
 
+  <!-- Load Data and Logic in the Correct Order -->
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
