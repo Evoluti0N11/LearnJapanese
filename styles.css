@@ -1,0 +1,211 @@
+/* ============================================================
+   styles.css — All custom styles. Dark mode via CSS variables,
+   no !important overrides.
+   ============================================================ */
+
+/* ─── DESIGN TOKENS ──────────────────────────────────────────
+   Light mode is the default. Dark mode flips the tokens.
+   ─────────────────────────────────────────────────────────── */
+:root {
+  --hangul-scale: 1;
+
+  /* Surface */
+  --bg-base: #fdfbf7;
+  --bg-card: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-input: #f8fafc;
+
+  /* Text */
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Borders */
+  --border-base: #e2e8f0;
+  --border-input: #e2e8f0;
+
+  /* Brand */
+  --pink: #f472b6;
+  --blue: #60a5fa;
+  --green: #34d399;
+
+  /* Shadows */
+  --shadow-card: 0 10px 25px -5px rgba(59,130,246,.08), 0 8px 10px -6px rgba(59,130,246,.04);
+}
+
+html.dark {
+  --bg-base: #0f172a;
+  --bg-card: #1e293b;
+  --bg-subtle: #0f172a;
+  --bg-input: #0f172a;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border-base: #334155;
+  --border-input: #334155;
+  --shadow-card: 0 10px 25px -5px rgba(0,0,0,.5);
+}
+
+/* ─── BASE ─────────────────────────────────────────────────── */
+html, body {
+  background-color: var(--bg-base);
+  font-family: 'Nunito', 'Noto Sans KR', sans-serif;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  transition: background-color .3s;
+}
+
+/* ─── SAFE AREA ─────────────────────────────────────────────── */
+.pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+.pt-safe { padding-top: max(env(safe-area-inset-top), 12px); }
+
+/* ─── UTILITIES ─────────────────────────────────────────────── */
+.no-select { user-select: none; -webkit-user-select: none; }
+.hide-scroll::-webkit-scrollbar { display: none; }
+.hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+.korean-shadow { box-shadow: var(--shadow-card); }
+
+/* ─── BACKGROUND PATTERN ─────────────────────────────────────── */
+.bg-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e2e8f0' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+html.dark .bg-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e293b' fill-opacity='0.8'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ─── WATERMARK ─────────────────────────────────────────────── */
+.hangul-watermark {
+  position: absolute;
+  right: -5%;
+  top: -5%;
+  font-size: 140px;
+  color: rgba(0,0,0,.03);
+  font-weight: 900;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+html.dark .hangul-watermark { color: rgba(255,255,255,.03); }
+
+/* ─── ANIMATIONS ─────────────────────────────────────────────── */
+@keyframes pop {
+  0%   { transform: scale(0.95); opacity: 0; }
+  50%  { transform: scale(1.02); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+.animate-pop { animation: pop .4s cubic-bezier(.16,1,.3,1) forwards; }
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fadein { animation: fadein .3s ease-in-out forwards; }
+
+@keyframes sweep {
+  0%   { opacity: 0; margin-top: -10px; }
+  100% { opacity: 1; margin-top: 0; }
+}
+details[open] summary ~ * { animation: sweep .3s ease-in-out; }
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0  rgba(236,72,153,.7); }
+  70%  { box-shadow: 0 0 0 15px rgba(236,72,153,0); }
+  100% { box-shadow: 0 0 0 0  rgba(236,72,153,0); }
+}
+.recording-pulse { animation: pulse-ring 1.5s cubic-bezier(.215,.61,.355,1) infinite; }
+
+/* ─── KOREAN CLICK SPANS ─────────────────────────────────────── */
+.korean-click {
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  border-bottom: 2px dashed #fbcfe8;
+  transition: all .2s;
+  font-size: calc(var(--hangul-scale) * 1em);
+  border-radius: 2px;
+}
+.korean-click:hover,
+.korean-click:focus {
+  color: #ec4899;
+  border-bottom-color: #ec4899;
+  background-color: #fdf2f8;
+  border-radius: 4px;
+  outline: 2px solid #f472b6;
+  outline-offset: 2px;
+}
+.korean-click::after {
+  content: '🔊';
+  position: absolute;
+  top: -10px;
+  right: -15px;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity .2s;
+  pointer-events: none;
+}
+.korean-click:hover::after { opacity: 1; }
+
+/* ─── HANGUL DISPLAY SCALE ───────────────────────────────────── */
+.hangul-display { font-size: calc(var(--hangul-scale) * 1em); }
+
+/* ─── DETAILS/SUMMARY ────────────────────────────────────────── */
+details > summary { list-style: none; cursor: pointer; }
+details > summary::-webkit-details-marker { display: none; }
+
+/* ─── RANGE SLIDER ───────────────────────────────────────────── */
+input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 24px; width: 24px;
+  border-radius: 50%;
+  background: #ec4899;
+  cursor: pointer;
+  margin-top: -8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%; height: 8px;
+  cursor: pointer;
+  background: #fbcfe8;
+  border-radius: 4px;
+}
+html.dark input[type=range]::-webkit-slider-runnable-track { background: #334155; }
+
+/* Prevent iOS zoom on inputs */
+input[type="text"] { font-size: 16px; }
+
+/* ─── MAP ────────────────────────────────────────────────────── */
+.leaflet-container {
+  font-family: 'Nunito', sans-serif;
+  border-radius: 2rem;
+  z-index: 10;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,.1);
+  padding: 0;
+  overflow: hidden;
+}
+.leaflet-popup-content { margin: 0; }
+html.dark .leaflet-popup-content-wrapper { background-color: #1e293b; color: #f8fafc; }
+html.dark .leaflet-tile-pane { filter: brightness(.85) saturate(.9); }
+
+/* ─── NAV ACTIVE INDICATOR ───────────────────────────────────── */
+.nav-btn[aria-current="page"] {
+  color: #ec4899;
+  transform: scale(1.1);
+}
+
+/* ─── FOCUS VISIBLE ──────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #f472b6;
+  outline-offset: 2px;
+}
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) { outline: none; }
+
+/* ─── PRINT ──────────────────────────────────────────────────── */
+@media print {
+  nav, header.app-top-bar, .app-toast { display: none !important; }
+}
