@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Annyeong Sara! Parla Coreano in 45 Giorni</title>
+  
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#fdfbf7">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind = {
+      config: {
+        darkMode: 'class'
+      }
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --korean-pink: #f472b6; 
+      --korean-blue: #60a5fa; 
+      --korean-nature: #34d399;
+      --hanbok-cream: #fdfbf7;
+      --hangul-scale: 1; /* Accessibility scale */
+    }
+    
+    /* Native App Feel for Mobile */
+    html, body {
+      overscroll-behavior-y: none;
+      -webkit-overflow-scrolling: touch;
+      background-color: var(--hanbok-cream);
+      font-family: 'Nunito', 'Noto Sans KR', sans-serif;
+    }
+    
+    .bg-pattern {
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='#e2e8f0' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+    .pt-safe { padding-top: max(env(safe-area-inset-top), 12px); } /* Protezione Notch iPhone/Android */
+    
+    .no-select { user-select: none; -webkit-user-select: none; }
+    .hide-scroll::-webkit-scrollbar { display: none; }
+    .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .korean-shadow { box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.08), 0 8px 10px -6px rgba(59, 130, 246, 0.04); }
+    .hangul-watermark {
+      position: absolute;
+      right: -5%;
+      top: -5%;
+      font-size: 140px;
+      color: rgba(0,0,0,0.03);
+      font-weight: 900;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    
+    @keyframes pop {
+      0% { transform: scale(0.95); opacity: 0; }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop { animation: pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    
+    @keyframes fadein {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .animate-fadein { animation: fadein 0.3s ease-in-out forwards; }
+
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7); }
+      70% { box-shadow: 0 0 0 15px rgba(236, 72, 153, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+    }
+    .recording-pulse { animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+
+    .chat-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 20px;
+      border-width: 10px 10px 0 0;
+      border-style: solid;
+      border-color: #eff6ff transparent transparent transparent;
+    }
+
+    input[type="text"] { font-size: 16px; } 
+
+    .custom-map-icon { background: transparent; border: none; }
+    .custom-map-icon div { 
+      display: flex; align-items: center; justify-content: center; 
+      width: 44px; height: 44px; background: white; border-radius: 50%; 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); 
+      border: 3px solid #f472b6; font-size: 22px; transition: transform 0.2s ease-out;
+    }
+    .custom-map-icon div:hover { transform: scale(1.15) translateY(-5px); cursor: pointer; border-color: #60a5fa; }
+    .animate-bounce-slow { animation: bounce 3s infinite; }
+    
+    .leaflet-container { font-family: 'Nunito', sans-serif; z-index: 10; border-radius: 2rem; }
+    .leaflet-popup-content-wrapper { border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); padding: 0; overflow: hidden; }
+    .leaflet-popup-content { margin: 0; }
+
+    /* Clickable Korean Words Styling with Dynamic Scale */
+    .korean-click {
+      cursor: pointer;
+      position: relative;
+      display: inline-block;
+      border-bottom: 2px dashed #fbcfe8;
+      transition: all 0.2s;
+      font-size: calc(var(--hangul-scale) * 1em);
+    }
+    .korean-click:hover {
+      color: #ec4899; 
+      border-bottom-color: #ec4899;
+      background-color: #fdf2f8; 
+      border-radius: 4px;
+    }
+    .korean-click::after {
+      content: '🔊';
+      position: absolute;
+      top: -10px;
+      right: -15px;
+      font-size: 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .korean-click:hover::after { opacity: 1; }
+    
+    .hangul-display { font-size: calc(var(--hangul-scale) * 1em); }
+
+    details > summary { list-style: none; cursor: pointer; }
+    details > summary::-webkit-details-marker { display: none; }
+    details[open] summary ~ * { animation: sweep .3s ease-in-out; }
+    @keyframes sweep {
+      0%    {opacity: 0; margin-top: -10px}
+      100%  {opacity: 1; margin-top: 0px}
+    }
+
+    /* Range Slider Styling */
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #ec4899; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #fbcfe8; border-radius: 4px; }
+
+    /* --- DARK MODE OVERRIDES --- */
+    html.dark body { background-color: #0f172a; color: #f8fafc; }
+    html.dark .bg-pattern { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e293b' fill-opacity='0.8'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+    html.dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; }
+    html.dark .text-gray-900, html.dark .text-gray-800, html.dark .text-gray-700 { color: #f8fafc !important; }
+    html.dark .text-gray-600, html.dark .text-gray-500 { color: #cbd5e1 !important; }
+    html.dark .bg-gray-50, html.dark .bg-gray-100, html.dark .bg-gray-200 { background-color: #0f172a !important; border-color: #1e293b !important; color: #f8fafc !important; }
+    html.dark nav, html.dark header.app-top-bar { background-color: rgba(15, 23, 42, 0.95) !important; border-color: #334155 !important; }
+    html.dark input[type="text"] { background-color: #0f172a !important; color: #f8fafc !important; border-color: #334155 !important; }
+    html.dark .leaflet-popup-content-wrapper { background-color: #1e293b !important; color: #f8fafc !important; }
+    html.dark .korean-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
+    html.dark .chat-bubble::after { border-color: #0f172a transparent transparent transparent !important; }
+  </style>
+</head>
+<body class="text-slate-800 selection:bg-blue-200 h-[100dvh] w-screen overflow-hidden flex flex-col bg-pattern">
+
+  <div id="root" class="flex flex-col h-full w-full relative"></div>
+
+  <script>
+    window._s_k_d = Array.from({length: 46}, (_, i) => "SR" + (i * 13 + 7) + "K");
+  </script>
+
+  <script type="module">
+    let db, auth, doc, setDoc, onSnapshot, signOut, signInAnonymously, signInWithCustomToken;
+    let useFirebase = false;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'korean-app-id';
+
+    // --- APPLICATION STATE ---
+    const state = {
+      user: null,
+      profileName: "Sara",
+      isDarkMode: localStorage.getItem('sara_theme') === 'dark',
+      hangulScale: 1, // Accessibility feature
+      isAuthLoading: false,
+      isTransitioning: false, 
+      currentView: 'dashboard', 
+      activeDay: 1,
+      completedDays: [],
+      mistakesRecord: {},
+      gameStep: 0,
+      score: 0,
+      selectedAnswer: null,
+      showFeedback: false,
+      isRecording: false,
+      fallbackActive: false,
+      fallbackOptions: [],
+      currentMistakes: [],
+      transInput: '',
+      transResult: '',
+      transRomaji: '', 
+      transLoading: false,
+      combo: 0 
+    };
+
+    if (state.isDarkMode) {
+        document.documentElement.classList.add('dark');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f172a');
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    let myMap = null;
+    let speechTimeout = null;
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    // --- HELPERS ---
+    window.haptic = (ms = 40) => {
+        if (navigator.vibrate) navigator.vibrate(ms);
+    };
+
+    window.toggleDarkMode = () => {
+        window.haptic(20);
+        state.isDarkMode = !state.isDarkMode;
+        
+        if (state.isDarkMode) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('sara_theme', 'dark');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f172a');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('sara_theme', 'light');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fdfbf7');
+        }
+        renderApp();
+    };
+
+    window.updateHangulSize = (val) => {
+        state.hangulScale = parseFloat(val);
+        document.documentElement.style.setProperty('--hangul-scale', state.hangulScale);
+        saveProgress(state.completedDays, state.mistakesRecord);
+    };
+
+    window.renderHangul = (text) => {
+      return `<span class="korean-click" style="font-family: 'Noto Sans KR', sans-serif;" onclick="window.playAudio(event, '${text}')" title="Tocca per ascoltare la pronuncia">${text}</span>`;
+    };
+
+    window.handleTouchStart = (e) => { touchstartX = e.changedTouches[0].screenX; };
+    window.handleTouchEnd = (e) => { 
+        touchendX = e.changedTouches[0].screenX; 
+        if (touchendX < touchstartX - 75) { // Swipe left
+            if(state.currentView === 'game' && state.selectedAnswer !== null) window.nextQuestion();
+        }
+    };
+
+    // --- DAY 1 TO 5: THE CORE FOUNDATION (TAILORED FOR SARA) ---
+    const DETAILED_LESSONS = [
+      {
+        day: 1,
+        title: "I Primi Incontri 👋",
+        topic: "Saluti e Alfabeto Base",
+        theory: {
+          intro: "Ciao Sara! Iniziamo il nostro viaggio. In Corea, salutare bene significa fare una prima impressione perfetta, specialmente se incontri altri cosplayer o se entri nel tuo primo PC Bang (sala gaming)! Inoltre, il coreano usa l'Hangul (한글), un alfabeto a 'blocchi' logici facilissimo inventato nel 1443. Ad esempio, N+A+M = 남 (Nam, come Nam Joo-hyuk!). Iniziamo ad allenare l'orecchio e le buone maniere!",
+          concept: "Il coreano ha vari livelli di formalità. Useremo la formalità standard (요 - 'yo' / 니다 - 'nida'), ideale per parlare con persone nuove in palestra, agli eventi cosplay o per strada. Ricorda: fai sempre un leggero inchino con la testa! Celebra ogni sillaba che riconosci, proprio come un 'level up' in League of Legends!",
+          builderRule: `Inizia con un sorriso! La combinazione perfetta per rompere il ghiaccio è: Leggero inchino + ${window.renderHangul('안녕하세요')} (Ciao/Buongiorno). Usalo anche quando entri in palestra (Gym) o in fumetteria.`,
+          examples: [
+            { hangul: "안녕하세요", romaji: "Annyeonghaseyo", eng: "Ciao / Buongiorno (Formale)", context: "Da usare sempre. Entrando in fiera, al PC Bang o in palestra. ☀️" },
+            { hangul: "감사합니다", romaji: "Gamsahamnida", eng: "Grazie", context: "Molto educato e standard. 🙏" },
+            { hangul: "죄송합니다", romaji: "Joesonghamnida", eng: "Mi scusi / Scusa", context: "Per chiedere perdono se si urta qualcuno facendo Cosplay o in palestra. 🙇‍♀️" },
+            { hangul: "안녕히 계세요", romaji: "Annyeonghi gyeseyo", eng: "Arrivederci (a chi resta)", context: "Tu te ne vai dalla fumetteria, il negoziante resta. 🚶‍♀️" },
+            { hangul: "안녕히 가세요", romaji: "Annyeonghi gaseyo", eng: "Arrivederci (a chi va)", context: "L'altro se ne va e tu resti. 👋" },
+            { hangul: "화이팅", romaji: "Hwaiting", eng: "Forza! / Dai!", context: "Il 'Fighting' usato nei K-drama, in palestra (Gym) o per caricarsi su LoL! 💪" }
+          ],
+          culture: "Fai attenzione a 'Gyeseyo' vs 'Gaseyo'. 'Gye' significa 'restare (in pace)', 'Ga' significa 'andare (in pace)'. Sbagliarli è il classico errore degli stranieri. Un'altra chicca: l'Hangul si legge da sinistra a destra e dall'alto verso il basso all'interno di un blocco sillabico."
+        },
+        exercises: [
+          { type: 'multiple_choice', question: "Entri in una palestra (Gym) a Seoul e incroci il personal trainer. Cosa dici per prima cosa?", options: ["Joesonghamnida", "Annyeonghaseyo", "Gamsahamnida"], optionsHangul: ["죄송합니다", "안녕하세요", "감사합니다"], answer: 1, conceptTag: "Saluti Palestra", feedback_incorrect: "Hai scelto male. Quando incontri qualcuno, usa sempre 'Annyeonghaseyo'.", tip: "'Annyeonghaseyo' letteralmente significa 'Sei in pace?' ed è perfetto per la palestra." },
+          { type: 'listen', question: "Ascolta l'audio toccando l'icona. Cosa significa questa frase usatissima nei drama (es. in 2521)?", audioHangul: "감사합니다", options: ["Grazie", "Ciao", "Forza!"], answer: 0, conceptTag: "Ascolto", feedback_incorrect: "La risposta giusta era 'Grazie'.", tip: "Ascolta il suono 'Gamsa'. Gamsahamnida è il grazie universale." },
+          { type: 'speak', question: "Tocca il microfono e dì 'Ciao' in coreano (Formale).", expectedRomaji: ["annyeonghaseyo", "annyeong"], expectedHangul: ["안녕하세요"], conceptTag: "Pronuncia", feedback_incorrect: "Pronuncia non riconosciuta. Prova ad articolare bene: An-nyeong-ha-se-yo.", tip: "Sei all'inizio, prenditi il tuo tempo per pronunciare ogni sillaba." },
+          { type: 'conversation', context: "Scenario: Stai passeggiando per Seoul e urti per sbaglio una persona. Alza lo sguardo ed è Nam Joo-hyuk (il tuo attore preferito di Start-Up!).", question: "Qual è la reazione immediata più educata prima di svenire?", options: ["Annyeonghi gaseyo", "Joesonghamnida", "Hwaiting"], optionsHangul: ["안녕히 가세요", "죄송합니다", "화이팅"], answer: 1, conceptTag: "Scuse", feedback_incorrect: "Dovevi chiedere scusa! Non incoraggiarlo a caso.", tip: "'Joesonghamnida' è perfetto. Un rapido cenno del capo aiuta sempre." },
+          { type: 'multiple_choice', question: "Hai appena finito di pagare alla cassa dell'Animate Store e stai uscendo. Il commesso resta dentro. Cosa gli dici?", options: ["Annyeonghi gyeseyo", "Annyeonghi gaseyo", "Joesonghamnida"], optionsHangul: ["안녕히 계세요", "안녕히 가세요", "죄송합니다"], answer: 0, conceptTag: "Arrivederci (a chi resta)", feedback_incorrect: "Attenzione a chi va e chi resta!", tip: "Tu te ne vai, lui RESTA. Quindi gli auguri di *restare* in pace: Gye-se-yo." },
+          { type: 'listen', question: "Cosa sta dicendo la tua amica che sta uscendo dalla tua camera d'hotel, mentre tu resti dentro a preparare il cosplay?", audioHangul: "안녕히 계세요", options: ["Arrivederci (a te che resti)", "Grazie per l'ospitalità", "Arrivederci (a te che vai)"], answer: 0, conceptTag: "Ascolto Arrivederci", feedback_incorrect: "Ha usato 'Gyeseyo'.", tip: "Dato che tu resti in camera, lei ti dice 'Annyeonghi gyeseyo'." },
+          { type: 'speak', question: "Hai appena ricevuto una cura provvidenziale dal tuo Support su LoL. Dì 'Grazie' in modo formale alla chat vocale.", expectedRomaji: ["gamsahamnida", "kamsahamnida"], expectedHangul: ["감사합니다"], conceptTag: "Pronuncia LoL", feedback_incorrect: "Non era chiaro.", tip: "Pronuncia: Gam-sa-ham-ni-da." },
+          { type: 'conversation', context: "Il tuo compagno d'allenamento in palestra sta per alzare il suo record di peso sulla panca piana.", question: "Come lo incoraggi in stile coreano?", options: ["Annyeonghi gaseyo", "Hwaiting", "Joesonghamnida"], optionsHangul: ["안녕히 가세요", "화이팅", "죄송합니다"], answer: 1, conceptTag: "Incoraggiamento", feedback_incorrect: "Dovevi fare il tifo per lui!", tip: "Usa 'Hwaiting!' (Fighting) alzando il pugno." },
+          { type: 'multiple_choice', question: "Un tuo amico coreano ti dice 'Annyeonghi gaseyo' (Vai in pace). Cosa sta succedendo?", options: ["Lui sta entrando in palestra.", "Tu te ne stai andando, lui resta.", "State per giocare a LoL."], optionsHangul: ["", "", ""], answer: 1, conceptTag: "Comprensione contesto", feedback_incorrect: "Ti ha detto 'Ga' (vai).", tip: "Se ti dice 'Ga-seyo', significa che tu sei quella che sta andando via!" },
+          { type: 'conversation', context: "Sali sul taxi per andare a un parco naturale e l'autista ti guarda dallo specchietto.", question: "Come apri la conversazione in modo gentile?", options: ["Annyeonghi gyeseyo", "Gamsahamnida", "Annyeonghaseyo"], optionsHangul: ["안녕히 계세요", "감사합니다", "안녕하세요"], answer: 2, conceptTag: "Saluti Base", feedback_incorrect: "Devi prima salutare!", tip: "Anche nel taxi, un bel 'Annyeonghaseyo' fa partire la corsa col piede giusto." },
+          { type: 'speak', question: "Poni rimedio a un errore. Dì 'Mi scusi / Chiedo perdono'.", expectedRomaji: ["joesonghamnida", "choesonghamnida"], expectedHangul: ["죄송합니다"], conceptTag: "Fluidità", feedback_incorrect: "Prova con: Joe-song-ham-ni-da.", tip: "È una parola lunga, ma ti salverà in molte situazioni!" }
+        ]
+      },
+      {
+        day: 2,
+        title: "Passioni, Anime & Palestra 🇮🇹",
+        topic: "Presentazioni e Hobby",
+        theory: {
+          intro: "Oggi impariamo a presentarti in modo unico, Sara. I coreani amano sapere chi sei e le tue passioni (palestra, cosplay, gaming). Inoltre, continuiamo a capire l'alfabeto (Hangul): la vocale va sempre a destra (es. ㅏ) o sotto (es. ㅗ) la consonante. Es: ㄹ+ㅗ+ㄹ = 롤 (LoL)!",
+          concept: "La particella '이에요 / 예요' (ieyo / yeyo) è il verbo 'essere' e va sempre alla FINE della frase. Usa 'yeyo' se il tuo nome o la parola finisce in vocale (Sara-yeyo), e 'ieyo' se finisce in consonante (come nel tuo amato Nam Joo-hyuk-ieyo).",
+          builderRule: `🔗 Chain link: Non presentarti mai a freddo! Prima di dire ${window.renderHangul('저는 사라예요')} (Io sono Sara), usa sempre il saluto ${window.renderHangul('안녕하세요')} imparato nel Giorno 1. Crea la tua prima combo!`,
+          examples: [
+            { hangul: "저는 사라예요", romaji: "Jeoneun Sara-yeyo", eng: "Io sono Sara.", context: "La tua introduzione chiave! ✨" },
+            { hangul: "로마에서 왔어요", romaji: "Roma-eseo wasseoyo", eng: "Vengo da Roma.", context: "Più specifico e affascinante di 'Sono italiana'. 🏛️" },
+            { hangul: "제 취미는 운동이에요", romaji: "Je chwimineun undong-ieyo", eng: "Il mio hobby è la palestra (allenamento).", context: "Per trovare compagni di workout in Corea. 🏋️‍♀️" },
+            { hangul: "제 취미는 코스프레예요", romaji: "Je chwimineun koseupeure-yeyo", eng: "Il mio hobby è il cosplay.", context: "Usa questa frase per rompere il ghiaccio in fiera! 🎭" },
+            { hangul: "스타트업 봤어요?", romaji: "Seutateueop bwasseoyo?", eng: "Hai visto Start-Up?", context: "Ottimo per trovare altri fan di Kdrama e Nam Joo-hyuk! 📺" }
+          ],
+          culture: "In Corea, chiedere 'Quanti anni hai?' (몇 살이에요? - Myeot sarieyo?) non è maleducato, anzi! Serve a capire chi è il maggiore per stabilire il livello di formalità nella conversazione, proprio come in Start-Up con il rispetto aziendale."
+        },
+        exercises: [
+          { type: 'multiple_choice', question: "Come ti presenti a un nuovo compagno di Duo su League of Legends dicendo 'Io sono Sara'?", options: ["Sara jeoneun-ieyo", "Jeoneun Sara-yeyo", "Yeyo Sara jeoneun"], optionsHangul: ["사라 저는이에요", "저는 사라예요", "예요 사라 저는"], answer: 1, conceptTag: "Struttura frase", feedback_incorrect: "Attenzione all'ordine delle parole (Soggetto Oggetto Verbo).", tip: "La struttura SOV impone: [Jeoneun] (Io) + [Nome] + yeyo (essere)." },
+          { type: 'speak', question: "Pronuncia: 'Io sono Sara.'", expectedRomaji: ["jeoneun sarayeyo", "sarayeyo"], expectedHangul: ["저는 사라예요", "사라예요"], conceptTag: "Pronuncia", feedback_incorrect: "Riprova, scandisci il tuo nome con 'yeyo'.", tip: "Dì 'Jeoneun Sara-yeyo'." },
+          { type: 'conversation', context: "🧑 Incontri un cosplayer ad Hongdae che ti chiede: 이름이 뭐예요? (Ireum-i mwoyeyo? - Come ti chiami?)", question: "Come rispondi alla sua domanda?", options: ["Roma-eseo wasseoyo", "Je chwimineun koseupeure-yeyo", "Jeoneun Sara-yeyo"], optionsHangul: ["로마에서 왔어요", "제 취미는 코스프레예요", "저는 사라예요"], answer: 2, conceptTag: "Risposta intro", feedback_incorrect: "Hai risposto qualcos'altro!", tip: "Ti ha chiesto il nome (Ireum). Rispondi con 'Jeoneun Sara-yeyo'." },
+          { type: 'listen', question: "Ascolta questa frase che userai per rompere il ghiaccio in una palestra coreana:", audioHangul: "제 취미는 운동이에요", options: ["Mi piacciono i cani", "Il mio hobby è l'allenamento", "Vengo dall'Italia"], answer: 1, conceptTag: "Ascolto GYM", feedback_incorrect: "Ascolta la parola 'Undong'.", tip: "Undong = Allenamento/Palestra!" },
+          { type: 'speak', question: "Rispondi a un complimento sul tuo accento dicendo da dove vieni: 'Vengo da Roma'.", expectedRomaji: ["romaeseo wasseoyo", "romaeseowasseoyo"], expectedHangul: ["로마에서 왔어요"], conceptTag: "Pronuncia", feedback_incorrect: "Prova ancora.", tip: "Ro-ma e-seo was-seo-yo." },
+          { type: 'multiple_choice', question: "Sei in un bar e vedi qualcuno con la spilletta di Sandbox. Come gli chiedi 'Hai visto Start-Up?'", options: ["Aenimeisyeon joahaeyo", "Seutateueop bwasseoyo?", "Jeoneun Start-Up yeyo"], optionsHangul: ["애니메이션 좋아해요", "스타트업 봤어요?", "저는 스타트업이에요"], answer: 1, conceptTag: "Hobby Kdrama", feedback_incorrect: "Usa il verbo 'guardare' al passato (bwasseoyo).", tip: "Seutateueop (Start-Up) + bwasseoyo? (hai visto?)." },
+          { type: 'speak', question: "Dì in modo fiero: 'Il mio hobby è il Cosplay' (Je chwimineun koseupeure-yeyo).", expectedRomaji: ["je chwimineun koseupeureyeyo", "jechwimineunkoseupeureyeyo"], expectedHangul: ["제 취미는 코스프레예요"], conceptTag: "Parlato Cosplay", feedback_incorrect: "Ricorda la pronuncia di Cosplay.", tip: "Je chwi-mi-neun ko-seu-peu-re-ye-yo." },
+          { type: 'multiple_choice', question: "Per scoprire l'età di qualcuno (e capire la formalità), cosa gli chiedi?", options: ["Myeot sarieyo?", "Ireum-i mwoyeyo?", "Bangapseumnida?"], optionsHangul: ["몇 살이에요?", "이름이 뭐예요?", "반갑습니다?"], answer: 0, conceptTag: "Fare domande", feedback_incorrect: "Hai selezionato un'altra domanda.", tip: "Myeot (quanti) + sal (anni) + ieyo? (sei?)." },
+          { type: 'conversation', context: "Stai chiacchierando con il gruppo della palestra in sala pesi.", question: "Qual è la sequenza perfetta per presentare te stessa a Sara?", options: ["Gamsahamnida. Sara-yeyo.", "Jeoneun Sara-yeyo. Roma-eseo wasseoyo. Bangapseumnida.", "Roma-eseo wasseoyo. Joesonghamnida."], optionsHangul: ["감사합니다. 사라예요.", "저는 사라예요. 로마에서 왔어요. 반갑습니다.", "로마에서 왔어요. 죄송합니다."], answer: 1, conceptTag: "Intro completa", feedback_incorrect: "L'ordine logico è nome, provenienza, piacere.", tip: "Nome -> Vengo da Roma -> Piacere di conoscerti (Bangapseumnida)." },
+          { type: 'listen', question: "Ascolta attentamente. Da quale città viene questa persona?", audioHangul: "로마에서 왔어요", options: ["Parigi", "Milano", "Roma"], answer: 2, conceptTag: "Ascolto", feedback_incorrect: "Non era quello!", tip: "Ha detto 'Roma-eseo wasseoyo'." }
+        ]
+      },
+      {
+        day: 3,
+        title: "Dov'è il PC Bang?! 📍",
+        topic: "Direzioni e Sopravvivenza",
+        theory: {
+          intro: "Sara, immagina di dover correre in palestra per la 'Leg Day' e non sai dove sia, o di cercare disperatamente un PC Bang per fare una classificata a LoL con i tuoi amici. Oggi risolviamo questo problema per orientarti nella mappa urbana.",
+          concept: "La formula magica per trovare i luoghi è: [Luogo] + 이/가 어디예요? (i/ga eodiyeyo?). 'Eodi' significa dove, e 'yeyo' è il verbo essere.",
+          builderRule: `🔗 Chain link: È scortese fermare le persone urlando "Dov'è il bagno?". Attira l'attenzione con ${window.renderHangul('저기요')} (Scusi) e chiedi scusa in anticipo con ${window.renderHangul('죄송합니다')} (Mi dispiace) prima di fare la tua domanda.`,
+          examples: [
+            { hangul: "체육관이 어디예요?", romaji: "Cheyukgwan-i eodiyeyo?", eng: "Dov'è la palestra?", context: "Cruciale per non perdere la tua routine di workout! 🏋️‍♀️" },
+            { hangul: "PC방이 어디예요?", romaji: "PC-bang-i eodiyeyo?", eng: "Dov'è il PC Bang?", context: "Fondamentale per la tua dose giornaliera di LoL! 💻" },
+            { hangul: "애니메이트 어디예요?", romaji: "Aenimeiteu eodiyeyo?", eng: "Dov'è l'Animate (Store di Anime)?", context: "Per i tuoi acquisti Cosplay e Manga. 🎌" },
+            { hangul: "화장실이 어디예요?", romaji: "Hwajangsil-i eodiyeyo?", eng: "Dov'è il bagno?", context: "Salva-vita assoluto nei grandi parchi. 🚽" },
+            { hangul: "직진 / 오른쪽 / 왼쪽", romaji: "Jikjin / Oreunjjok / Oenjjok", eng: "Dritto / Destra / Sinistra", context: "Per capire le indicazioni che ti daranno. ➡️" }
+          ],
+          culture: "I PC Bang coreani sono incredibili: poltrone giganti, tastiere meccaniche RGB, monitor a 240hz... e puoi ordinare ramen e hot dog direttamente dal computer con un click, te lo portano alla postazione!"
+        },
+        exercises: [
+          { type: 'listen', question: "Cosa sta cercando questa persona disperatamente per fare una classificata a LoL?", audioHangul: "PC방이 어디예요?", options: ["Il bagno", "La stazione", "Il PC Bang"], answer: 2, conceptTag: "Ascolto", feedback_incorrect: "Ascolta bene la prima parola.", tip: "'PC-bang' significa sala LAN/Internet Cafe." },
+          { type: 'speak', question: "Non vuoi saltare il giorno di petto. Chiedi: 'Dov'è la palestra?'", expectedRomaji: ["cheyukgwani eodiyeyo", "cheyukgwanieodiyeyo"], expectedHangul: ["체육관이 어디예요"], conceptTag: "Palestra", feedback_incorrect: "Ripeti con calma: Che-yuk-gwan.", tip: "Dì: 'Che-yuk-gwan-i eo-di-ye-yo?'" },
+          { type: 'multiple_choice', question: "Sei vestita in cosplay e cerchi l'Animate store. Come lo chiedi?", options: ["Aenimeiteu eodiyeyo?", "PC-bang-i eodiyeyo?", "Aenimeiteu hwajangsil?"], optionsHangul: ["애니메이트 어디예요?", "PC방이 어디예요?", "애니메이트 화장실?"], answer: 0, conceptTag: "Struttura Store Anime", feedback_incorrect: "Aenimeiteu (Animate) è il nome del negozio.", tip: "La struttura è: Luogo + eodiyeyo." },
+          { type: 'conversation', context: "Chiedi a un gamer per strada dov'è il PC Bang più vicino. 🎮 Lui ti indica: 직진이에요. (Jikjin-ieyo).", question: "In che direzione devi andare?", options: ["Gira a Destra", "Gira a Sinistra", "Vai Dritto"], optionsHangul: ["오른쪽", "왼쪽", "직진"], answer: 2, conceptTag: "Direzioni", feedback_incorrect: "Attenzione ai vocaboli di direzione.", tip: "Jikjin significa andare dritti." },
+          { type: 'speak', question: "Chiedi l'attenzione di un passante prima di fare una domanda (Scusi!).", expectedRomaji: ["jeogiyo", "chogiyo"], expectedHangul: ["저기요"], conceptTag: "Parlato", feedback_incorrect: "Non è stato riconosciuto.", tip: "Dì 'Jeo-gi-yo!'" },
+          { type: 'multiple_choice', question: "Quale parola significa 'Sinistra'?", options: ["Oenjjok", "Oreunjjok", "Jikjin"], optionsHangul: ["왼쪽", "오른쪽", "직진"], answer: 0, conceptTag: "Direzioni", feedback_incorrect: "Hai scelto la direzione sbagliata!", tip: "Oenjjok = Sinistra. (Oreunjjok è Destra)." },
+          { type: 'listen', question: "Ascolta la direzione data dall'anziana signora al parco vicino all'Han River:", audioHangul: "오른쪽", options: ["Destra", "Sinistra", "Dritto"], answer: 0, conceptTag: "Ascolto", feedback_incorrect: "La parola era diversa.", tip: "Oreunjjok significa Destra." },
+          { type: 'conversation', context: "Devi chiedere dov'è il bagno durante una competizione di Cosplay.", question: "Come formuli la frase?", options: ["Hwajangsil-i eodiyeyo?", "Eodiyeyo hwajangsil-i?", "Hwajangsil-ieyo?"], optionsHangul: ["화장실이 어디예요?", "어디예요 화장실이?", "화장실이에요?"], answer: 0, conceptTag: "Applicazione Pratica", feedback_incorrect: "Ricorda la regola base SOV.", tip: "Luogo (Hwajangsil) + i (particella) + eodiyeyo (dov'è)." },
+          { type: 'speak', question: "Dì 'Bagno' (Hwajangsil) per farti capire al volo in emergenza.", expectedRomaji: ["hwajangsil"], expectedHangul: ["화장실"], conceptTag: "Vocabolario", feedback_incorrect: "La pronuncia di questa parola è difficile, riprova!", tip: "Hwa-jang-sil." },
+          { type: 'multiple_choice', question: "In Corea, come ti indicheranno fisicamente la direzione?", options: ["Puntando il dito indice", "Con tutta la mano aperta, palmo in su", "Facendo un cenno con la testa"], optionsHangul: ["", "", ""], answer: 1, conceptTag: "Cultura", feedback_incorrect: "Puntare il dito è maleducato!", tip: "Usano la mano aperta per mostrare rispetto, spesso con entrambe le mani se sono molto cortesi." }
+        ]
+      },
+      {
+        day: 4,
+        title: "Sopravvivenza e Modestia Coreana 🆘",
+        topic: "Comunicazione Genuina",
+        theory: {
+          intro: "Arriverà il momento in cui ti faranno complimenti (per il tuo cosplay, per i tuoi muscoli o per come carry su LoL) e andrai in tilt. Questo è il tuo kit di sopravvivenza per mostrare la famosa modestia asiatica e tirarti fuori d'impiccio.",
+          concept: "Usa 'Mollayo' per dire 'non lo so'. Impara a usare 'Gwaenchanayo' (va bene / sto bene). E se ti sfidano a LoL o ti chiedono se sei un'esperta di fitness, metti le mani avanti sminuendo le tue abilità!",
+          builderRule: `🔗 Chain link: Se ti danno indicazioni velocissime (Giorno 3) e ti perdi, non andare in panico. Sorridi, usa ${window.renderHangul('죄송합니다')} (Scusa) e poi ${window.renderHangul('천천히 말해 주세요')} (Parla più piano).`,
+          examples: [
+            { hangul: "괜찮아요", romaji: "Gwaenchanayo", eng: "Sto bene / Non grazie / Nessun problema", context: "Il tuo coltellino svizzero. ✋" },
+            { hangul: "몰라요", romaji: "Mollayo", eng: "Non lo so / Non capisco", context: "Quando la chat di LoL impazzisce e non capisci nulla. 🤷‍♀️" },
+            { hangul: "천천히 말해 주세요", romaji: "Cheoncheonhi malhae juseyo", eng: "Parla più piano, per favore.", context: "Fondamentale per farli rallentare. 🐢" },
+            { hangul: "게임 잘 못해요", romaji: "Geim jal mothaeyo", eng: "Non sono brava ai videogiochi.", context: "La perfetta falsa modestia coreana prima di carryare la partita a LoL! 🎮" },
+            { hangul: "운동 잘 못해요", romaji: "Undong jal mothaeyo", eng: "Non sono un'esperta di palestra.", context: "Usalo per modestia, anche se sollevi più di loro! 🏋️‍♀️" },
+            { hangul: "코스프레 제가 만들었어요", romaji: "Koseupeure jega mandeureosseoyo", eng: "Il cosplay l'ho fatto io.", context: "Per vantarti un pochino (ma con grazia) del tuo duro lavoro! ✂️" }
+          ],
+          culture: "Spesso se offri qualcosa a un coreano, o se gli fai un complimento vistoso, per pura modestia rifiuterà due o tre volte dicendo 'Gwaenchanayo' (Non è nulla) o 'Anieyo' (Non è vero), sminuendo le proprie abilità."
+        },
+        exercises: [
+          { type: 'conversation', context: "🏪 Sei da CU (minimarket) per comprare delle proteine. Il cassiere chiede: 봉투 필요하세요? (Vuole una busta a pagamento?)", question: "Come dici educatamente 'No grazie, va bene così'?", options: ["Aniyo, Mollayo", "Gwaenchanayo", "Ne"], optionsHangul: ["아니요 몰라요", "괜찮아요", "네"], answer: 1, conceptTag: "Rifiutare Educatamente", feedback_incorrect: "In Corea un 'No' diretto (Aniyo) può sembrare duro.", tip: "'Gwaenchanayo' è il modo standard e gentile per rifiutare qualcosa." },
+          { type: 'multiple_choice', question: "Un gruppo al PC Bang ti vede vincere 1v9 con Jinx e ti loda. Tu vuoi fare la modesta dicendo 'Non sono brava ai giochi'.", options: ["Ne, gamsahamnida", "Geim jal mothaeyo", "Mollayo"], optionsHangul: ["네, 감사합니다", "게임 잘 못해요", "몰라요"], answer: 1, conceptTag: "Modestia LoL", feedback_incorrect: "Ricorda la frase sulla modestia nei giochi.", tip: "'Geim' (Gioco) + 'jal mothaeyo' (non so fare bene)." },
+          { type: 'listen', question: "In palestra ti fanno i complimenti per il tuo sollevamento pesi. Ascolta come rispondi con modestia:", audioHangul: "운동 잘 못해요", options: ["Non mi piace la palestra", "Non sono brava con la palestra (modestia)", "Dov'è la palestra?"], answer: 1, conceptTag: "Ascolto Modestia", feedback_incorrect: "Undong (palestra/allenamento) + jal mothaeyo (non so fare bene).", tip: "Anche se sei bravissima, in Corea si usa dire 'Undong jal mothaeyo'." },
+          { type: 'speak', question: "Fai sfoggio delle tue abilità artigianali: 'Il cosplay l'ho fatto io'.", expectedRomaji: ["koseupeure jega mandeureosseoyo", "koseupeurejegamandeureosseoyo"], expectedHangul: ["코스프레 제가 만들었어요"], conceptTag: "Cosplay", feedback_incorrect: "Prova a pronunciare bene Mandeureosseoyo (ho creato).", tip: "Koseupeure je-ga man-deu-reos-seo-yo." },
+          { type: 'speak', question: "Metti in pratica per la tua sopravvivenza in metro se ti danno direzioni troppo veloci: 'Parla più piano, per favore.'", expectedRomaji: ["cheoncheonhi malhae juseyo", "cheoncheonhimalhaejuseyo"], expectedHangul: ["천천히 말해 주세요", "천천히 말해주세요"], conceptTag: "Parlato", feedback_incorrect: "La pronuncia è un po' ostica, fai attenzione.", tip: "Cheon-cheon-hi mal-hae ju-se-yo." },
+          { type: 'conversation', context: "🧑 Il jungler nemico su LoL ti scrive in chat all chat: 블라블라블라 (Ti sta provocando ma non sai leggere i caratteri).", question: "Tu vuoi rispondergli in chat vocale sorridendo: 'Non capisco / Non lo so'.", options: ["Hwajangsil-i eodiyeyo?", "Mollayo", "Gwaenchanayo"], optionsHangul: ["화장실이 어디예요?", "몰라요", "괜찮아요"], answer: 1, conceptTag: "Ignorare i tossici", feedback_incorrect: "Usa l'ignoranza tattica!", tip: "Usa 'Mollayo' (non so/non capisco)." },
+          { type: 'multiple_choice', question: "Vedi qualcuno cadere in fiera, lo aiuti a rialzarsi. Ti dice 'Gamsahamnida'. Tu come dici 'Di nulla / Nessun problema'?", options: ["Ne", "Aniyo", "Gwaenchanayo"], optionsHangul: ["네", "아니요", "괜찮아요"], answer: 2, conceptTag: "Risposta al Grazie", feedback_incorrect: "Non si risponde 'Sì' al grazie.", tip: "'Gwaenchanayo' (Va tutto bene) è un'ottima risposta informale al grazie." },
+          { type: 'listen', question: "Cosa sta dicendo questa persona se gli chiedi consigli tattici per vincere la partita?", audioHangul: "몰라요", options: ["Te lo dico io", "Non lo so", "Vai dritto"], answer: 1, conceptTag: "Ascolto Non lo so", feedback_incorrect: "Ha detto Mollayo.", tip: "Mol-la-yo." },
+          { type: 'speak', question: "Stai bene così e vuoi rifiutare un altro drink: 'Sto bene (Gwaenchanayo)'.", expectedRomaji: ["gwaenchanayo", "gwenchanayo"], expectedHangul: ["괜찮아요"], conceptTag: "Pronuncia", feedback_incorrect: "Gwaen-chan-a-yo.", tip: "Gwaen-chan-a-yo." },
+          { type: 'multiple_choice', question: "Cosa significa letteralmente dire 'Aniyo' (No) in Corea se ti offrono qualcosa al ristorante?", options: ["È molto scortese, meglio usare Gwaenchanayo", "È il modo più normale per rifiutare", "Vuol dire che sei allergica"], optionsHangul: ["", "", ""], answer: 0, conceptTag: "Cultura", feedback_incorrect: "Sbagliato!", tip: "Un 'No' secco (Aniyo) per un favore o un'offerta è visto come troppo brusco." }
+        ]
+      },
+      {
+        day: 5,
+        title: "Al Ristorante e Cibo Proteico 🌶️🥩",
+        topic: "Ristoranti e Alimenti",
+        theory: {
+          intro: "Eccoci alla parte vitale: il cibo coreano! Dato che ti alleni tanto (Gym rat!), dovrai saper chiedere proteine o pollo, ed evitare cibi distruggi-stomaco troppo piccanti. Se hai fame post-partita, il PC bang ti salverà.",
+          concept: "La parola d'oro è '주세요' (Ju-se-yo), che significa 'per favore mi dia'. Indica quello che vuoi nel menù e dì 'Igeo juseyo' (Questo, per favore).",
+          builderRule: `🔗 Chain link: Quando la cameriera (Ajumma) porta il cibo, fai una splendida figura dicendo ${window.renderHangul('감사합니다')} (Grazie) seguito da ${window.renderHangul('맛있어요')} (È delizioso!).`,
+          examples: [
+            { hangul: "이거 주세요", romaji: "Igeo juseyo", eng: "Questo, per favore.", context: "La base per ordinare tutto dal menù. 👈" },
+            { hangul: "닭가슴살 있어요?", romaji: "Dakgaseumsal isseoyo?", eng: "Avete petto di pollo?", context: "Essenziale per i macros dopo la palestra! 🍗" },
+            { hangul: "단백질 많은 거 주세요", romaji: "Danbaekjil maneun geo juseyo", eng: "Mi dia qualcosa con molte proteine.", context: "Per veri appassionati di fitness. 🥩" },
+            { hangul: "안 맵게 해주세요", romaji: "An maepge haejuseyo", eng: "Non lo faccia piccante, per favore.", context: "FONDAMENTALE per sopravvivere in Corea! 🚫🌶️" },
+            { hangul: "맛있어요", romaji: "Masisseoyo", eng: "È delizioso!", context: "Fai felice chi cucina. 😋" },
+            { hangul: "이 영화 너무 슬퍼요", romaji: "I yeonghwa neomu seulpeoyo", eng: "Questo film è troppo triste.", context: "Da usare dopo aver pianto per 'Even if this love disappears'. 😭" }
+          ],
+          culture: "Nei ristoranti coreani l'acqua e i contorni (Banchan) sono quasi sempre gratuiti e ricaricabili all'infinito. Mangiare pollo fritto e birra (Chimaek) è il rito del venerdì sera post-lavoro o post-LoL."
+        },
+        exercises: [
+          { type: 'multiple_choice', question: "Hai appena finito un workout pesante. Come chiedi se hanno del petto di pollo al ristorante per riprendere energie?", options: ["Igeo juseyo?", "Dakgaseumsal isseoyo?", "Masisseoyo?"], optionsHangul: ["이거 주세요?", "닭가슴살 있어요?", "맛있어요?"], answer: 1, conceptTag: "Pollo Gym", feedback_incorrect: "Sbagliato. Hai chiesto un'altra cosa.", tip: "'Dakgaseumsal' = petto di pollo, 'isseoyo' = ce l'hai/avete?" },
+          { type: 'conversation', context: "Il cameriere del PC Bang si avvicina alla tua postazione gaming. Tu vuoi ordinare un Iced Americano dal menu a schermo.", question: "Indicando il monitor, cosa dici?", options: ["Igeo juseyo", "Gangaji gansik", "Mollayo"], optionsHangul: ["이거 주세요", "강아지 간식", "몰라요"], answer: 0, conceptTag: "Ordinare PC Bang", feedback_incorrect: "Non rispondere a caso, indica lo schermo!", tip: "'Igeo juseyo' significa letteralmente 'Questo (Igeo) per favore dia a me (juseyo)'." },
+          { type: 'listen', question: "Il cuoco ti guarda sorridendo dopo il tuo primo morso di tteokbokki. Tu esclami questo per farlo felice:", audioHangul: "맛있어요", options: ["Quanto costa?", "Non è piccante", "È delizioso!"], answer: 2, conceptTag: "Ascolto Complimenti", feedback_incorrect: "Hai capito male la parola.", tip: "Ha detto 'Masisseoyo!' (Delicious!)." },
+          { type: 'speak', question: "Ordina tu stessa la cena: 'Questo per favore.'", expectedRomaji: ["igeo juseyo", "igeojuseyo"], expectedHangul: ["이거 주세요"], conceptTag: "Ordinare Pronuncia", feedback_incorrect: "La pronuncia non era chiara.", tip: "Dì 'I-geo ju-se-yo'." },
+          { type: 'multiple_choice', question: "Vuoi il ramen, ma sai che la roba coreana potrebbe distruggerti lo stomaco. Come chiedi di NON farlo piccante?", options: ["Gyesanseo juseyo", "An maepge haejuseyo", "Masisseoyo"], optionsHangul: ["계산서 주세요", "안 맵게 해주세요", "맛있어요"], answer: 1, conceptTag: "Sopravvivenza Cibo", feedback_incorrect: "Attenta o finirai a bere litri d'acqua in lacrime!", tip: "'An' (Non) + 'Maepge' (in modo piccante) + 'Haejuseyo' (per favore lo faccia)." },
+          { type: 'speak', question: "Stai guardando 'Even if this love disappears' con gli amici e sei in lacrime. Come dici 'Questo film è troppo triste'?", expectedRomaji: ["i yeonghwa neomu seulpeoyo", "iyeonghwaneomuseulpeoyo"], expectedHangul: ["이 영화 너무 슬퍼요"], conceptTag: "Emozioni Kdrama", feedback_incorrect: "Attenzione a 'seulpeoyo' (triste).", tip: "I yeong-hwa neo-mu seul-peo-yo." },
+          { type: 'conversation', context: "Non hai ascoltato il consiglio precedente, il cibo è infernale, la tua bocca brucia.", question: "Come implori che ti portino dell'acqua?", options: ["Mul jom juseyo", "Yeok-i eodiyeyo?", "Gwaenchanayo"], optionsHangul: ["물 좀 주세요", "역이 어디예요?", "괜찮아요"], answer: 0, conceptTag: "Acqua", feedback_incorrect: "Devi chiedere l'acqua, non la stazione!", tip: "Mul = Acqua. Jom juseyo = Per favore me ne dia un po'." },
+          { type: 'speak', question: "Sei focalizzata sui macro della tua dieta. Dì: 'Mi dia qualcosa con molte proteine' (Danbaekjil maneun geo juseyo).", expectedRomaji: ["danbaekjil maneun geo juseyo", "danbaekjilmaneungeojuseyo"], expectedHangul: ["단백질 많은 거 주세요"], conceptTag: "Pronuncia Proteine", feedback_incorrect: "Dan-baek-jil man-eun geo ju-se-yo.", tip: "Dan-baek-jil (Proteine) man-eun geo (qualcosa che ne ha tante)." },
+          { type: 'listen', question: "Cosa sta dicendo questa persona per rifiutare il peperoncino?", audioHangul: "안 맵게 해주세요", options: ["Troppo piccante!", "Non piccante, per favore", "Più piccante, per favore"], answer: 1, conceptTag: "Ascolto Piccante", feedback_incorrect: "Non hai colto la negazione 'An'.", tip: "An maepge = Non piccante." },
+          { type: 'multiple_choice', question: "Hai cenato, il servizio è stato eccellente e le Ajumma simpaticissime. Quanta mancia lasci?", options: ["Almeno il 10%", "Lascio gli spiccioli sul tavolo", "Nulla, non si fa in Corea"], optionsHangul: ["", "", ""], answer: 2, conceptTag: "Cultura Ristorazione", feedback_incorrect: "Sbagliato, ti rincorreranno per restituirtela e penseranno tu abbia dimenticato i soldi!", tip: "Niente mancia in Corea! Paga il prezzo esatto scontrinato." }
+        ]
+      }
+    ];
+
+    // --- PROCEDURAL GENERATOR FOR DAYS 6-45 (TAILORED FOR SARA) ---
+    const ADVANCED_TOPICS = [
+      { name: "Start-Up Quotes", hangul: "지도 없는 항해를 떠나는 거예요", romaji: "Jido eomneun hanghaereul tteonaneun geoyeyo", eng: "Partiamo per un viaggio senza mappa", scenario: "Vuoi citare la famosa frase di Start-Up per incoraggiare un amico.", clue: "항해 (hanghae) = viaggio/navigazione" },
+      { name: "Gym Rat: Workout", hangul: "몇 세트 남았어요?", romaji: "Myeot sete namasseoyo?", eng: "Quante serie ti mancano?", scenario: "Vuoi usare un macchinario occupato in palestra.", clue: "세트 (sete) = set/serie in palestra" },
+      { name: "Even If This Love Disappears", hangul: "내일의 너를 잊는다 해도", romaji: "Naeirui neoreul inneunda haedo", eng: "Anche se dovessi dimenticarti domani", scenario: "Parli del film super triste con le tue amiche.", clue: "잊다 (itda) = dimenticare" },
+      { name: "LoL: Gankami!", hangul: "갱 와주세요!", romaji: "Gaeng wajuseyo!", eng: "Vieni a gankarmi per favore!", scenario: "Sei sotto torre in Mid e chiedi aiuto al Jungler.", clue: "갱 (gaeng) = gank (arrivo a sorpresa)" },
+      { name: "Cosplay: Parrucca", hangul: "이 가발 어디서 샀어요?", romaji: "I gabal eodiseo sasseoyo?", eng: "Dove hai comprato questa parrucca?", scenario: "Sei in fiera e ammiri l'acconciatura di un'altra cosplayer.", clue: "가발 (gabal) = parrucca" },
+      { name: "Fangirl di Nam Joo-hyuk", hangul: "남주혁 진짜 멋있어", romaji: "Nam Ju-hyeok jinjja meosisseo", eng: "Nam Joo-hyuk è davvero bellissimo/figo", scenario: "Stai guardando il suo ultimo Drama e commenti con entusiasmo.", clue: "멋있어 (meosisseo) = essere figo/bello (informale)" },
+      { name: "Proteine e Macro", hangul: "단백질 보충제 추천해 주세요", romaji: "Danbaekjil bochungje chucheonhae juseyo", eng: "Mi consigli un integratore proteico?", scenario: "Sei in farmacia sportiva e cerchi nuove proteine.", clue: "보충제 (bochungje) = integratore" },
+      { name: "Passione LoL: Mid Lane", hangul: "미드 차이", romaji: "Mideu chai", eng: "Mid diff (Differenza in mid lane)", scenario: "Stai flammando (scherzosamente) in chat perché il mid nemico è scarso.", clue: "차이 (chai) = differenza (usato come 'diff' su LoL)" },
+      { name: "Parlar di 2521! 📺", hangul: "스물다섯 스물하나 봤어요?", romaji: "Seumuldaseot seumulhana bwasseoyo?", eng: "Hai visto 2521?", scenario: "Vuoi parlare della tua serie preferita.", clue: "봤어요? (bwasseoyo) = Hai visto/guardato?" },
+      { name: "Natura e Relax", hangul: "산책 갈까요?", romaji: "Sanchaek galkkayo?", eng: "Andiamo a fare una passeggiata?", scenario: "Vuoi esplorare il parco del fiume Han come nei Drama.", clue: "산책 (sanchaek) = passeggiata" },
+      { name: "Cosplay Shopping", hangul: "이거 입어봐도 돼요?", romaji: "Igeo ibeobwado dwaeyo?", eng: "Posso provarlo?", scenario: "Sei da Animate o in un negozio di costumi.", clue: "입어보다 (ibeoboda) = provare un vestito" },
+      { name: "Foto Ricordo Cosplay", hangul: "사진 같이 찍을까요?", romaji: "Sajin gachi jjigeulkkayo?", eng: "Facciamo una foto insieme?", scenario: "Incontri un cosplayer pazzesco e vuoi un ricordo.", clue: "사진 (sajin) = foto, 같이 (gachi) = insieme" },
+      { name: "Barbecue per la Massa (K-BBQ)", hangul: "삼겹살 이 인분 주세요", romaji: "Samgyeopsal i inbun juseyo", eng: "Due porzioni di pancetta, per favore", scenario: "Giorno di sgarro dietetico e carico proteico post fiera.", clue: "인분 (inbun) = porzione a persona" },
+      { name: "Stanchezza post-Leg Day", hangul: "너무 피곤해요", romaji: "Neomu pigonhaeyo", eng: "Sono troppo stanca", scenario: "Hai fatto troppi squat in palestra e non senti più le gambe.", clue: "피곤하다 (pigonhada) = essere stanco" },
+      { name: "Sconti Stoffe Cosplay", hangul: "조금만 깎아주세요~", romaji: "Jogeumman kkakajuseyo~", eng: "Fammi un piccolo sconto~", scenario: "Al mercato di Dongdaemun stai comprando stoffe costose.", clue: "깎다 (kkakta) = tagliare il prezzo. Si usa con voce dolce!" },
+      { name: "Gamer Terminology: Support", hangul: "힐 좀 주세요", romaji: "Hil jom juseyo", eng: "Dammi un po' di cure (heal) per favore", scenario: "Sei in team fight e stai per morire su LoL.", clue: "힐 (Hil) = Heal/Cure" },
+      { name: "Richiesta Foto Personale", hangul: "사진 좀 찍어주시겠어요?", romaji: "Sajin jom jjigeojusigesseoyo?", eng: "Potrebbe scattarmi una foto?", scenario: "Vuoi la foto perfetta in posa Cosplay.", clue: "사진 (sajin) = foto" },
+      { name: "Complimenti Estremi", hangul: "대박!", romaji: "Daebak!", eng: "Incredibile! / Wow!", scenario: "Vedi una pentakill assurda durante un match di LoL.", clue: "대박 (daebak) = grande successo/wow" },
+      { name: "In Metropolitana", hangul: "다음 역은 어디예요?", romaji: "Daeum yeogeun eodiyeyo?", eng: "Qual è la prossima stazione?", scenario: "Devi andare all'evento e hai perso l'annuncio vocale.", clue: "다음 (daeum) = prossimo" },
+      { name: "Prendere il Taxi per il PC Bang", hangul: "PC방으로 가주세요", romaji: "PC-bang-euro gajuseyo", eng: "Al PC Bang, per favore", scenario: "Piove a dirotto ma l'addestramento rankato chiama.", clue: "으로 가주세요 (euro gajuseyo) = vada verso..." },
+      { name: "Ricevere Complimenti in Game", hangul: "게임 정말 잘하시네요!", romaji: "Geim jeongmal jalhasineyo!", eng: "Sei davvero brava ai giochi!", scenario: "Il tuo compagno è impressionato dai tuoi riflessi.", clue: "잘하다 (jalhada) = essere bravi a fare qualcosa" },
+      { name: "Rispondere Umilmente (Gym)", hangul: "아니에요, 아직 멀었어요", romaji: "Anieyo, ajik meoreosseoyo", eng: "No, ho ancora molto da imparare/migliorare", scenario: "Ti dicono che hai un fisico perfetto, metti in atto la modestia coreana!", clue: "아직 (ajik) = ancora" },
+      { name: "Gamer Toxicity (Soft)", hangul: "트롤 하지마", romaji: "Teurol hajima", eng: "Non trollare", scenario: "Il tuo compagno sta suicidandosi di proposito in bot lane.", clue: "트롤 (teurol) = troll" },
+      { name: "Gym Rat: Sudore", hangul: "땀이 많이 났어요", romaji: "Ttami mani nasseoyo", eng: "Ho sudato molto", scenario: "Hai appena concluso 40 minuti di cardio intenso.", clue: "땀 (ttam) = sudore" },
+      { name: "Emergenza Bagno", hangul: "여기에 휴지 있어요?", romaji: "Yeogie hyuji isseoyo?", eng: "C'è della carta igienica qui?", scenario: "I bagni della metropolitana ti colgono di sprovvista.", clue: "휴지 (hyuji) = carta igienica / fazzoletti" },
+      { name: "Inviti Formali/Informali", hangul: "언제 밥 한번 먹자!", romaji: "Eonje bap hanbeon meokja!", eng: "Mangiamo insieme qualche volta! (Informale)", scenario: "Un cosplayer si congeda. È un modo di salutare comune!", clue: "밥 (bap) = riso / pasto" },
+      { name: "Al Pub post-LoL", hangul: "건배!", romaji: "Geonbae!", eng: "Salute! / Brindisi!", scenario: "I tuoi nuovi amici versano il Soju per festeggiare la Promozione a Gold.", clue: "건배 (geonbae) = brindisi (vuotare il bicchiere)" },
+      { name: "In Farmacia (Yakguk)", hangul: "근육통 약 있어요?", romaji: "Geunyuktong yak isseoyo?", eng: "Avete medicine per dolori muscolari?", scenario: "La leg day ti ha distrutto i quadricipiti.", clue: "근육통 (geunyuktong) = dolori muscolari (DOMS)" },
+      { name: "Saluti tra Amici Gamers", hangul: "나중에 봐요!", romaji: "Najunge bwayo!", eng: "Ci vediamo dopo!", scenario: "Fai log-out dal client di League of Legends.", clue: "나중에 (najunge) = più tardi" },
+      { name: "Quote da 2521 (Iconica)", hangul: "널 가져야겠어", romaji: "Neol gajyeoyagesseo", eng: "Devo averti (Ti farò mio/a)", scenario: "La famosissima frase che Na Hee-do dice. Usala scherzosamente!", clue: "가지다 (gajida) = avere/possedere" },
+      { name: "Al Salone di Bellezza (Acconciature)", hangul: "머리 다듬어 주세요", romaji: "Meori dadeumeo juseyo", eng: "Mi spunti i capelli, per favore", scenario: "Sei in un parrucchiere a Gangnam prima di un photoset cosplay.", clue: "머리 (meori) = testa/capelli" },
+      { name: "In Farmacia (Digestione)", hangul: "소화제 있어요?", romaji: "Sohwaje isseoyo?", eng: "Avete qualcosa per la digestione?", scenario: "Troppe proteine e pollo ti hanno bloccato.", clue: "소화제 (sohwaje) = digestivo" },
+      { name: "Al Noraebang (Karaoke)", hangul: "애니 노래 부를까요?", romaji: "Aeni norae bureulkkayo?", eng: "Cantiamo canzoni anime?", scenario: "Siete al karaoke e l'atmosfera è al top per le opening.", clue: "부르다 (bureuda) = cantare" },
+      { name: "Sentimenti & Amicizia", hangul: "보고 싶어요", romaji: "Bogo sipeoyo", eng: "Mi manchi / Voglio vederti", scenario: "Guardi un poster di Nam Joo-hyuk o pensi alle tue amiche.", clue: "보고 싶다 (bogo sipda) = mancare/voler vedere" },
+      { name: "Incontri Nerd/Gym", hangul: "주말에 시간 있어요?", romaji: "Jumare sigan isseoyo?", eng: "Hai tempo questo fine settimana?", scenario: "Vuoi invitare qualcuno al PC Bang o in palestra.", clue: "주말 (jumal) = fine settimana" },
+      { name: "Cosplay Crafting", hangul: "밤새서 만들었어요", romaji: "Bamsaeseo mandeureosseoyo", eng: "L'ho fatto restando sveglia tutta la notte", scenario: "Qualcuno loda l'armatura del tuo Cosplay pazzesco.", clue: "밤새다 (bamsaeda) = fare le ore piccole" },
+      { name: "Dichiarazione (Start-Up Style)", hangul: "좋아해요", romaji: "Joahaeyo", eng: "Mi piaci / Ti amo", scenario: "La confessione classica e dolcissima dei Kdrama.", clue: "좋아하다 (joahada) = piacere/amare" },
+      { name: "Frustrazione in Ranked", hangul: "진짜 짜증나요", romaji: "Jinjja jjajeungnayo", eng: "È davvero snervante", scenario: "Il tuo team in ranked sta perdendo miseramente e feeda.", clue: "짜증나다 (jjajeungnada) = essere irritato" },
+      { name: "Incoraggiamento (Gym/Life)", hangul: "포기하지 마세요", romaji: "Pogihaji maseyo", eng: "Non arrenderti", scenario: "Incoraggi un'amica a fare l'ultima ripetizione sotto il bilanciere.", clue: "포기하다 (pogihada) = arrendersi" },
+      { name: "Fame Nera post-fiera", hangul: "배고파 죽겠어요", romaji: "Baegopa jukgesseoyo", eng: "Muoio di fame", scenario: "Hai saltato il pranzo in fiera per farti fare foto.", clue: "죽겠다 (jukgetda) = morire (usato come esagerazione)" }
+    ];
+
+    const generateFullMonth = () => {
+      const fullCourse = [...DETAILED_LESSONS];
+
+      // Exercise type rotators for variety
+      const VARIETY_EXERCISE_BUILDERS = [
+        // Type A: Standard multiple choice
+        (t) => ({
+          type: 'multiple_choice',
+          question: `Situazione: ${t.scenario}. Cosa significa "${t.romaji}"?`,
+          options: [t.eng, "Non capisco bene", "Dov'è il bagno?"],
+          optionsHangul: [t.hangul, "몰라요", "화장실이 어디예요"],
+          answer: 0,
+          conceptTag: "Vocabolario Nuovo",
+          tip: `Ricorda: ${t.clue}`
+        }),
+        // Type B: Reverse (Italian → Korean)
+        (t) => ({
+          type: 'multiple_choice',
+          question: `Come si dice in Coreano: "${t.eng}"?`,
+          options: [t.romaji, "Annyeonghaseyo", "Gamsahamnida"],
+          optionsHangul: [t.hangul, "안녕하세요", "감사합니다"],
+          answer: 0,
+          conceptTag: "Produzione Attiva",
+          tip: `Parti dal significato e trova la forma coreana. ${t.clue}`
+        }),
+        // Type C: Scenario fill-in
+        (t) => ({
+          type: 'conversation',
+          context: `Scenario reale: ${t.scenario}`,
+          question: `In questa situazione, quale frase coreana useresti?`,
+          options: [t.romaji, "Mollayo", "Gamsahamnida"],
+          optionsHangul: [t.hangul, "몰라요", "감사합니다"],
+          answer: 0,
+          conceptTag: "Scenari Reali",
+          tip: `Il contesto è tutto. ${t.clue}`
+        }),
+        // Type D: Hangul recognition
+        (t) => ({
+          type: 'multiple_choice',
+          question: `Vedi scritto "${t.hangul}" su un cartello. Cosa significa?`,
+          options: [t.eng, "Mi scusi", "Quanto costa?"],
+          optionsHangul: [t.hangul, "죄송합니다", "얼마예요?"],
+          answer: 0,
+          conceptTag: "Lettura Hangul",
+          tip: `Prova a leggere i blocchi sillabici uno per uno!`
+        }),
+      ];
+      
+      for (let i = 6; i <= 45; i++) {
+        const t = ADVANCED_TOPICS[i - 6];
+        
+        // Build building blocks breakdown for the theory intro
+        const hangulChars = t.hangul.replace(/[^\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uD7B0-\uD7FF]/g, ' ').trim();
+        const clueWord = t.clue.split('=')[0].trim().replace(/[()]/g, '');
+        const clueEng = t.clue.split('=')[1] ? t.clue.split('=')[1].trim() : t.clue;
+
+        let dailyExercises = [];
+
+        for (let round = 0; round < 4; round++) {
+            // Rotate exercise types for variety
+            const variantIdx = round % VARIETY_EXERCISE_BUILDERS.length;
+            dailyExercises.push(VARIETY_EXERCISE_BUILDERS[variantIdx](t));
+
+            dailyExercises.push({
+              type: 'listen',
+              question: "[Shadowing Loop] Ascolta l'audio 3 volte, chiudi gli occhi e ripeti ad alta voce imitando l'accento. Poi seleziona la risposta corretta:",
+              audioHangul: t.hangul,
+              options: [t.eng, "Vado in Palestra", "Quanto costa?"],
+              answer: 0,
+              conceptTag: "Ascolto Nuovo",
+              tip: "La ripetizione attiva (shadowing) è il segreto per sbloccare la scioltezza vocale. Non saltare questo passaggio e usa la tua voce!"
+            });
+
+            dailyExercises.push({
+              type: 'speak',
+              question: `Pronuncia: Dì '${t.eng}' in Coreano.`,
+              expectedRomaji: [t.romaji.toLowerCase().replace(/[^a-z]/g, '')],
+              expectedHangul: [t.hangul],
+              conceptTag: "Pronuncia",
+              feedback_incorrect: `Prova a dire '${t.romaji}' ad alta voce in modo chiaro.`,
+              tip: "Non avere paura di sbagliare l'accento."
+            });
+
+            dailyExercises.push({
+              type: 'conversation',
+              context: `Sfida di Fluidità: Ora che hai imparato "${t.eng}", pensa a come unirla con le frasi dei Giorni 1-5 (saluti o ringraziamenti).`,
+              question: `Nello scenario "${t.name}", qual è la frase chiave per mantenere attiva questa conversazione?`,
+              options: [t.romaji, "Igeo juseyo", "Annyeonghaseyo"],
+              optionsHangul: [t.hangul, "이거 주세요", "안녕하세요"],
+              answer: 0,
+              conceptTag: "Scenari Reali",
+              tip: `Usa ${t.romaji} nel contesto giusto, sempre accompagnato da un sorriso o un inchino verbale.`
+            });
+
+            const randomDayNum = Math.floor(Math.random() * Math.min(i - 1, 5)) + 1; 
+            const pastDay = fullCourse.find(d => d.day === randomDayNum);
+            const reviewExs = pastDay.exercises.filter(ex => ex.type === 'multiple_choice' || ex.type === 'listen');
+            const randomEx = reviewExs[Math.floor(Math.random() * reviewExs.length)];
+            
+            let reviewExercise = JSON.parse(JSON.stringify(randomEx));
+            reviewExercise.question = `[Ripasso Spaziato] ` + reviewExercise.question;
+            reviewExercise.conceptTag = "Ripasso Attivo";
+            reviewExercise.tip = "I concetti vecchi tendono a svanire, rinfrescarli consolida la memoria a lungo termine!";
+            dailyExercises.push(reviewExercise);
+        }
+
+        fullCourse.push({
+          day: i,
+          title: `Giorno ${i}: ${t.name}`,
+          topic: "Conversazione Intermedia",
+          theory: {
+            intro: `Benvenuta al Giorno ${i}, Sara! Oggi affrontiamo uno scenario per te essenziale: "${t.name}". Impareremo una frase nuova e faremo tanto ripasso attivo.`,
+            concept: `Studia bene la frase chiave. Negli esercizi troverai domande ripetitive su di essa (per fissarla nel cervello) e quiz a sorpresa presi dai Giorni passati!`,
+            builderRule: `🔗 Chain link: Prova a concatenare mentalmente ${window.renderHangul(t.hangul)} (${t.eng}) con una presentazione di te stessa come ${window.renderHangul('저는 사라예요')} (Io sono Sara) o un ringraziamento come ${window.renderHangul('감사합니다')} (Grazie). Le frasi isolate non bastano, uniscile!`,
+            buildingBlocks: `💡 Mattoncini: <strong>${clueWord}</strong> = <em>${clueEng}</em>. Riconosci questa parola all'interno di <span style="font-family:'Noto Sans KR'">${t.hangul}</span> (${t.romaji}). Ogni frase coreana è fatta di pezzi che puoi imparare uno alla volta!`,
+            examples: [{ hangul: t.hangul, romaji: t.romaji, eng: t.eng, context: "Frase Focus del Giorno ✨" }],
+            culture: t.clue
+          },
+          exercises: dailyExercises
+        });
+      }
+      return fullCourse;
+    };
+
+    const COURSE_DATA = generateFullMonth();
+
+    // EXPANDED LIBRARY DATA WITH COLLAPSIBLE SECTIONS FOR BETTER UI
+    const LIBRARY_DATA = [
+      {
+        category: "🆘 Carta d'Emergenza — 10 Frasi Salvavita",
+        icon: "zap", iconColor: "text-yellow-500",
+        items: [
+          { hangul: "저기요!", romaji: "Jeogiyo!", eng: "Scusi! (per chiamare chiunque)", context: "La frase più utile in assoluto. Funziona al ristorante, per strada, in negozio." },
+          { hangul: "이거 주세요", romaji: "Igeo juseyo", eng: "Questo, per favore", context: "Indica il menu o l'oggetto. Non serve altro." },
+          { hangul: "얼마예요?", romaji: "Eolmayeyo?", eng: "Quanto costa?", context: "Universal shopping phrase. Usala ovunque." },
+          { hangul: "화장실이 어디예요?", romaji: "Hwajangsili eodiyeyo?", eng: "Dov'è il bagno?", context: "Salva la vita. Impararla a memoria." },
+          { hangul: "한국어 잘 못해요", romaji: "Hangugeo jal mothaeyo", eng: "Non parlo bene il coreano", context: "Usala subito se parlano troppo veloce. I coreani ti aiuteranno." },
+          { hangul: "몰라요", romaji: "Mollayo", eng: "Non lo so / Non capisco", context: "Breve, chiaro, salva dai silenzi imbarazzanti." },
+          { hangul: "도와주세요", romaji: "Dowajuseyo", eng: "Aiutatemi, per favore", context: "Solo per emergenze vere. Funziona sempre." },
+          { hangul: "괜찮아요", romaji: "Gwaenchanayo", eng: "Sto bene / Va bene / No grazie", context: "Tre usi in una parola sola. Potentissima." },
+          { hangul: "영어 할 줄 아세요?", romaji: "Yeongeo hal jul aseyo?", eng: "Sa parlare inglese?", context: "Per situazioni complicate, mai vergognarsi di chiederlo." },
+          { hangul: "안녕하세요 / 감사합니다", romaji: "Annyeonghaseyo / Gamsahamnida", eng: "Ciao / Grazie", context: "Le due parole magiche. Un sorriso + queste due → conquisti chiunque." }
+        ]
+      },
+      {
+        category: "Alfabeto Coreano (Hangul) 🔠",
+        icon: "type", iconColor: "text-indigo-500",
+        items: [
+          { hangul: "ㅏ, ㅓ, ㅗ, ㅜ, ㅡ, ㅣ", romaji: "a, eo, o, u, eu, i", eng: "Vocali Base", context: "Le vocali sono il cuore della sillaba. Stanno a destra (ㅏ) o sotto (ㅗ) la consonante." },
+          { hangul: "ㄱ, ㄴ, ㄷ, ㄹ, ㅁ, ㅂ, ㅅ, ㅇ, ㅈ", romaji: "g/k, n, d/t, r/l, m, b/p, s, ng, j", eng: "Consonanti Base", context: "Combinate con le vocali formano i blocchi. Es: ㄱ (g) + ㅏ (a) = 가 (Ga)." },
+          { hangul: "운동", romaji: "Undong", eng: "Palestra / Allenamento", context: "Costruito con i blocchi: ㅇ+ㅜ+ㄴ (un) e ㄷ+ㅗ+ㅇ (dong). Lo userai tanto per i tuoi workout!" },
+          { hangul: "남주혁", romaji: "Nam Ju-hyeok", eng: "Nam Joo-hyuk", context: "Il tuo attore preferito di 2521 e Start-Up! Inizia con la consonante N (ㄴ) + A (ㅏ) + M (ㅁ) = 남 (Nam)." }
+        ]
+      },
+      {
+        category: "Passioni: Gym, LoL & Cosplay 🎮🏋️‍♀️",
+        icon: "dumbbell", iconColor: "text-blue-500",
+        items: [
+          { hangul: "제 취미는 운동이에요", romaji: "Je chwimineun undong-ieyo", eng: "Il mio hobby è allenarmi/palestra.", context: "Per i veri gym rat che non saltano il Leg Day." },
+          { hangul: "제 취미는 코스프레예요", romaji: "Je chwimineun koseupeure-yeyo", eng: "Il mio hobby è il cosplay.", context: "Fondamentale per rompere il ghiaccio in fiera." },
+          { hangul: "리그 오브 레전드 좋아해요?", romaji: "Rigeu obeu lejeondeu joahaeyo?", eng: "Ti piace League of Legends?", context: "Domanda base al PC Bang." },
+          { hangul: "단백질 많은 거 주세요", romaji: "Danbaekjil maneun geo juseyo", eng: "Mi dia qualcosa di ricco di proteine.", context: "Massimizza i macro dopo l'allenamento." },
+          { hangul: "사진 같이 찍을까요?", romaji: "Sajin gachi jjigeulkkayo?", eng: "Facciamo una foto insieme?", context: "Utile per i photoshoot in fiera." }
+        ]
+      },
+      {
+        category: "K-Drama Vibes: 2521 & Start-Up 📺",
+        icon: "tv", iconColor: "text-purple-500",
+        items: [
+          { hangul: "스물다섯 스물하나 봤어요?", romaji: "Seumuldaseot seumulhana bwasseoyo?", eng: "Hai visto 2521?", context: "La serie amatissima da Sara! Usalo per rompere il ghiaccio." },
+          { hangul: "스타트업 봤어요?", romaji: "Seutateueop bwasseoyo?", eng: "Hai visto Start-Up?", context: "Cerca altri fan di Nam Joo-hyuk." },
+          { hangul: "이 영화 너무 슬퍼요", romaji: "I yeonghwa neomu seulpeoyo", eng: "Questo film è troppo triste.", context: "Da usare dopo 'Even if this love disappears'." },
+          { hangul: "남주혁 진짜 멋있어", romaji: "Nam Ju-hyeok jinjja meosisseo", eng: "Nam Joo-hyuk è bellissimo/figo", context: "Esclamazione da fangirl pura." },
+          { hangul: "화이팅!", romaji: "Hwaiting!", eng: "Forza! / Buona fortuna!", context: "Il classico incitamento coreano per dare supporto morale a chi è in difficoltà." }
+        ]
+      },
+      {
+        category: "Emergenze & Sopravvivenza 🆘",
+        icon: "alert-circle", iconColor: "text-red-500",
+        items: [
+          { hangul: "몰라요", romaji: "Mollayo", eng: "Non lo so / Non capisco", context: "Molto informale, ma utile per tirarsi fuori d'impiccio." },
+          { hangul: "괜찮아요", romaji: "Gwaenchanayo", eng: "Va bene / Sto bene", context: "Perfetto per dire 'No grazie' o 'Nessun problema'." },
+          { hangul: "한국어 잘 못해요", romaji: "Hangugeo jal mothaeyo", eng: "Non parlo bene il coreano", context: "Usalo per chiedere clemenza se i locali parlano a raffica." },
+          { hangul: "도와주세요", romaji: "Dowajuseyo", eng: "Aiutatemi / Per favore aiutami", context: "Se ti sei persa o hai un'emergenza vera e propria." },
+          { hangul: "아파요", romaji: "Apayo", eng: "Mi fa male / Sono malata", context: "Punta la parte del corpo che fa male (o i muscoli dopo la palestra) e dì 'Apayo'." }
+        ]
+      },
+      {
+        category: "Ristorante & Cibo 🥘",
+        icon: "utensils", iconColor: "text-orange-500",
+        items: [
+          { hangul: "저기요!", romaji: "Jeogiyo!", eng: "Scusi! (Per chiamare il cameriere)", context: "Alza la mano o premi il campanello al tavolo e grida questo." },
+          { hangul: "이거 주세요", romaji: "Igeo juseyo", eng: "Questo, per favore.", context: "Indica la foto nel menu." },
+          { hangul: "안 맵게 해주세요", romaji: "An maepge haejuseyo", eng: "Non piccante, per favore", context: "Per salvarti lo stomaco." },
+          { hangul: "물 좀 주세요", romaji: "Mul jom juseyo", eng: "Acqua, per favore", context: "A volte il distributore d'acqua è self-service (scritto 'Self')." },
+          { hangul: "맥주 / 소주", romaji: "Maekju / Soju", eng: "Birra / Soju", context: "Le due bevande alcoliche più consumate in Corea (Somaek se le mischi!)." }
+        ]
+      }
+    ];
+
+    const MAP_REGIONS = [
+      { name: "Palazzo Gyeongbokgung (Seoul)", image: "https://images.unsplash.com/photo-1546874177-9e664107314e?w=600&q=80", icon: "🏯", emoji: "🤴", desc: "Il palazzo reale più iconico della Corea. Indossa l'Hanbok (abito tradizionale) per entrare gratis!", keywords: ["Storia", "Hanbok", "Seoul Tour"], lat: 37.5796, lng: 126.9770,
+        phrases: [
+          { hangul: "한복 입어봐도 돼요?", romaji: "Hanbok ibeobwado dwaeyo?", eng: "Posso provare l'Hanbok?" },
+          { hangul: "사진 같이 찍을까요?", romaji: "Sajin gachi jjigeulkkayo?", eng: "Facciamo una foto insieme?" }
+        ]
+      },
+      { name: "N Seoul Tower (Namsan)", image: "https://www.agoda.com/wp-content/uploads/2024/08/Namsan-Tower-during-autumn-in-Seoul-South-Korea.jpg", icon: "🗼", emoji: "🌇", desc: "Il punto panoramico più alto di Seoul, famoso per la funivia e le recinzioni piene di lucchetti dell'amore.", keywords: ["Seoul", "Panorama", "Romance"], lat: 37.5512, lng: 126.9882,
+        phrases: [
+          { hangul: "케이블카 어디서 타요?", romaji: "Keibeulka eodiseo tayo?", eng: "Dove si prende la funivia?" },
+          { hangul: "여기서 사진 찍어도 돼요?", romaji: "Yeogiseo sajin jjigeodo dwaeyo?", eng: "Posso fare foto qui?" }
+        ]
+      },
+      { name: "Bukchon Hanok Village", image: "https://southkoreahallyu.com/wp-content/uploads/2025/08/bukchon-3.jpg", icon: "🏘️", emoji: "🏮", desc: "Un villaggio tradizionale nel cuore della città moderna, perfetto per passeggiate e foto tra case storiche (Hanok).", keywords: ["Tradizione", "Foto", "Hanok"], lat: 37.5826, lng: 126.9836,
+        phrases: [
+          { hangul: "조용히 해주세요", romaji: "Joyonghi haejuseyo", eng: "Silenzio per favore (zona residenziale!)" },
+          { hangul: "이 골목이 2521에 나와요?", romaji: "I golmogi 2521e nawayo?", eng: "Questo vicolo appare in 2521?" }
+        ]
+      },
+      { name: "Spiaggia di Haeundae (Busan)", image: "https://guidacorea.it/wp-content/uploads/2023/06/Guida-Completa-Spiagge-Busan-1.jpg", icon: "🏖️", emoji: "🏄‍♀️", desc: "La spiaggia più famosa della Corea, nota per l'atmosfera estiva, il mercato del pesce e i grattacieli sul mare.", keywords: ["Busan", "Mare", "Relax"], lat: 35.1587, lng: 129.1604,
+        phrases: [
+          { hangul: "선크림 있어요?", romaji: "Seonkeurim isseoyo?", eng: "Hai la crema solare?" },
+          { hangul: "해운대역 어떻게 가요?", romaji: "Haeundaeyeok eotteoke gayo?", eng: "Come si arriva alla stazione Haeundae?" }
+        ]
+      },
+      { name: "Gamcheon Culture Village", image: "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_728/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/xbxsizde9f8qchwmbnnh/BusanHighlightCityTourwithSkyCapsule,Gamcheon,Yachtmore.webp", icon: "🎨", emoji: "🖌️", desc: "Conosciuto come il 'Machu Picchu di Busan', è un labirinto coloratissimo di case e opere di street art in collina.", keywords: ["Busan", "Arte", "Colori"], lat: 35.0975, lng: 129.0106,
+        phrases: [
+          { hangul: "입장료가 얼마예요?", romaji: "Ipjangnyo-ga eolmayeyo?", eng: "Quanto costa l'ingresso?" },
+          { hangul: "지도 있어요?", romaji: "Jido isseoyo?", eng: "Avete una mappa?" }
+        ]
+      },
+      { name: "Tempio di Bulguksa", image: "https://guidacorea.it/wp-content/uploads/2023/04/Tempio-Bulguksa-Grotta-Seokguram.jpg", icon: "🛕", emoji: "🙏", desc: "Patrimonio mondiale UNESCO. Situato nell'antica capitale del regno di Silla, un capolavoro assoluto dell'arte buddista.", keywords: ["Gyeongju", "Storia", "Tempio"], lat: 35.7900, lng: 129.3320,
+        phrases: [
+          { hangul: "몇 시에 닫아요?", romaji: "Myeot sie dadayo?", eng: "A che ora chiude?" },
+          { hangul: "여기가 유네스코예요?", romaji: "Yeogiga Yuneskoyeyo?", eng: "Questo è patrimonio UNESCO?" }
+        ]
+      },
+      { name: "Isola di Jeju", image: "https://www.viaggioincorea.it/wp-content/uploads/2021/04/%E1%84%89%E1%85%A5%E1%86%BC%E1%84%89%E1%85%A1%E1%86%AB%E1%84%8B%E1%85%B5%E1%86%AF%E1%84%8E%E1%85%AE%E1%86%AF%E1%84%87%E1%85%A9%E1%86%BC-from-news.chosun.gif", icon: "🌋", emoji: "🍊", desc: "Le Hawaii della Corea. Un'isola vulcanica famosa per la natura, le cascate, i mandarini succosi e le statue in pietra.", keywords: ["Jeju", "Natura", "Vacanze"], lat: 33.3617, lng: 126.5292,
+        phrases: [
+          { hangul: "한라산 등반 코스 추천해 주세요", romaji: "Hallasan deungban koseu chucheonhae juseyo", eng: "Consigliami un sentiero per il Monte Halla" },
+          { hangul: "귤 한 봉지 얼마예요?", romaji: "Gyul han bongji eolmayeyo?", eng: "Quanto costa un sacchetto di mandarini?" }
+        ]
+      },
+      { name: "Daehak-ro Park (2521)", image: "https://seeanyplaces.com/wp-content/uploads/2021/05/DaeHak-ro-8.jpg", icon: "🏙️", emoji: "🎭", desc: "Al Marronnier Park hanno girato la scena in cui Yi-jin e Hee-do passeggiano nel caos cittadino in '2521'.", keywords: ["Seoul", "2521", "Arte"], lat: 37.5821, lng: 127.0021,
+        phrases: [
+          { hangul: "스물다섯 스물하나 촬영지예요?", romaji: "Seumuldaseot seumulhana chwaryeongjiyeyo?", eng: "È un luogo delle riprese di 2521?" },
+          { hangul: "여기서 공연 봐도 돼요?", romaji: "Yeogiseo gongyeon bwado dwaeyo?", eng: "Posso vedere spettacoli qui?" }
+        ]
+      },
+      { name: "Casa di Na Hee-do", image: "https://english.visitkorea.or.kr/public/images/2024/08/02/a8510d8630ea4007847cda5144a5933e.png", icon: "🏠", emoji: "🤺", desc: "La famosa casa in salita (Jeonju) dove Yi-jin le lasciava il giornale e la rosa rossa.", keywords: ["2521", "Nostalgia", "Jeonju"], lat: 35.8145, lng: 127.1522,
+        phrases: [
+          { hangul: "전주 한옥마을 어디예요?", romaji: "Jeonju hanongmaul eodiyeyo?", eng: "Dov'è il villaggio Hanok di Jeonju?" },
+          { hangul: "드라마 촬영지 맞아요?", romaji: "Deurama chwaryeongji majayo?", eng: "È davvero il set del drama?" }
+        ]
+      },
+      { name: "Tunnel Hanbyeokgul", image: "https://i0.wp.com/wanderwithjin.com/wp-content/uploads/2022/02/2521_tunnel.jpg?resize=800%2C800&ssl=1", icon: "🚇", emoji: "🏃‍♀️", desc: "L'iconico tunnel in mattoni dove Hee-do e Yi-jin scappano correndo nella notte, urlando per la libertà.", keywords: ["2521", "Fuga", "Romance"], lat: 35.8105, lng: 127.1585,
+        phrases: [
+          { hangul: "여기서 사진 찍어도 돼요?", romaji: "Yeogiseo sajin jjigeodo dwaeyo?", eng: "Posso fare foto qui?" },
+          { hangul: "2521 터널 맞죠?", romaji: "2521 teonel matjyo?", eng: "È il tunnel di 2521, giusto?" }
+        ]
+      },
+      { name: "Fumetteria Myeongjin", image: "https://lynntop.com/wp-content/uploads/2024/05/Image-5-4-24-at-10.55%E2%80%AFPM-1-1024x689.jpeg.webp", icon: "📚", emoji: "📖", desc: "L'esterno della fumetteria (oggi Sound of Magic) dove Yi-jin lavorava part-time in 2521.", keywords: ["2521", "Full House", "Yi-jin"], lat: 35.8115, lng: 127.1485,
+        phrases: [
+          { hangul: "만화책 있어요?", romaji: "Manhwachaek isseoyo?", eng: "Avete fumetti/manhwa?" },
+          { hangul: "추천해 주세요", romaji: "Chucheonhae juseyo", eng: "Me ne consigliate uno?" }
+        ]
+      },
+      { name: "Spiaggia di Geumjin", image: "https://i0.wp.com/wanderwithjin.com/wp-content/uploads/2022/02/2521_SB2.jpg?resize=840%2C536&ssl=1", icon: "🌊", emoji: "📸", desc: "Il luogo dello stupendo e nostalgico viaggio estivo della squadra di 2521. 'Questa estate è nostra!'", keywords: ["2521", "Amici", "Estate"], lat: 37.6450, lng: 129.0436,
+        phrases: [
+          { hangul: "여기가 금진 해변이에요?", romaji: "Yeogiga Geumjin haebyeonieyo?", eng: "È questa la spiaggia di Geumjin?" },
+          { hangul: "파도 진짜 예뻐요", romaji: "Pado jinjja yeppeoyo", eng: "Le onde sono davvero belle" }
+        ]
+      }
+    ];
+
+    // --- LOGIC & LOCAL SAVE ---
+    const loadLocalProgress = () => {
+      try {
+        const saved = localStorage.getItem('sara_korean_save_v2');
+        if (saved) {
+          const data = JSON.parse(saved);
+          state.completedDays = data.completedDays || [];
+          state.mistakesRecord = data.mistakesRecord || {};
+          if (data.profileName) state.profileName = data.profileName;
+          if (data.hangulScale) {
+              state.hangulScale = data.hangulScale;
+              document.documentElement.style.setProperty('--hangul-scale', state.hangulScale);
+          }
+        }
+      } catch(e) { console.error("Local storage error", e); }
+    };
+
+    const showSaveToast = (msg = "Progressi Salvati, Sara!", isError = false) => {
+      const toast = document.createElement('div');
+      const bg = isError ? 'bg-red-500' : 'bg-green-500';
+      const icon = isError ? 'alert-triangle' : 'check-circle';
+      toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 ${bg} text-white px-6 py-3 rounded-full shadow-2xl z-[10000] transition-all duration-300 text-sm font-bold flex items-center gap-2 animate-pop border border-white/20`;
+      toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 text-white"></i> ${msg}`;
+      document.body.appendChild(toast);
+      lucide.createIcons();
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translate(-50%, -20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    };
+
+    const initApp = async () => {
+      try {
+        const configStr = typeof window.__firebase_config !== 'undefined' ? window.__firebase_config : null;
+        if (configStr) {
+          const config = JSON.parse(configStr);
+          if (Object.keys(config).length > 0) {
+            useFirebase = true;
+            const appMod = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
+            const authMod = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+            const fsMod = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+
+            const appInstance = appMod.initializeApp(config);
+            auth = authMod.getAuth(appInstance);
+            db = fsMod.getFirestore(appInstance);
+
+            doc = fsMod.doc; setDoc = fsMod.setDoc; onSnapshot = fsMod.onSnapshot;
+            signOut = authMod.signOut; signInAnonymously = authMod.signInAnonymously; signInWithCustomToken = authMod.signInWithCustomToken;
+
+            authMod.onAuthStateChanged(auth, (currentUser) => {
+              state.user = currentUser;
+              state.isAuthLoading = false;
+              renderApp();
+              if (currentUser) {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data');
+                onSnapshot(userDocRef, (docSnap) => {
+                  if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    state.completedDays = data.completedDays || [];
+                    state.mistakesRecord = data.mistakesRecord || {};
+                    if (data.profileName) state.profileName = data.profileName;
+                    if (data.hangulScale) {
+                       state.hangulScale = data.hangulScale;
+                       document.documentElement.style.setProperty('--hangul-scale', state.hangulScale);
+                    }
+                    if(state.currentView !== 'game') renderApp();
+                  }
+                }, (err) => console.error(err));
+              }
+            });
+
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+              await signInAnonymously(auth);
+            }
+            return;
+          }
+        }
+      } catch(e) {
+        console.warn("Cloud init skipped. Local storage in uso.", e);
+      }
+
+      useFirebase = false;
+      state.user = { uid: 'local-user' };
+      state.isAuthLoading = false;
+      loadLocalProgress();
+      renderApp();
+    };
+
+    const saveProgress = async (newCompleted, newMistakes) => {
+      if (useFirebase && state.user && state.user.uid !== 'local-user') {
+        try {
+          const userDocRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'profile', 'data');
+          await setDoc(userDocRef, {
+            completedDays: newCompleted,
+            mistakesRecord: newMistakes,
+            profileName: state.profileName,
+            hangulScale: state.hangulScale,
+            lastUpdated: new Date().toISOString()
+          }, { merge: true });
+        } catch (e) { console.error("Failed to save:", e); }
+      } else {
+        localStorage.setItem('sara_korean_save_v2', JSON.stringify({
+          completedDays: newCompleted,
+          mistakesRecord: newMistakes,
+          profileName: state.profileName,
+          hangulScale: state.hangulScale
+        }));
+        showSaveToast(); 
+      }
+    };
+
+    // --- SECRET UNLOCK FEATURE ---
+    window.unlockDayWithCode = (code) => {
+        window.haptic();
+        if(!code || code.length < 4) return;
+        const upperCode = code.toUpperCase().trim();
+        const foundDayIndex = window._s_k_d.indexOf(upperCode);
+        
+        if(foundDayIndex > 0 && foundDayIndex <= 45) {
+            if(!state.completedDays.includes(foundDayIndex)) {
+                const newDays = [...state.completedDays];
+                for(let i=1; i<=foundDayIndex; i++) {
+                   if(!newDays.includes(i)) newDays.push(i);
+                }
+                state.completedDays = newDays;
+                saveProgress(newDays, state.mistakesRecord);
+                showSaveToast(`Livello ${foundDayIndex} sbloccato! Magia! ✨`);
+                document.getElementById('unlockCodeInput').value = '';
+                renderApp();
+            } else {
+                showSaveToast("Hai già sbloccato questo livello!", true);
+            }
+        } else {
+            showSaveToast("Codice Segreto non valido! Riprova.", true);
+        }
+    };
+
+    // --- AUDIO & TRANSLATION ---
+    window.playAudio = (e, textHangul) => {
+      if (e) { e.stopPropagation(); e.preventDefault(); }
+      window.haptic(30);
+      if (!textHangul) return;
+      
+      const cleanText = textHangul.replace(/<[^>]*>?/gm, '');
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = 'ko-KR'; 
+        utterance.rate = 0.85; 
+        
+        const voices = window.speechSynthesis.getVoices();
+        const koVoices = voices.filter(v => v.lang.includes('ko'));
+        if(koVoices.length > 0) {
+          let bestVoice = koVoices.find(v => /Yuna|Somi|Female|Google/i.test(v.name));
+          if(!bestVoice) bestVoice = koVoices[0];
+          utterance.voice = bestVoice;
+        }
+        window.speechSynthesis.speak(utterance);
+      } else {
+        showSaveToast("Il tuo browser non supporta la pronuncia.", true);
+      }
+    };
+
+    window.runTranslation = async () => {
+      window.haptic();
+      const inputEl = document.getElementById('transInput');
+      if (!inputEl || !inputEl.value.trim()) return;
+      
+      const text = inputEl.value.trim();
+      state.transLoading = true;
+      state.transResult = "Traducendo...";
+      state.transRomaji = "";
+      renderApp();
+
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=it&tl=ko&dt=t&dt=rm&q=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        let koText = "";
+        let romajiText = "";
+
+        if (data && data[0]) {
+            data[0].forEach(item => {
+                if (item[0] && typeof item[0] === 'string' && item[0] !== "null" && !item[0].match(/^[a-zA-Z\s]+$/)) {
+                    koText += item[0];
+                }
+                if (item[2] && typeof item[2] === 'string' && /^[a-zA-Zāēīōūōōuu\-\s\'eou]+$/i.test(item[2])) {
+                    romajiText += item[2];
+                } else if (item[3] && typeof item[3] === 'string' && /^[a-zA-Zāēīōūōōuu\-\s\'eou]+$/i.test(item[3])) {
+                    romajiText += item[3]; 
+                }
+            });
+            
+            if(!romajiText && data[0].length > 1) {
+                const lastEl = data[0][data[0].length - 1];
+                if(lastEl && typeof lastEl[2] === 'string') romajiText = lastEl[2];
+                else if(lastEl && typeof lastEl[3] === 'string') romajiText = lastEl[3];
+            }
+
+            state.transResult = koText || "Impossibile tradurre.";
+            state.transRomaji = romajiText ? romajiText.trim() : "Audio disponibile sotto";
+        } else {
+            state.transResult = "Impossibile tradurre.";
+        }
+      } catch(e) {
+        state.transResult = "Errore di rete. Riprova.";
+        showSaveToast("Errore di rete durante la traduzione.", true);
+      }
+      
+      state.transLoading = false;
+      renderApp();
+    };
+
+    window.initMap = () => {
+        const container = document.getElementById('korea-map');
+        if (!container) return;
+        
+        if (myMap !== null) {
+            myMap.remove();
+            myMap = null;
+        }
+
+        myMap = L.map('korea-map', {
+            zoomControl: false,
+            scrollWheelZoom: false 
+        }).setView([36.5, 127.5], 7);
+        
+        L.control.zoom({ position: 'topright' }).addTo(myMap);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap',
+            className: 'map-tiles'
+        }).addTo(myMap);
+
+        MAP_REGIONS.forEach(region => {
+            const icon = L.divIcon({
+                className: 'custom-map-icon',
+                html: `<div class="animate-bounce-slow border-4 border-pink-400" onclick="window.haptic(20)">${region.icon}</div>`,
+                iconSize: [44, 44],
+                iconAnchor: [22, 22],
+                popupAnchor: [0, -22]
+            });
+
+            const marker = L.marker([region.lat, region.lng], {icon: icon}).addTo(myMap);
+            
+            marker.bindPopup(`
+                <div class="p-0 text-center min-w-[260px] flex flex-col items-center">
+                    <img src="${region.image}" alt="${region.name}" class="w-full h-32 object-cover rounded-t-xl mb-3 shadow-sm border-b-2 border-pink-100" onerror="this.src='https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=600&q=80'" />
+                    <div class="px-3 pb-3 w-full">
+                      <h3 class="font-black text-lg text-gray-800 mb-1 leading-tight">${region.name}</h3>
+                      <p class="text-xs font-bold text-gray-600 mb-2">${region.desc}</p>
+                      <div class="flex flex-wrap justify-center gap-1 mb-3">
+                          ${region.keywords.map(kw => `<span class="bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-[10px] font-black uppercase">${kw}</span>`).join('')}
+                      </div>
+                      ${region.phrases ? `
+                      <div class="bg-pink-50 border border-pink-100 rounded-xl p-2.5 text-left">
+                        <p class="text-[10px] font-black text-pink-500 uppercase tracking-widest mb-2 flex items-center gap-1">🗣️ Frasi Utili Qui</p>
+                        ${region.phrases.map(ph => `
+                          <div class="flex items-center justify-between gap-2 mb-1.5">
+                            <div>
+                              <p class="text-sm font-black text-gray-800" style="font-family:'Noto Sans KR'">${ph.hangul}</p>
+                              <p class="text-[10px] text-blue-500 font-bold">${ph.romaji}</p>
+                              <p class="text-[10px] text-gray-500 font-bold">${ph.eng}</p>
+                            </div>
+                            <button onclick="window.playAudio(event,'${ph.hangul}')" class="shrink-0 bg-white border border-pink-200 text-pink-500 p-1.5 rounded-full shadow-sm hover:bg-pink-50 transition-all">🔊</button>
+                          </div>
+                        `).join('<hr class="border-pink-100 my-1">')}
+                      </div>
+                      ` : ''}
+                    </div>
+                </div>
+            `);
+        });
+    };
+
+    // --- GLOBAL ACTIONS WITH LOADING TRANSITION ---
+    window.changeView = (view) => {
+      window.haptic(20);
+      state.isTransitioning = true;
+      renderApp();
+      setTimeout(() => {
+          state.currentView = view;
+          state.isTransitioning = false;
+          renderApp();
+      }, 300); // 300ms App-like fade transition
+    };
+
+    window.startDay = (dayNum) => {
+      window.haptic(40);
+      state.isTransitioning = true;
+      renderApp();
+      setTimeout(() => {
+          state.activeDay = dayNum;
+          state.currentView = 'theory';
+          state.gameStep = 0;
+          state.score = 0;
+          state.combo = 0;
+          state.selectedAnswer = null;
+          state.showFeedback = false;
+          state.fallbackActive = false;
+          state.currentMistakes = [];
+          state.isTransitioning = false;
+          renderApp();
+      }, 300);
+    };
+
+    window.startGame = () => {
+      window.haptic(40);
+      state.isTransitioning = true;
+      renderApp();
+      setTimeout(() => {
+          state.currentView = 'game';
+          state.isTransitioning = false;
+          renderApp();
+      }, 300);
+    };
+
+    window.handleMultipleChoiceAnswer = (index) => {
+      if (state.showFeedback) return;
+      
+      const exercise = COURSE_DATA.find(d => d.day === state.activeDay).exercises[state.gameStep];
+      
+      if (exercise.optionsHangul && exercise.optionsHangul[index]) {
+        window.playAudio(null, exercise.optionsHangul[index]);
+      }
+
+      state.selectedAnswer = index;
+      state.showFeedback = true;
+      
+      if (index === exercise.answer) {
+        state.score += 1;
+        state.combo += 1; 
+        window.haptic([30, 50, 30]); // Success vibration
+      } else {
+        state.combo = 0; 
+        state.currentMistakes.push(exercise.conceptTag);
+        window.haptic(100); // Error vibration
+      }
+      renderApp();
+    };
+
+    // --- FALLBACK VOCALE (QUIZ FONETICO) ---
+    window.triggerSpeechFallback = () => {
+        window.haptic();
+        if(speechTimeout) clearTimeout(speechTimeout);
+        state.isRecording = false;
+        state.fallbackActive = true;
+        
+        const ex = COURSE_DATA.find(d => d.day === state.activeDay).exercises[state.gameStep];
+        const correct = ex.expectedRomaji[0];
+        
+        // Genera distrattori credibili ma palesemente errati
+        const opt1 = correct.replace(/[aeiou]/g, (m) => m==='a'?'e':m==='e'?'i':m==='i'?'o':m==='o'?'u':'a');
+        const opt2 = correct.replace(/k|g|t|d|p|b|j/g, (m) => m==='k'?'g':m==='g'?'k':m==='t'?'d':m==='d'?'t':m==='p'?'b':'p').replace(/[aeiou]/g, 'a');
+        
+        const options = [correct, opt1, opt2];
+        state.fallbackOptions = options.sort(() => Math.random() - 0.5);
+        renderApp();
+    };
+
+    window.handleFallbackAnswer = (index) => {
+       if (state.showFeedback) return;
+       const ex = COURSE_DATA.find(d => d.day === state.activeDay).exercises[state.gameStep];
+       const correct = ex.expectedRomaji[0];
+       const isCorrect = state.fallbackOptions[index] === correct;
+       
+       if(isCorrect) {
+          window.playAudio(null, ex.expectedHangul[0]);
+          state.selectedAnswer = true;
+          state.score += 1;
+          state.combo += 1;
+          state.showFeedback = true;
+          window.haptic([30, 50, 30]);
+          ex.feedback_incorrect = "Bravissima! L'audio che hai appena sentito è la pronuncia esatta. L'Hai riconosciuta perfettamente.";
+       } else {
+          state.selectedAnswer = false;
+          state.combo = 0;
+          state.currentMistakes.push(ex.conceptTag);
+          state.showFeedback = true;
+          window.haptic(100);
+          ex.feedback_incorrect = `Quella non era la pronuncia esatta. La romanizzazione corretta era: "${correct}". Ascoltala bene la prossima volta!`;
+       }
+       renderApp();
+    };
+
+    // BUG FIX PER MICROFONO ANDROID CHROME
+    window.handleSpeechRecognition = (e) => {
+      if (e) e.preventDefault();
+      if (state.selectedAnswer !== null || state.isRecording) return;
+      window.haptic(50);
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        window.triggerSpeechFallback();
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ko-KR';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.continuous = false;
+      
+      state.isRecording = true;
+      renderApp();
+
+      // Timeout di sicurezza (7 sec) -> Passa al Fallback
+      speechTimeout = setTimeout(() => {
+          if (state.isRecording) {
+              recognition.stop();
+              window.triggerSpeechFallback();
+          }
+      }, 7000);
+
+      recognition.onresult = (event) => {
+        clearTimeout(speechTimeout);
+        state.isRecording = false;
+        let rawTranscript = event.results[0][0].transcript;
+        let transcript = rawTranscript.toLowerCase().trim();
+        
+        const cleanTranscript = transcript.replace(/[.,!?。、！？\s~]/g, '');
+        const exercise = COURSE_DATA.find(d => d.day === state.activeDay).exercises[state.gameStep];
+        
+        const isMatchHangul = exercise.expectedHangul.some(k => cleanTranscript.includes(k.replace(/[.,!?。、！？\s~]/g, '')));
+        const isMatchRomaji = exercise.expectedRomaji.some(r => cleanTranscript.includes(r.replace(/[.,!?。、！？\s~]/g, '')));
+        
+        const isMatch = cleanTranscript.length > 0 && (isMatchHangul || isMatchRomaji);
+        
+        state.selectedAnswer = isMatch;
+        state.showFeedback = true;
+
+        if (isMatch) {
+            state.score += 1;
+            state.combo += 1;
+            window.haptic([30, 50, 30]);
+        } else {
+            state.combo = 0;
+            window.haptic(100);
+            exercise.feedback_incorrect = `Hai detto: "${rawTranscript}". Non sono riuscita a capirti bene, riprova scandendo meglio!`;
+            state.currentMistakes.push(exercise.conceptTag);
+        }
+        renderApp();
+      };
+
+      recognition.onerror = (event) => {
+        clearTimeout(speechTimeout);
+        if(event.error === 'not-allowed' || event.error === 'no-speech') {
+            window.triggerSpeechFallback();
+        } else {
+            state.isRecording = false;
+            state.showFeedback = true;
+            state.selectedAnswer = false; 
+            state.combo = 0;
+            const exercise = COURSE_DATA.find(d => d.day === state.activeDay).exercises[state.gameStep];
+            exercise.feedback_incorrect = "Errore microfono (" + event.error + "). Passa al prossimo.";
+            renderApp();
+        }
+      };
+      
+      try { recognition.start(); } catch(err) { clearTimeout(speechTimeout); window.triggerSpeechFallback(); }
+    };
+
+    window.nextQuestion = () => {
+      window.haptic(20);
+      const currentLesson = COURSE_DATA.find(d => d.day === state.activeDay);
+      if (state.gameStep < currentLesson.exercises.length - 1) {
+        state.gameStep += 1;
+        state.selectedAnswer = null;
+        state.showFeedback = false;
+        state.fallbackActive = false;
+        state.fallbackOptions = [];
+      } else {
+        const newCompleted = state.completedDays.includes(state.activeDay) ? state.completedDays : [...state.completedDays, state.activeDay];
+        const newMistakes = { ...state.mistakesRecord, [state.activeDay]: state.currentMistakes };
+        
+        state.completedDays = newCompleted;
+        state.mistakesRecord = newMistakes;
+        saveProgress(newCompleted, newMistakes);
+        
+        state.currentView = 'result';
+        
+        // Gamification Confetti for perfect score
+        if (state.score === currentLesson.exercises.length && typeof confetti !== 'undefined') {
+            setTimeout(() => {
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#f472b6', '#60a5fa', '#fcd34d'] });
+                window.haptic([50, 50, 50, 50, 100]);
+            }, 300);
+        }
+      }
+      renderApp();
+    };
+
+    window.updateProfileName = (val) => {
+      state.profileName = val;
+      saveProgress(state.completedDays, state.mistakesRecord);
+      renderApp();
+    };
+
+    window.handleSwitchAccount = async () => {
+      window.haptic([50, 100]);
+      if(!confirm("Vuoi davvero azzerare i tuoi progressi, Sara? Perderai la streak!")) return;
+      try {
+        if (useFirebase && state.user && state.user.uid !== 'local-user') {
+          await signOut(auth);
+        } else {
+          localStorage.removeItem('sara_korean_save_v2');
+        }
+        state.completedDays = [];
+        state.mistakesRecord = {};
+        state.currentView = 'dashboard';
+        saveProgress([], {}); 
+        renderApp();
+      } catch (e) { console.error(e); }
+    };
+
+    // --- RENDER FUNCTIONS ---
+    const renderApp = () => {
+      const root = document.getElementById('root');
+      
+      if (state.isAuthLoading) {
+        root.innerHTML = `<div class="h-full w-full flex items-center justify-center text-blue-500"><i data-lucide="loader-2" class="animate-spin w-12 h-12"></i></div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      let overlayHtml = '';
+      if(state.isTransitioning) {
+         overlayHtml = `
+            <div class="fixed inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-[10000] flex items-center justify-center animate-fadein">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-2xl flex flex-col items-center">
+                    <i data-lucide="loader-2" class="animate-spin text-pink-500 w-12 h-12 mb-3"></i>
+                    <span class="font-black text-gray-600 dark:text-gray-300 tracking-widest uppercase text-xs">Caricamento</span>
+                </div>
+            </div>
+         `;
+      }
+
+      let content = '';
+      if (state.currentView === 'dashboard') content = renderDashboard();
+      else if (state.currentView === 'theory') content = renderTheory();
+      else if (state.currentView === 'game') content = renderGame();
+      else if (state.currentView === 'result') content = renderResult();
+      else if (state.currentView === 'library') content = renderLibrary();
+      else if (state.currentView === 'explore') content = renderExplore();
+      else if (state.currentView === 'profile') content = renderProfile();
+
+      root.innerHTML = `
+        ${overlayHtml}
+
+        <header class="app-top-bar w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 z-[9000] flex-shrink-0 pt-safe transition-colors">
+            <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="font-black text-pink-500 text-lg flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i> 
+                    <span class="hidden sm:inline">Annyeong, ${state.profileName}!</span>
+                    <span class="sm:hidden">Learn Korean</span>
+                </div>
+                <button onclick="window.toggleDarkMode()" class="p-2.5 rounded-full bg-gray-50 dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 transition-transform hover:scale-110 active:scale-95 outline-none flex items-center justify-center">
+                    <i data-lucide="${state.isDarkMode ? 'moon' : 'sun'}" class="w-5 h-5 ${state.isDarkMode ? 'text-blue-300' : 'text-yellow-500'}"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto overscroll-y-contain w-full pb-20 md:pb-0 hide-scroll bg-transparent" ontouchstart="window.handleTouchStart(event)" ontouchend="window.handleTouchEnd(event)">
+            <div class="max-w-[100vw] mx-auto p-4 md:p-8 w-full relative animate-fadein">
+                ${content}
+            </div>
+        </main>
+        ${renderNav()}
+      `;
+      lucide.createIcons();
+
+      if (state.currentView === 'explore' && !state.isTransitioning) {
+          setTimeout(window.initMap, 50);
+      }
+    };
+
+    const renderNav = () => {
+      const navItems = [
+        { view: 'dashboard', icon: 'map-pin', label: 'Percorso' },
+        { view: 'explore', icon: 'compass', label: 'Korea Tour' },
+        { view: 'library', icon: 'book-marked', label: 'Guida Base' },
+        { view: 'profile', icon: 'circle-user-round', label: 'Profilo' },
+      ];
+      return `
+        <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-blue-100 pb-safe z-[9999] shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] md:relative md:border-b md:border-t-0 flex-shrink-0">
+          <div class="max-w-4xl mx-auto flex justify-between md:justify-center md:gap-16 px-4 py-2 md:p-5">
+            ${navItems.map(item => {
+              const isActive = state.currentView === item.view;
+              return `<button onclick="window.changeView('${item.view}')" class="flex flex-col items-center gap-1 transition-all min-w-[60px] ${isActive ? 'scale-105' : 'hover:scale-105'}">
+                <div class="${isActive ? 'bg-pink-100 text-pink-600' : 'text-gray-400 hover:text-blue-500'} p-2 rounded-2xl transition-all">
+                  <i data-lucide="${item.icon}" class="w-6 h-6 md:w-7 md:h-7"></i>
+                </div>
+                <span class="text-[10px] md:text-xs font-black uppercase tracking-widest ${isActive ? 'text-pink-600' : 'text-gray-400'}">${item.label}</span>
+              </button>`;
+            }).join('')}
+          </div>
+        </nav>
+      `;
+    };
+
+    const renderDashboard = () => {
+      const totalProgress = Math.min((state.completedDays.length / 45) * 100, 100);
+      const currentStreak = state.completedDays.length > 0 ? (state.combo > 0 ? state.combo : 1) : 0; 
+      const exercisesDoneToday = state.score; 
+
+      let html = `
+      <div class="max-w-4xl mx-auto relative">
+        <div class="hangul-watermark">가자</div>
+        
+        <header class="bg-gradient-to-br from-pink-400 via-pink-300 to-blue-400 text-white rounded-2xl md:rounded-[2rem] p-6 md:p-10 mb-6 korean-shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+          <div class="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4">
+             <i data-lucide="sparkles" class="w-48 h-48"></i>
+          </div>
+          <div class="z-10 w-full">
+            <h1 class="text-3xl md:text-5xl font-black mb-3 tracking-tight no-select flex justify-between items-center">
+               <span>Studio in Corso 🌸</span>
+            </h1>
+            <p class="text-pink-50 text-base md:text-xl font-bold mb-4 leading-snug">Il tuo percorso per padroneggiare il Coreano in 45 giorni.</p>
+            
+            <div class="w-full max-w-md bg-white/20 h-4 rounded-full overflow-hidden backdrop-blur-sm border border-white/30">
+               <div class="bg-white h-full transition-all duration-1000" style="width: ${totalProgress}%"></div>
+            </div>
+            <p class="text-xs md:text-sm font-bold mt-2 flex items-center gap-2">
+                ${Math.round(totalProgress)}% Completato. 
+                ${totalProgress === 100 ? "Grandiosa! 화이팅! ✊" : "Forza Sara, 화이팅! ✊"}
+            </p>
+          </div>
+          <div class="flex gap-3 w-full md:w-auto z-10 shrink-0">
+             <div class="flex-1 md:flex-none flex flex-col items-center justify-center bg-white/20 p-3 md:p-4 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner min-w-[80px]">
+              <i data-lucide="flame" class="${currentStreak > 0 ? 'text-orange-400 animate-pulse' : 'text-gray-300'} mb-1 w-6 h-6 md:w-10 md:h-10"></i>
+              <span class="font-black text-xs md:text-sm">${currentStreak} Streak</span>
+            </div>
+            <div class="flex-1 md:flex-none flex flex-col items-center justify-center bg-white/20 p-3 md:p-4 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner min-w-[80px]">
+              <i data-lucide="award" class="text-yellow-300 mb-1 w-6 h-6 md:w-10 md:h-10"></i>
+              <span class="font-black text-xs md:text-sm">${state.completedDays.length} / 45</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="bg-white p-5 rounded-2xl md:rounded-[1.5rem] shadow-sm border border-gray-100 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+           <div class="flex items-center gap-4">
+              <div class="p-3 bg-green-50 text-green-500 rounded-full shrink-0"><i data-lucide="target" class="w-6 h-6"></i></div>
+              <div>
+                 <h3 class="font-black text-gray-800 text-sm md:text-base">Obiettivo Giornaliero</h3>
+                 <p class="text-xs md:text-sm font-bold text-gray-400">25 Minuti / 1 Lezione completata</p>
+              </div>
+           </div>
+           <button class="bg-gray-100 text-gray-400 font-bold px-4 py-2 rounded-xl text-xs md:text-sm w-full sm:w-auto" onclick="window.haptic()">${state.completedDays.length > 0 ? '✔ Raggiunto' : 'In attesa'}</button>
+        </div>
+
+        <div class="bg-white rounded-2xl md:rounded-[2rem] korean-shadow p-5 md:p-10 mb-8 border border-blue-50 relative z-10">
+          <div class="flex justify-between items-center mb-6 border-b-2 border-blue-50 pb-4">
+            <h2 class="text-2xl md:text-3xl font-black text-gray-800 flex items-center gap-3">
+              <i data-lucide="map" class="text-blue-400 w-6 h-6 md:w-8 md:h-8"></i> Syllabus Formativo
+            </h2>
+          </div>
+
+          <div class="space-y-6 md:space-y-8 relative before:absolute before:inset-0 before:ml-[1.35rem] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-1 md:before:w-1.5 before:bg-gradient-to-b before:from-pink-200 before:via-blue-200 before:to-gray-200 before:rounded-full">
+      `;
+
+      COURSE_DATA.forEach(dayData => {
+        const isCompleted = state.completedDays.includes(dayData.day);
+        const isLocked = dayData.day > 1 && !state.completedDays.includes(dayData.day - 1);
+        const dayMistakes = state.mistakesRecord[dayData.day] || [];
+        const needsReview = isCompleted && dayMistakes.length > 0;
+
+        let circleClass = "bg-pink-500 text-white transform md:scale-110 shadow-lg shadow-pink-500/40 border-4 border-white";
+        let circleContent = dayData.day;
+        if (isCompleted) { circleClass = "bg-blue-500 text-white shadow-md border-4 border-blue-100"; circleContent = `<i data-lucide="check" class="w-5 h-5 md:w-6 md:h-6"></i>`; }
+        else if (isLocked) { circleClass = "bg-gray-200 text-gray-400 border-4 border-white dark:bg-slate-700 dark:border-slate-800"; }
+
+        let badgeHtml = '';
+        if (isCompleted && !needsReview) badgeHtml += `<span class="text-[10px] md:text-xs font-black text-blue-700 bg-blue-100 px-3 py-1 rounded-full uppercase tracking-wider">Completato</span>`;
+        if (needsReview) badgeHtml += `<span class="text-[10px] md:text-xs font-black text-orange-700 bg-orange-100 px-3 py-1 rounded-full flex items-center gap-1 uppercase tracking-wider"><i data-lucide="alert-circle" class="w-3 h-3"></i> Ripasso</span>`;
+        if (isLocked) badgeHtml += `<span class="text-[10px] md:text-xs font-black text-gray-400 bg-gray-100 px-3 py-1 rounded-full uppercase tracking-wider dark:bg-slate-800">Bloccato</span>`;
+
+        let btnHtml = '';
+        if (!isLocked) {
+          const btnClass = isCompleted ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100' : 'bg-pink-500 text-white hover:bg-pink-600 shadow-md shadow-pink-500/30';
+          const icon = needsReview ? `<i data-lucide="rotate-ccw" class="w-5 h-5 md:w-6 md:h-6"></i>` : `<i data-lucide="play" class="w-5 h-5 md:w-6 md:h-6 ml-0.5 md:ml-1"></i>`;
+          btnHtml = `<button onclick="window.startDay(${dayData.day})" class="p-3 md:p-4 rounded-full transition-all hover:scale-110 shrink-0 ${btnClass} min-h-[48px] min-w-[48px] md:min-h-[56px] md:min-w-[56px] flex items-center justify-center outline-none">${icon}</button>`;
+        }
+
+        html += `
+          <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group ${isLocked ? 'opacity-60 grayscale-[30%]' : ''}">
+            <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 font-black text-base md:text-lg transition-transform ${circleClass}">
+              ${circleContent}
+            </div>
+            <div class="w-[calc(100%-3.5rem)] md:w-[calc(50%-3rem)] bg-white p-5 md:p-6 rounded-2xl md:rounded-[1.5rem] shadow-sm border-2 border-gray-50 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-pink-200 cursor-pointer" onclick="if(!${isLocked}) window.startDay(${dayData.day})">
+              <div class="flex justify-between items-center gap-3 md:gap-4">
+                <div class="flex-1">
+                  <span class="text-[10px] md:text-[11px] font-black text-pink-500 uppercase tracking-widest block mb-1">${dayData.topic}</span>
+                  <h3 class="font-black text-gray-800 leading-tight mb-2 text-lg md:text-xl">${dayData.title}</h3>
+                  <p class="text-[11px] md:text-xs text-gray-400 font-bold mb-2 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${dayData.exercises.length} Esercizi</p>
+                  <div class="flex flex-wrap gap-2 mt-2">${badgeHtml}</div>
+                </div>
+                ${btnHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div></div></div>`;
+      return html;
+    };
+
+    const renderExplore = () => {
+      let html = `
+      <div class="max-w-5xl mx-auto animate-pop">
+        
+        <div class="bg-white rounded-2xl md:rounded-[3rem] p-6 md:p-12 mb-8 md:mb-10 korean-shadow border border-blue-50 text-center relative overflow-hidden">
+          <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0iI2QxZDVkYiIvPjwvc3ZnPg==')]"></div>
+          <h1 class="text-3xl md:text-5xl font-black text-gray-900 mb-3 md:mb-4 relative z-10 flex justify-center items-center gap-2 md:gap-3">
+             <i data-lucide="map" class="w-8 h-8 md:w-12 md:h-12 text-blue-500"></i> Korea Tour 🇰🇷
+          </h1>
+          <p class="text-gray-500 text-base md:text-xl font-bold relative z-10">Esplora le location del drama 2521 e i punti turistici chiave. Tocca la mappa per i dettagli o scorri le foto!</p>
+        </div>
+
+        <div class="w-full h-[400px] md:h-[600px] rounded-2xl md:rounded-[2rem] shadow-xl border-4 border-white mb-8 md:mb-12 z-0 relative overflow-hidden bg-gray-100 flex items-center justify-center">
+             <div id="korea-map" class="absolute inset-0 z-10"></div>
+             <i data-lucide="loader-2" class="animate-spin w-8 h-8 md:w-10 md:h-10 text-gray-400 absolute z-0"></i>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+      `;
+
+      MAP_REGIONS.forEach(region => {
+        html += `
+          <div class="bg-white rounded-2xl md:rounded-[2rem] overflow-hidden shadow-md border-2 border-gray-50 hover:shadow-xl hover:-translate-y-1 hover:border-blue-100 transition-all group flex flex-col">
+            <div class="h-48 md:h-56 relative w-full overflow-hidden bg-gray-200">
+               <img src="${region.image}" alt="${region.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=600&q=80'" />
+               <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+               <span class="absolute bottom-4 left-4 text-4xl md:text-5xl cursor-pointer hover:scale-110 transition-transform" title="Ascolta in Coreano" onclick="window.playAudio(event, '${region.name.split('(')[0].trim()}')">${region.icon}</span>
+            </div>
+            <div class="p-6 md:p-8 flex-1 flex flex-col">
+              <h2 class="text-xl md:text-2xl font-black text-gray-800 leading-tight mb-3 md:mb-4">${region.name}</h2>
+              <p class="text-gray-600 font-bold text-sm md:text-base mb-5 md:mb-6 leading-relaxed flex-1">${region.desc}</p>
+              
+              ${region.phrases ? `
+              <div class="bg-pink-50 border border-pink-100 rounded-2xl p-4 md:p-5 mb-5 md:mb-6">
+                <p class="text-[10px] md:text-xs font-black text-pink-500 uppercase tracking-widest mb-3 flex items-center gap-1.5"><span>🗣️</span> Usa Queste Frasi Qui</p>
+                <div class="space-y-3">
+                  ${region.phrases.map(ph => `
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <p class="text-sm md:text-base font-black text-gray-800" style="font-family:'Noto Sans KR'">${ph.hangul}</p>
+                        <p class="text-[10px] md:text-xs text-blue-500 font-bold">${ph.romaji} — <span class="text-gray-500">${ph.eng}</span></p>
+                      </div>
+                      <button onclick="window.playAudio(event,'${ph.hangul}')" class="shrink-0 bg-white border border-pink-200 text-pink-500 p-2 rounded-full shadow-sm hover:bg-pink-100 transition-all hover:scale-110 outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                      </button>
+                    </div>
+                  `).join('<hr class="border-pink-100">')}
+                </div>
+              </div>
+              ` : ''}
+              
+              <div class="bg-gray-50 rounded-2xl p-4 md:p-5 border border-gray-100">
+                 <span class="text-[10px] md:text-xs font-black text-blue-500 uppercase tracking-widest mb-3 block">Highlight</span>
+                 <div class="flex flex-wrap gap-2 md:gap-3 items-center">
+                    <span class="text-2xl md:text-3xl hover:animate-bounce cursor-pointer">${region.emoji}</span>
+                    ${region.keywords.map(kw => `<span class="bg-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold text-gray-700 shadow-sm border border-gray-100">${kw}</span>`).join('')}
+                 </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div></div>`;
+      return html;
+    };
+
+    const renderTheory = () => {
+      const lesson = COURSE_DATA.find(d => d.day === state.activeDay);
+      
+      let examplesHtml = lesson.theory.examples.map(ex => `
+        <div class="bg-white border-2 border-gray-100 p-5 md:p-6 rounded-2xl md:rounded-[1.5rem] flex flex-col sm:flex-row sm:items-center justify-between gap-4 md:gap-5 shadow-sm hover:shadow-md hover:border-pink-200 transition-all group">
+          <div>
+            <p class="text-2xl md:text-3xl font-black text-gray-900 mb-1 md:mb-2 group-hover:text-pink-600 transition-colors hangul-display">${window.renderHangul(ex.hangul)}</p>
+            <p class="text-blue-500 font-bold text-sm md:text-base mb-1 tracking-wide">${ex.romaji}</p>
+            <p class="text-gray-700 font-black text-base md:text-lg mb-2">"${ex.eng}"</p>
+            ${ex.context ? `<p class="text-xs md:text-sm text-gray-500 bg-gray-50 p-2.5 md:p-3 rounded-xl font-bold border border-gray-100 inline-block mt-1 md:mt-2">${ex.context}</p>` : ''}
+          </div>
+          <button onclick="window.playAudio(event, '${ex.hangul}')" class="flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 border-2 border-blue-100 text-blue-700 px-5 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl transition-transform hover:scale-105 shrink-0 shadow-sm w-full sm:w-auto mt-3 sm:mt-0 min-h-[50px] md:min-h-[56px] outline-none">
+            <i data-lucide="volume-2" class="w-5 h-5 md:w-6 md:h-6"></i><span class="font-black text-sm md:text-base">Ascolta</span>
+          </button>
+        </div>
+      `).join('');
+
+      return `
+      <div class="max-w-3xl mx-auto animate-pop">
+        <button onclick="window.changeView('dashboard')" class="text-gray-500 mb-4 md:mb-6 flex items-center hover:text-gray-800 font-black text-sm md:text-base transition-colors px-3 md:px-4 py-2 rounded-lg hover:bg-gray-100 w-fit min-h-[44px] outline-none">
+          <i data-lucide="arrow-left" class="w-5 h-5 md:w-6 md:h-6 mr-2"></i> Torna alla Mappa
+        </button>
+
+        <div class="bg-white rounded-2xl md:rounded-[2rem] korean-shadow overflow-hidden border border-blue-50">
+          <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 md:p-12 relative overflow-hidden">
+            <i data-lucide="book-open" class="absolute right-0 bottom-0 w-32 h-32 md:w-48 md:h-48 opacity-10 transform translate-x-6 translate-y-6 md:translate-x-10 md:translate-y-10"></i>
+            <span class="bg-white/20 backdrop-blur-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-black tracking-widest uppercase mb-4 md:mb-6 inline-block shadow-sm border border-white/30">
+              Giorno ${lesson.day} • Teoria
+            </span>
+            <h2 class="text-2xl md:text-4xl font-black leading-tight relative z-10">${lesson.title}</h2>
+          </div>
+          
+          <div class="p-5 md:p-10 space-y-8 md:space-y-12 text-gray-700 text-base md:text-lg">
+            <div class="flex gap-4 md:gap-5 items-start bg-pink-50 p-5 md:p-8 rounded-2xl md:rounded-[1.5rem] border border-pink-100 shadow-sm">
+              <i data-lucide="quote" class="text-pink-500 shrink-0 mt-0.5 md:mt-1 w-8 h-8 md:w-10 md:h-10"></i>
+              <p class="leading-relaxed font-bold text-pink-900 text-base md:text-xl">${lesson.theory.intro}</p>
+            </div>
+
+            <div>
+              <h3 class="font-black text-gray-800 mb-4 md:mb-6 flex items-center gap-3 text-xl md:text-2xl">
+                <div class="p-2 bg-blue-100 rounded-xl text-blue-600"><i data-lucide="brain" class="w-5 h-5 md:w-6 md:h-6"></i></div> 
+                Il Concetto Base
+              </h3>
+              <p class="text-gray-600 font-bold leading-relaxed text-base md:text-xl">${lesson.theory.concept}</p>
+            </div>
+
+            ${lesson.day <= 5 ? `
+            <div class="bg-amber-50 rounded-2xl md:rounded-[1.5rem] p-5 md:p-6 border-2 border-amber-200 flex gap-4 items-start shadow-sm">
+              <span class="text-2xl shrink-0">📌</span>
+              <div>
+                <h3 class="font-black text-amber-900 mb-1 text-base md:text-lg">Regola d'Oro: Formale vs Informale</h3>
+                <p class="text-amber-800 font-bold text-sm md:text-base leading-relaxed">Con <strong>sconosciuti, negozianti, taxisti</strong> → usa sempre le frasi con <strong>-요 (-yo)</strong> o <strong>-니다 (-nida)</strong> alla fine. Con <strong>amici coreani della tua età</strong> → puoi togliere il -요. Nei K-Drama si mischiano entrambi. Per i tuoi primi giorni in Corea: usa sempre la forma con -요 e non sbagli mai! 🙏</p>
+              </div>
+            </div>
+            ` : ''}
+
+            <div>
+              <h3 class="font-black text-gray-800 mb-4 md:mb-6 text-xl md:text-2xl border-b-2 pb-3 border-gray-100">Frasi Chiave 📝</h3>
+              <p class="text-xs md:text-sm font-bold text-pink-500 mb-4 bg-pink-50 p-3 md:p-4 rounded-xl border border-pink-100 flex gap-3 items-start md:items-center shadow-sm">
+                 <i data-lucide="mouse-pointer-click" class="w-5 h-5 md:w-6 md:h-6 shrink-0 mt-0.5 md:mt-0"></i> 
+                 <span>Tocca le parole Coreane tratteggiate per ascoltare la pronuncia! Ripeti a voce alta per creare fluidità.</span>
+              </p>
+              <div class="space-y-4 md:space-y-6">
+                ${examplesHtml}
+              </div>
+            </div>
+            
+            ${lesson.theory.builderRule ? `
+            <div class="bg-indigo-50 rounded-2xl md:rounded-[1.5rem] p-5 md:p-8 border border-indigo-100 flex gap-4 md:gap-5 items-start shadow-sm transform transition-all hover:scale-[1.01]">
+              <i data-lucide="link" class="text-indigo-500 shrink-0 mt-0.5 md:mt-1 w-8 h-8 md:w-10 md:h-10"></i>
+              <div>
+                <h3 class="font-black text-indigo-900 mb-1 md:mb-2 text-lg md:text-xl">Conversation Builder</h3>
+                <p class="text-indigo-800 font-bold leading-relaxed text-sm md:text-lg">${lesson.theory.builderRule}</p>
+              </div>
+            </div>
+            ` : ''}
+
+            ${lesson.theory.buildingBlocks ? `
+            <div class="bg-yellow-50 rounded-2xl md:rounded-[1.5rem] p-5 md:p-8 border border-yellow-200 flex gap-4 md:gap-5 items-start shadow-sm">
+              <i data-lucide="puzzle" class="text-yellow-500 shrink-0 mt-0.5 md:mt-1 w-8 h-8 md:w-10 md:h-10"></i>
+              <div>
+                <h3 class="font-black text-yellow-900 mb-1 md:mb-2 text-lg md:text-xl">Mattoncini della Frase 🧩</h3>
+                <p class="text-yellow-800 font-bold leading-relaxed text-sm md:text-lg">${lesson.theory.buildingBlocks}</p>
+              </div>
+            </div>
+            ` : ''}
+
+            <div class="bg-green-50 rounded-2xl md:rounded-[1.5rem] p-5 md:p-8 border border-green-100 flex gap-4 md:gap-5 items-start shadow-sm">
+              <i data-lucide="leaf" class="text-green-600 shrink-0 mt-0.5 md:mt-1 w-8 h-8 md:w-10 md:h-10"></i>
+              <div>
+                <h3 class="font-black text-green-900 mb-1 md:mb-2 text-lg md:text-xl">Dettaglio Culturale 🎎</h3>
+                <p class="text-green-800 font-bold leading-relaxed text-sm md:text-lg">${lesson.theory.culture}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 md:p-10 bg-gray-50 border-t-2 border-gray-100 flex justify-end">
+            <button onclick="window.startGame()" class="bg-pink-500 hover:bg-pink-600 text-white px-6 md:px-10 py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-lg md:text-xl shadow-lg shadow-pink-500/30 flex items-center justify-center gap-3 transition-transform transform hover:scale-105 w-full md:w-auto min-h-[60px] md:min-h-[70px] outline-none">
+              Inizia la Pratica (${lesson.exercises.length} Es) <i data-lucide="play-circle" class="w-6 h-6 md:w-8 md:h-8"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      `;
+    };
+
+    const renderGame = () => {
+      const lesson = COURSE_DATA.find(d => d.day === state.activeDay);
+      const exercise = lesson.exercises[state.gameStep];
+      const isAnswered = state.selectedAnswer !== null;
+      
+      let isCorrect = false;
+      if (exercise.type === 'multiple_choice' || exercise.type === 'listen' || exercise.type === 'conversation') {
+        isCorrect = isAnswered && state.selectedAnswer === exercise.answer;
+      } else if (exercise.type === 'speak') {
+        isCorrect = isAnswered && state.selectedAnswer === true;
+      }
+
+      const progressWidth = (state.gameStep / lesson.exercises.length) * 100;
+      
+      let typeLabel = 'Quiz di Comprensione';
+      let typeIcon = 'brain';
+      let typeColor = 'text-blue-700 bg-blue-50 border-blue-100';
+      if(exercise.type === 'speak') { typeLabel = 'Pronuncia Vocale'; typeIcon = 'mic'; typeColor = 'text-pink-700 bg-pink-50 border-pink-100'; }
+      else if(exercise.type === 'listen') { typeLabel = 'Test di Ascolto'; typeIcon = 'headphones'; typeColor = 'text-indigo-700 bg-indigo-50 border-indigo-100'; }
+      else if(exercise.type === 'conversation') { typeLabel = 'Simulazione Dialogo'; typeIcon = 'message-square'; typeColor = 'text-orange-700 bg-orange-50 border-orange-100'; }
+
+      let exerciseHtml = '';
+      let builderHint = '';
+
+      if (exercise.type === 'listen' && !isAnswered) {
+          builderHint = `<div class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-3 md:px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex gap-2 md:gap-3 shadow-sm mt-5 md:mt-6"><i data-lucide="headphones" class="w-4 h-4 md:w-5 md:h-5 shrink-0"></i> Tecnica Shadowing: Ascolta l'audio 2-3 volte, poi prova a ripeterlo ad alta voce prima di rispondere.</div>`;
+      } else if (exercise.type === 'conversation' && !isAnswered && state.activeDay > 1) {
+          builderHint = `<div class="bg-orange-50 border border-orange-200 text-orange-800 px-3 md:px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex gap-2 md:gap-3 shadow-sm mt-5 md:mt-6"><i data-lucide="message-circle" class="w-4 h-4 md:w-5 md:h-5 shrink-0"></i> Conversation Builder: Pensa a come potresti concatenare questa risposta con il tuo saluto del Giorno 1!</div>`;
+      }
+
+      let contextHtml = '';
+      if (exercise.type === 'conversation' && exercise.context) {
+        contextHtml = `
+          <div class="mb-6 md:mb-10 w-full flex justify-start">
+            <div class="chat-bubble bg-orange-50 border-2 border-orange-200 p-4 md:p-6 rounded-2xl rounded-bl-none shadow-sm relative w-11/12 md:w-3/4">
+              <p class="text-orange-900 font-bold text-sm md:text-lg">${exercise.context}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      if (exercise.type === 'multiple_choice' || exercise.type === 'listen' || exercise.type === 'conversation') {
+        exerciseHtml = `<div class="space-y-3 md:space-y-4">` + exercise.options.map((opt, i) => {
+          let btnClass = "bg-white border-2 border-gray-200 text-gray-700 hover:border-pink-400 hover:bg-pink-50";
+          let iconHtml = '';
+          if (isAnswered) {
+            if (i === exercise.answer) {
+              btnClass = "bg-green-50 border-2 border-green-500 text-green-900 shadow-md transform md:scale-[1.02] z-10";
+              iconHtml = `<i data-lucide="check-circle-2" class="text-green-500 w-6 h-6 md:w-8 md:h-8 animate-pop"></i>`;
+            } else if (i === state.selectedAnswer) {
+              btnClass = "bg-rose-50 border-2 border-rose-500 text-rose-900";
+              iconHtml = `<i data-lucide="x-circle" class="text-rose-500 w-6 h-6 md:w-8 md:h-8"></i>`;
+            } else {
+              btnClass = "bg-gray-50 border-2 border-gray-100 text-gray-400 opacity-60";
+            }
+          }
+
+          let optionAudioBtn = '';
+          if (exercise.optionsHangul && exercise.optionsHangul[i]) {
+            optionAudioBtn = `
+              <button onclick="window.playAudio(event, '${exercise.optionsHangul[i]}')" class="p-3 md:p-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-200 transition-colors shrink-0 z-10 border border-blue-100 mr-3 md:mr-4 shadow-sm min-h-[44px] min-w-[44px] md:min-h-[50px] md:min-w-[50px] flex items-center justify-center outline-none">
+                 <i data-lucide="volume-2" class="w-5 h-5 md:w-6 md:h-6"></i>
+              </button>
+            `;
+          }
+
+          const hasHangul = /[\u3131-\uD79D]/ugi.test(opt);
+          const optionText = hasHangul ? window.renderHangul(opt) : opt;
+
+          return `
+            <div class="relative w-full rounded-[1rem] md:rounded-[1.2rem] transition-all cursor-pointer shadow-sm hover:shadow-md min-h-[70px] md:min-h-[80px] flex items-center ${btnClass}" onclick="if(!${isAnswered}) window.handleMultipleChoiceAnswer(${i})">
+              <div class="flex items-center w-full p-3 md:p-6 h-full">
+                ${optionAudioBtn}
+                <span class="font-black text-lg md:text-2xl flex-grow leading-tight ${hasHangul ? 'hangul-display' : ''}">${optionText}</span>
+                <div class="flex items-center gap-2 md:gap-3 shrink-0 ml-2 md:ml-4">
+                  ${iconHtml}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('') + `</div>`;
+      } else if (exercise.type === 'speak') {
+        if(state.fallbackActive && !isAnswered) {
+            exerciseHtml = `
+            <div class="space-y-3 md:space-y-4 w-full animate-pop">
+                <p class="text-xs md:text-sm font-bold text-orange-600 bg-orange-50 p-3 md:p-4 rounded-xl border border-orange-200 mb-4 md:mb-6 shadow-sm flex items-start gap-2 md:gap-3 leading-relaxed">
+                    <i data-lucide="info" class="w-4 h-4 md:w-5 md:h-5 shrink-0 mt-0.5"></i> Scegli la <b>pronuncia fonetica esatta</b> per proseguire! L'audio si attiverà se indovini.
+                </p>
+                ${state.fallbackOptions.map((opt, i) => `
+                    <button onclick="window.handleFallbackAnswer(${i})" class="w-full text-left p-4 md:p-6 rounded-[1rem] md:rounded-[1.2rem] border-2 border-gray-200 hover:border-pink-400 hover:bg-pink-50 font-black text-lg md:text-2xl transition-all shadow-sm flex items-center justify-between text-gray-800 min-h-[70px] md:min-h-[80px] outline-none">
+                        <span class="break-words mr-3 md:mr-4">${opt}</span> <i data-lucide="ear" class="w-5 h-5 md:w-6 md:h-6 text-pink-400 shrink-0"></i>
+                    </button>
+                `).join('')}
+            </div>
+            `;
+        } else {
+            const btnClasses = state.isRecording ? 'bg-pink-500 scale-110 shadow-2xl shadow-pink-500/50 recording-pulse border-white border-4' : isAnswered ? 'bg-gray-200 text-gray-400' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-xl hover:scale-105 border-4 border-blue-200';
+            const msg = state.isRecording ? "Ti sto ascoltando..." : isAnswered ? "Analisi completata." : "Tocca per parlare";
+            exerciseHtml = `
+            <div class="flex flex-col items-center justify-center mt-6 md:mt-12 space-y-6 md:space-y-8 bg-gray-50 p-6 md:p-10 rounded-3xl md:rounded-[2.5rem] border-2 border-dashed border-gray-200 min-h-[250px] md:min-h-[300px] relative">
+                <button ${isAnswered || state.isRecording ? 'disabled' : ''} 
+                onmousedown="window.handleSpeechRecognition(event)" 
+                ontouchstart="window.handleSpeechRecognition(event)" 
+                class="relative w-32 h-32 md:w-40 md:h-40 rounded-full flex items-center justify-center transition-all ${btnClasses} no-select outline-none">
+                <i data-lucide="mic" class="w-12 h-12 md:w-16 md:h-16 ${state.isRecording ? 'animate-bounce' : ''}"></i>
+                </button>
+                <p class="text-gray-600 font-black text-center text-lg md:text-xl">${msg}</p>
+                ${(!isAnswered && !state.isRecording) ? `<button onclick="window.triggerSpeechFallback()" class="absolute bottom-3 right-3 md:bottom-4 md:right-4 text-[10px] md:text-xs font-bold text-gray-400 hover:text-gray-600 bg-white border border-gray-200 px-3 md:px-4 py-2 md:py-3 rounded-lg shadow-sm transition-colors outline-none">Salta / Alternativa</button>` : ''}
+            </div>
+            `;
+        }
+      }
+
+      const feedbackClass = isCorrect ? 'bg-green-50 border-green-200 text-green-900' : 'bg-rose-50 border-rose-200 text-rose-900';
+      const iconClass = isCorrect ? 'bg-green-500' : 'bg-rose-500';
+      const iconType = isCorrect ? 'check' : 'message-circle-warning';
+      const headingText = isCorrect ? 'Perfetto, Sara! 🎉' : 'Oops, non ti arrendere! 💪';
+      const btnFeedClass = isCorrect ? 'bg-green-500 hover:bg-green-600 shadow-green-500/30' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/30';
+      const btnText = state.gameStep === lesson.exercises.length - 1 ? 'Termina Lezione' : 'Prossima Domanda';
+
+      return `
+      <div class="max-w-2xl mx-auto animate-pop">
+        
+        <div class="flex justify-between items-center mb-4 md:mb-6 px-1 md:px-2">
+            <div class="flex items-center gap-2 bg-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl shadow-sm border border-gray-100">
+                <i data-lucide="flame" class="w-5 h-5 md:w-6 md:h-6 ${state.combo > 1 ? 'text-orange-500 animate-pulse' : 'text-gray-300'}"></i>
+                <span class="font-black text-sm md:text-lg ${state.combo > 1 ? 'text-orange-600' : 'text-gray-400'}">Streak: ${state.combo}</span>
+            </div>
+            <span class="font-black text-gray-500 text-sm md:text-lg bg-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl shadow-sm border border-gray-100">${state.gameStep + 1} / ${lesson.exercises.length}</span>
+        </div>
+
+        <div class="mb-6 md:mb-8 flex items-center gap-4 bg-white p-2 md:p-3 rounded-2xl shadow-sm border border-gray-100">
+          <div class="flex-grow bg-gray-100 h-3 md:h-5 rounded-xl overflow-hidden shadow-inner">
+            <div class="bg-gradient-to-r from-blue-400 to-pink-500 h-full transition-all duration-700 ease-out" style="width: ${progressWidth}%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl md:rounded-[2.5rem] korean-shadow p-5 md:p-12 min-h-[450px] md:min-h-[550px] flex flex-col border border-blue-50 relative overflow-hidden">
+          <div class="flex-grow z-10">
+            <div class="flex justify-center mb-6 md:mb-10">
+               <span class="${typeColor} text-[10px] md:text-sm font-black px-4 md:px-6 py-1.5 md:py-2 rounded-full uppercase tracking-widest shadow-sm border flex items-center gap-2 text-center">
+                 <i data-lucide="${typeIcon}" class="w-3 h-3 md:w-4 md:h-4 shrink-0"></i> ${typeLabel}
+               </span>
+            </div>
+
+            ${exercise.type === 'listen' ? `
+              <div class="flex justify-center mb-5 md:mb-6">
+                <button onclick="window.playAudio(event, '${exercise.audioHangul}')" class="flex items-center justify-center gap-3 md:gap-4 bg-pink-500 hover:bg-pink-600 text-white px-6 md:px-10 py-4 md:py-6 rounded-full transition-transform hover:scale-105 shadow-xl shadow-pink-500/30 w-full sm:w-auto outline-none">
+                  <i data-lucide="volume-2" class="w-6 h-6 md:w-10 md:h-10 animate-pulse"></i><span class="font-black text-lg md:text-2xl">Riproduci Audio</span>
+                </button>
+              </div>
+            ` : ''}
+
+            ${contextHtml}
+            
+            <h2 class="text-xl md:text-3xl lg:text-4xl font-black text-gray-800 mb-6 md:mb-8 text-center leading-snug">
+              ${exercise.question}
+            </h2>
+
+            ${exerciseHtml}
+            ${builderHint}
+          </div>
+
+          <div class="mt-8 md:mt-12 transition-all duration-500 z-10 ${isAnswered ? 'opacity-100 translate-y-0 block' : 'opacity-0 translate-y-4 hidden'}">
+            <div class="p-5 md:p-8 rounded-2xl md:rounded-[1.5rem] flex flex-col sm:flex-row gap-4 md:gap-5 items-start shadow-sm border-2 ${feedbackClass}">
+              <div class="p-3 md:p-4 rounded-full text-white shrink-0 shadow-md ${iconClass}">
+                  <i data-lucide="${iconType}" class="w-6 h-6 md:w-8 md:h-8"></i>
+              </div>
+              <div class="flex-grow w-full">
+                <h4 class="font-black text-xl md:text-2xl mb-1 md:mb-3">${headingText}</h4>
+                <p class="font-bold text-sm md:text-lg mb-2 text-gray-800">${isCorrect ? "Ottima risposta, vai avanti così." : exercise.feedback_incorrect}</p>
+                ${!isCorrect && exercise.tip ? `<div class="bg-white/50 p-3 md:p-4 rounded-xl border border-white/40 mt-2 md:mt-3 font-bold text-xs md:text-md text-gray-700 shadow-inner break-words w-full"><strong>💡 Hint del Sensei:</strong><br/>${exercise.tip}</div>` : ''}
+              </div>
+            </div>
+            <button onclick="window.nextQuestion()" class="w-full mt-4 md:mt-6 py-4 md:py-6 rounded-xl md:rounded-2xl font-black text-lg md:text-2xl text-white shadow-xl transition-transform transform hover:scale-[1.02] min-h-[60px] md:min-h-[70px] ${btnFeedClass} outline-none">
+              ${btnText}
+            </button>
+          </div>
+        </div>
+      </div>
+      `;
+    };
+
+    const renderResult = () => {
+      const lesson = COURSE_DATA.find(d => d.day === state.activeDay);
+      const total = lesson.exercises.length;
+      const isPerfect = state.score === total;
+      
+      const adminCode = window._s_k_d[state.activeDay];
+
+      const mistakesHtml = state.currentMistakes.length > 0 
+        ? `<div class="bg-rose-50 border-2 border-rose-200 text-rose-900 p-4 md:p-6 rounded-2xl mb-8 md:mb-10 text-left shadow-sm">
+             <span class="font-black block mb-2 md:mb-3 text-sm md:text-lg flex items-center gap-2"><i data-lucide="book-open" class="w-5 h-5 md:w-6 md:h-6"></i> Heatmap: Punti deboli da ripassare:</span>
+             <div class="flex flex-wrap gap-2 mt-2 md:mt-4">
+               ${[...new Set(state.currentMistakes)].map(m => `<span class="bg-rose-200 text-rose-800 px-2 md:px-3 py-1 rounded-full font-bold text-xs md:text-sm shadow-sm">${m}</span>`).join('')}
+             </div>
+           </div>` 
+        : '';
+        
+      const finalMissionText = state.activeDay <= 5 
+        ? "Registra mentalmente o ad alta voce un monologo: immagina di entrare in palestra o al PC Bang, presentati velocemente e saluta."
+        : `Sfida: Fai finta di vivere ora la situazione "${lesson.topic}". Saluta, chiedi "${lesson.theory.examples[0].eng}", poi ringrazia. Parla forte e chiaro!`;
+
+      return `
+      <div class="max-w-lg mx-auto text-center px-2 md:px-4 animate-pop">
+        <div class="bg-white rounded-3xl md:rounded-[3rem] korean-shadow p-8 md:p-16 border border-blue-50 relative overflow-hidden mt-4">
+          
+          <div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0iI2QxZDVkYiIvPjwvc3ZnPg==')]"></div>
+
+          <div class="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-yellow-300 via-yellow-400 to-orange-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 md:mb-8 shadow-2xl shadow-yellow-500/40 relative z-10 animate-pop">
+            <i data-lucide="trophy" class="w-12 h-12 md:w-16 md:h-16"></i>
+          </div>
+          <h2 class="text-3xl md:text-5xl font-black text-gray-900 mb-2 md:mb-3 relative z-10">Lezione Completata!</h2>
+          <p class="text-blue-500 mb-8 md:mb-10 font-black uppercase tracking-widest text-[10px] md:text-sm relative z-10">Giorno ${state.activeDay}: ${lesson.topic}</p>
+          
+          <div class="text-[4rem] md:text-[5rem] font-black text-pink-500 mb-4 md:mb-6 drop-shadow-md relative z-10 leading-none">${state.score}<span class="text-3xl md:text-4xl text-gray-400">/${total}</span></div>
+          
+          ${mistakesHtml}
+
+          <p class="text-base md:text-xl font-bold text-gray-600 mb-6 md:mb-8 leading-relaxed relative z-10">
+            ${isPerfect ? "Sei stata IMPECCABILE, Sara! Zero errori, pronta per un K-Drama o un game a LoL senza sottotitoli. 🌸 화이팅! ✊" : "Ottimo sforzo! Non demordere, ricorda lo spirito sportivo dei K-Drama: 화이팅! (Fighting!) ✊ Gli errori si sistemano con la Ripetizione Spaziata."}
+          </p>
+
+          <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-indigo-100 mb-8 md:mb-10 shadow-md relative z-10 text-left">
+             <div class="flex items-center justify-between mb-3 md:mb-4">
+                 <span class="font-black text-indigo-900 flex items-center gap-2 text-sm md:text-lg"><i data-lucide="mic-2" class="w-5 h-5 md:w-6 md:h-6 text-indigo-500"></i> Roleplay</span>
+                 <span class="bg-indigo-600 text-white text-[8px] md:text-[10px] font-black px-2 md:px-3 py-1 md:py-1.5 rounded-full uppercase tracking-widest shadow-sm">Task Finale</span>
+             </div>
+             <p class="text-indigo-800 font-bold text-xs md:text-base leading-relaxed mb-4 md:mb-6">${finalMissionText}</p>
+             <button onclick="window.haptic([50, 100, 50]); this.innerHTML='<i data-lucide=\\'check-circle\\' class=\\'w-5 h-5 md:w-6 md:h-6\\'></i> Fatto!'; this.classList.replace('bg-white', 'bg-green-500'); this.classList.replace('text-indigo-600', 'text-white'); lucide.createIcons();" class="w-full bg-white border-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-lg transition-all flex items-center justify-center gap-2 md:gap-3 shadow-sm outline-none active:scale-95">
+                 <i data-lucide="play-circle" class="w-5 h-5 md:w-6 md:h-6"></i> Ho parlato per 20 secondi
+             </button>
+          </div>
+
+          <div class="bg-gray-100 p-3 md:p-4 rounded-xl mb-8 md:mb-12 border border-gray-200 relative z-10 text-xs md:text-sm font-bold text-gray-600 text-left shadow-sm">
+             <i data-lucide="key" class="w-4 h-4 md:w-5 md:h-5 inline text-pink-500 mb-0.5 md:mb-1"></i> Codice Segreto salvataggio: <span class="font-mono bg-white px-2 py-1 rounded shadow-sm text-pink-600 select-all border border-pink-100">${adminCode}</span>
+             <div class="text-[10px] md:text-xs text-gray-400 mt-1.5 md:mt-2 font-normal">Inseriscilo nel "Profilo" da un altro dispositivo per sbloccare automaticamente questo livello.</div>
+          </div>
+
+          <button onclick="window.changeView('dashboard')" class="w-full bg-gray-900 hover:bg-black text-white py-4 md:py-6 rounded-xl md:rounded-2xl font-black text-lg md:text-2xl shadow-xl transition-transform transform hover:scale-[1.02] relative z-10 flex justify-center items-center gap-2 md:gap-3 min-h-[60px] md:min-h-[70px] outline-none">
+            <i data-lucide="map" class="w-6 h-6 md:w-7 md:h-7"></i> Salva e Torna al Percorso
+          </button>
+        </div>
+      </div>
+      `;
+    };
+
+    const renderLibrary = () => {
+      let html = `
+      <div class="max-w-5xl mx-auto animate-pop">
+        
+        <div class="bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] korean-shadow border border-blue-50 mb-8 md:mb-12 relative overflow-hidden">
+          <div class="absolute right-0 top-0 w-48 h-48 md:w-64 md:h-64 bg-gradient-to-bl from-pink-50 to-transparent rounded-bl-full -z-10"></div>
+          
+          <h2 class="text-2xl md:text-3xl font-black text-gray-900 mb-2 md:mb-3 flex items-center gap-2 md:gap-3">
+            <div class="p-2 md:p-3 bg-pink-100 text-pink-600 rounded-xl md:rounded-2xl"><i data-lucide="bot" class="w-6 h-6 md:w-8 md:h-8"></i></div> 
+            Traduttore AI
+          </h2>
+          <p class="text-gray-500 font-bold mb-6 md:mb-8 text-sm md:text-lg">Scrivi in Italiano. Otterrai Hangul, romanizzazione e audio per salvarti in Corea.</p>
+          
+          <div class="flex flex-col md:flex-row gap-3 md:gap-4 mb-3 md:mb-4 z-10 relative">
+            <input type="text" id="transInput" value="${state.transInput}" onchange="state.transInput = this.value" placeholder="es., Quanto costa un biglietto?" class="flex-grow border-2 border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-5 text-base md:text-xl font-bold text-gray-800 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-sm min-h-[50px] md:min-h-[60px]" />
+            <button onclick="window.runTranslation()" class="bg-pink-500 hover:bg-pink-600 text-white px-6 md:px-10 py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-base md:text-xl transition-transform hover:scale-105 shadow-xl shadow-pink-500/30 flex justify-center items-center gap-2 md:gap-3 min-h-[50px] md:min-h-[60px] outline-none">
+              ${state.transLoading ? `<i data-lucide="loader-2" class="animate-spin w-5 h-5 md:w-6 md:h-6"></i>` : `<i data-lucide="languages" class="w-5 h-5 md:w-6 md:h-6"></i> Traduci`}
+            </button>
+          </div>
+          
+          ${state.transResult ? `
+            <div class="mt-6 md:mt-8 bg-gray-900 p-5 md:p-8 rounded-2xl md:rounded-[1.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 shadow-2xl animate-pop border border-gray-800">
+              <div class="w-full">
+                 <span class="text-2xl md:text-4xl font-black text-white block mb-2 hangul-display" style="font-family: 'Noto Sans KR'">${window.renderHangul(state.transResult)}</span>
+                 <span class="text-sm md:text-xl font-bold text-blue-300 tracking-wide break-words">${state.transRomaji}</span>
+                 <div class="mt-3 bg-white/10 rounded-xl px-3 py-2 text-xs md:text-sm font-bold text-yellow-300 flex items-center gap-2">
+                   <span>📌</span> 
+                   <span>${state.transResult && (state.transResult.endsWith('요') || state.transResult.endsWith('다') || state.transResult.endsWith('까') || state.transResult.endsWith('세요')) ? '✅ Forma Formale (-요/-다) — Sicura da usare con sconosciuti e negozianti.' : '⚠️ Controlla il livello di formalità prima di usarla con sconosciuti!'}</span>
+                 </div>
+              </div>
+              <button onclick="window.playAudio(event, '${state.transResult}')" class="bg-blue-500 hover:bg-blue-400 shadow-lg text-white p-4 md:p-5 rounded-full transition-transform hover:scale-110 shrink-0 w-full md:w-auto flex justify-center min-h-[50px] md:min-h-[64px] min-w-[50px] md:min-w-[64px] outline-none">
+                <i data-lucide="volume-2" class="w-6 h-6 md:w-8 md:h-8"></i>
+              </button>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 mb-8 md:mb-12 shadow-sm border-2 border-red-50 relative overflow-hidden flex flex-col md:flex-row items-center gap-6 md:gap-8 group hover:shadow-lg transition-shadow">
+           <div class="p-4 md:p-6 bg-red-50 text-red-500 rounded-full shrink-0 group-hover:scale-110 transition-transform">
+               <i data-lucide="youtube" class="w-10 h-10 md:w-16 md:h-16"></i>
+           </div>
+           <div class="flex-grow text-center md:text-left">
+              <h2 class="text-xl md:text-2xl font-black text-gray-900 mb-2">Risorse Extra: Impara di Più!</h2>
+              <p class="text-gray-600 font-bold mb-4 text-sm md:text-lg">Sei in treno verso Jeju-do e vuoi studiare? Guarda questo fantastico corso base per ampliare il tuo vocabolario e la grammatica.</p>
+              <a href="https://www.youtube.com/watch?v=sx0yyQqkpqo&list=PLbFrQnW0BNMUkAFj4MjYauXBPtO3I9O_k" target="_blank" class="inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-black px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-md min-h-[44px] transition-colors w-full md:w-auto text-sm md:text-base outline-none" onclick="window.haptic()">
+                 Apri Playlist Youtube <i data-lucide="external-link" class="w-4 h-4 md:w-5 md:h-5"></i>
+              </a>
+           </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-400 to-pink-400 text-white rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-12 mb-8 md:mb-12 shadow-xl text-center md:text-left relative overflow-hidden">
+          <i data-lucide="book-marked" class="absolute right-0 bottom-0 w-48 h-48 md:w-64 md:h-64 opacity-10 transform translate-x-6 translate-y-6 md:translate-x-10 md:translate-y-10"></i>
+          <h1 class="text-3xl md:text-5xl font-black mb-3 md:mb-4 flex items-center justify-center md:justify-start gap-3 md:gap-4 relative z-10">
+             Dizionario Interattivo 🎒
+          </h1>
+          <p class="text-blue-50 text-sm md:text-xl font-bold relative z-10">Tocca le frasi in Coreano (Hangul) per allenare la pronuncia prima di uscire in città.</p>
+        </div>
+        <div class="space-y-4 md:space-y-6">
+      `;
+
+      LIBRARY_DATA.forEach(section => {
+        let itemsHtml = section.items.map(item => `
+          <div class="bg-white p-5 md:p-8 rounded-[1.2rem] md:rounded-[1.5rem] shadow-sm border-2 border-gray-50 flex flex-col justify-between hover:shadow-xl hover:border-pink-100 transition-all group">
+            <div class="mb-2">
+              <div class="flex justify-between items-start mb-3 md:mb-4 gap-3 md:gap-4">
+                <div class="w-full">
+                  <p class="text-xl md:text-3xl font-black text-gray-900 mb-1 md:mb-2 group-hover:text-pink-600 transition-colors hangul-display" style="font-family: 'Noto Sans KR'">${window.renderHangul(item.hangul)}</p>
+                  <p class="text-[10px] md:text-xs font-black text-blue-500 uppercase tracking-widest break-words">${item.romaji}</p>
+                </div>
+                <button onclick="window.playAudio(event, '${item.hangul}')" class="shrink-0 flex items-center justify-center bg-gray-50 hover:bg-pink-50 border border-gray-200 hover:border-pink-200 text-gray-700 hover:text-pink-700 p-2 md:p-3 rounded-full transition-all shadow-sm w-10 h-10 md:w-14 md:h-14 outline-none">
+                  <i data-lucide="volume-2" class="w-5 h-5 md:w-6 md:h-6"></i>
+                </button>
+              </div>
+              <p class="text-gray-700 font-black text-base md:text-lg mb-3 md:mb-4 leading-tight">"${item.eng}"</p>
+              <div class="bg-gray-50 p-3 md:p-4 rounded-xl border border-gray-100">
+                <p class="text-gray-600 text-xs md:text-sm font-bold leading-relaxed flex items-start gap-2"><i data-lucide="info" class="w-4 h-4 text-pink-400 shrink-0 mt-0.5"></i> ${item.context}</p>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        html += `
+          <details class="group bg-white rounded-2xl md:rounded-[2rem] border-2 border-gray-100 shadow-sm overflow-hidden mb-4 md:mb-6 open:shadow-lg open:border-pink-200 transition-all">
+            <summary class="flex items-center justify-between p-5 md:p-8 cursor-pointer bg-white hover:bg-gray-50 transition-colors no-select outline-none" onclick="window.haptic(20)">
+              <div class="flex items-center gap-3 md:gap-4">
+                <div class="p-2 md:p-3 bg-gray-100 rounded-xl group-open:bg-pink-100 transition-colors"><i data-lucide="${section.icon}" class="${section.iconColor} w-6 h-6 md:w-8 md:h-8 group-open:text-pink-600"></i></div>
+                <h2 class="text-lg md:text-3xl font-black text-gray-800">${section.category}</h2>
+              </div>
+              <div class="bg-gray-100 p-1.5 md:p-2 rounded-full text-gray-500 group-open:bg-pink-100 group-open:text-pink-500 transition-all group-open:rotate-180 shrink-0">
+                 <i data-lucide="chevron-down" class="w-5 h-5 md:w-6 md:h-6"></i>
+              </div>
+            </summary>
+            <div class="p-5 md:p-8 pt-0 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-gray-50/50">
+              ${itemsHtml}
+            </div>
+          </details>
+        `;
+      });
+
+      html += `</div></div>`;
+      return html;
+    };
+
+    const renderProfile = () => {
+      let saluti = 0, vita = 0, passioni = 0, avan = 0;
+      state.completedDays.forEach(d => {
+         if(d <= 5) saluti += 20; 
+         else if(d <= 15) vita += 10;
+         else if(d <= 25) passioni += 10;
+         else avan += 5;
+      });
+
+      return `
+      <div class="max-w-md mx-auto px-2 md:px-4 animate-pop">
+        <div class="bg-white rounded-[2rem] md:rounded-[3rem] korean-shadow p-6 md:p-10 border border-blue-50 text-center relative overflow-hidden mt-4">
+          
+          <div class="w-24 h-24 md:w-32 md:h-32 bg-pink-50 text-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 md:mb-8 border-4 md:border-8 border-white shadow-xl relative z-10">
+            <i data-lucide="user" class="w-12 h-12 md:w-16 md:h-16"></i>
+          </div>
+          <h2 class="text-2xl md:text-4xl font-black text-gray-900 mb-2">Profilo di Studio</h2>
+          <p class="text-gray-500 mb-8 md:mb-12 font-bold text-sm md:text-lg">Il tuo viaggio in Corea è al sicuro qui.</p>
+          
+          <div class="text-left mb-6 md:mb-8">
+            <label class="block text-[10px] md:text-sm font-black text-gray-500 mb-2 md:mb-3 uppercase tracking-widest">Cambia Nome Studente</label>
+            <input 
+              type="text" 
+              value="${state.profileName}"
+              onchange="window.updateProfileName(this.value)"
+              class="w-full border-2 border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-5 text-xl md:text-2xl font-black text-gray-800 focus:border-pink-500 outline-none transition-colors shadow-inner bg-gray-50 focus:bg-white min-h-[50px] md:min-h-[60px]"
+            />
+          </div>
+
+          <div class="text-left mb-6 md:mb-8 bg-gray-50 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100">
+             <label class="block text-[10px] md:text-sm font-black text-gray-800 mb-3 md:mb-4 uppercase tracking-widest flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-4 h-4 md:w-5 md:h-5 text-blue-500"></i> Competenze Apprese</label>
+             <div class="space-y-3 md:space-y-4">
+                 <div>
+                    <div class="flex justify-between text-[10px] md:text-xs font-bold text-gray-500 mb-1"><span>Basi & Saluti</span> <span>${Math.min(saluti, 100)}%</span></div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 md:h-2"><div class="bg-pink-500 h-1.5 md:h-2 rounded-full" style="width: ${Math.min(saluti, 100)}%"></div></div>
+                 </div>
+                 <div>
+                    <div class="flex justify-between text-[10px] md:text-xs font-bold text-gray-500 mb-1"><span>Vita Quotidiana</span> <span>${Math.min(vita, 100)}%</span></div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 md:h-2"><div class="bg-blue-500 h-1.5 md:h-2 rounded-full" style="width: ${Math.min(vita, 100)}%"></div></div>
+                 </div>
+                 <div>
+                    <div class="flex justify-between text-[10px] md:text-xs font-bold text-gray-500 mb-1"><span>Passioni & Hobby</span> <span>${Math.min(passioni, 100)}%</span></div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 md:h-2"><div class="bg-green-500 h-1.5 md:h-2 rounded-full" style="width: ${Math.min(passioni, 100)}%"></div></div>
+                 </div>
+             </div>
+          </div>
+
+          <div class="text-left mb-8 md:mb-10 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-gray-200">
+             <label class="block text-[10px] md:text-sm font-black text-gray-800 mb-1.5 md:mb-2 uppercase tracking-widest flex items-center gap-2"><i data-lucide="zoom-in" class="w-4 h-4 md:w-5 md:h-5"></i> Grandezza Testo Coreano</label>
+             <p class="text-[10px] md:text-xs text-gray-500 font-bold mb-3 md:mb-4 leading-relaxed">Se i caratteri ti sembrano troppo piccoli sul telefono, usa questo slider per ingrandirli in tutta l'app.</p>
+             <div class="flex gap-3 md:gap-4 items-center">
+                 <span class="text-xs md:text-sm font-black text-gray-400">가</span>
+                 <input type="range" min="1" max="1.6" step="0.1" value="${state.hangulScale || 1}" onchange="window.updateHangulSize(this.value)" class="flex-grow" />
+                 <span class="text-xl md:text-2xl font-black text-pink-500">가</span>
+             </div>
+          </div>
+
+          <div class="text-left mb-8 md:mb-10 bg-pink-50 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-pink-100">
+             <label class="block text-[10px] md:text-sm font-black text-pink-600 mb-1.5 md:mb-2 uppercase tracking-widest flex items-center gap-2"><i data-lucide="unlock" class="w-3 h-3 md:w-4 md:h-4"></i> Inserisci Codice Sblocco</label>
+             <p class="text-[10px] md:text-xs text-pink-500 font-bold mb-2 md:mb-3 leading-relaxed">Usa il codice segreto fornito dall'amministratore per sincronizzare il livello!</p>
+             <div class="flex gap-2">
+                 <input type="text" id="unlockCodeInput" placeholder="es. SR20K" class="w-full border-2 border-pink-200 rounded-xl md:rounded-xl p-2 md:p-3 text-base md:text-lg font-bold text-gray-800 focus:border-pink-500 outline-none uppercase font-mono shadow-inner min-h-[44px] md:min-h-[50px]" />
+                 <button onclick="window.unlockDayWithCode(document.getElementById('unlockCodeInput').value)" class="bg-pink-500 hover:bg-pink-600 text-white px-4 md:px-5 rounded-xl font-bold shadow-md min-h-[44px] md:min-h-[50px] outline-none"><i data-lucide="arrow-right" class="w-5 h-5 md:w-6 md:h-6"></i></button>
+             </div>
+          </div>
+
+          <div class="bg-gray-900 p-6 md:p-8 rounded-2xl md:rounded-3xl mb-8 md:mb-12 flex justify-between items-center text-left shadow-xl">
+            <div>
+              <p class="text-gray-400 text-[10px] md:text-xs font-black uppercase tracking-widest mb-1">Giorni Completati</p>
+              <p class="text-4xl md:text-5xl font-black text-pink-400">${state.completedDays.length}</p>
+            </div>
+            <i data-lucide="award" class="text-yellow-400 w-12 h-12 md:w-16 md:h-16"></i>
+          </div>
+
+          <button onclick="window.handleSwitchAccount()" class="w-full bg-white border-2 border-gray-200 hover:bg-red-50 hover:border-red-300 hover:text-red-600 text-gray-500 py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-base md:text-lg shadow-sm transition-all flex justify-center items-center gap-2 md:gap-3 min-h-[50px] md:min-h-[60px] outline-none">
+            <i data-lucide="trash-2" class="w-5 h-5 md:w-6 md:h-6"></i> Resetta Percorso
+          </button>
+        </div>
+      </div>
+      `;
+    };
+
+    // Boot App
+    initApp();
+
+  </script>
+
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => console.log('Service Worker registrato con successo!', reg.scope))
+        .catch((err) => console.warn('Errore registrazione Service Worker', err));
+    });
+  }
+  </script>
+</body>
+</html>
