@@ -22,7 +22,6 @@ const state = {
   newlyUnlockedLocation: null,
   wotdIndex: 0,
   
-  // New Mechanics State
   builderSelection: [],
   matchingState: { selectedId: null, matched: [] },
   matchingSetup: null
@@ -36,7 +35,6 @@ if (state.isDarkMode) {
 let myMap = null;
 let speechTimeout = null;
 
-// --- HELPERS ---
 window.haptic = (ms = 40) => { if (navigator.vibrate) navigator.vibrate(ms); };
 
 window.toggleDarkMode = () => {
@@ -51,10 +49,6 @@ window.updateHangulSize = (val) => {
     state.hangulScale = parseFloat(val);
     document.documentElement.style.setProperty('--hangul-scale', state.hangulScale);
     saveProgress(state.completedDays, state.mistakesRecord);
-};
-
-window.renderHangul = (text) => {
-  return `<span class="korean-click" style="font-family: 'Noto Sans KR', sans-serif;" onclick="window.playAudio(event, '${text}')" title="Tocca per ascoltare la pronuncia">${text}</span>`;
 };
 
 // --- DATA & SAVING LOGIC (LocalStorage Native) ---
@@ -140,7 +134,7 @@ window.unlockDayWithCode = (code) => {
     } else { showSaveToast("Codice Segreto non valido! Riprova.", true); }
 };
 
-// --- AUDIO & FALLBACK LOGIC ---
+// --- AUDIO E MIC ---
 window.playAudio = (e, textHangul) => {
   if (e) { e.stopPropagation(); e.preventDefault(); }
   window.haptic(30);
@@ -265,7 +259,7 @@ window.initMap = () => {
     });
 };
 
-// --- GAME HANDLERS ---
+// --- LOGICA ESERCIZI ---
 const setupSpecialExercise = (ex) => {
     if (ex.type === 'matching') {
         const koOptions = ex.pairs.map((p, i) => ({ id: i, text: p.ko, type: 'ko' })).sort(() => 0.5 - Math.random());
@@ -343,7 +337,7 @@ window.nextQuestion = () => {
   renderApp();
 };
 
-// --- NAVIGATION ---
+// --- NAVIGAZIONE ---
 window.changeView = (view) => {
   window.haptic(20); state.isTransitioning = true; renderApp();
   setTimeout(() => { state.currentView = view; state.isTransitioning = false; renderApp(); }, 300);
@@ -361,7 +355,7 @@ window.startGame = () => {
   setTimeout(() => { state.currentView = 'game'; state.isTransitioning = false; renderApp(); }, 300);
 };
 
-// --- RENDERERS ---
+// --- RENDERERS (INTERFACCIA) ---
 const renderNav = () => {
   const navItems = [
     { view: 'dashboard', icon: 'map-pin', label: 'Percorso' }, { view: 'explore', icon: 'compass', label: 'Korea Tour' },
@@ -457,7 +451,7 @@ const renderGame = () => {
             let btnClass = isMatched ? 'bg-green-100 border-green-300 text-green-700 opacity-50 scale-95 cursor-default' : isSelected ? 'bg-pink-100 border-pink-500 text-pink-700 scale-[1.02] shadow-md' : 'bg-white border-gray-200 text-gray-700 shadow-sm hover:border-pink-300';
             return `<div onclick="window.handleMatchClick(${opt.id}, '${opt.type}', '${opt.text}')" class="word-chip p-3 md:p-4 rounded-xl border-2 font-black text-center min-h-[60px] flex items-center justify-center transition-all ${btnClass}">${opt.text}</div>`;
         }).join('');
-        exerciseHtml = `<div class="grid grid-cols-2 gap-4"><div class="matching-col">${renderCol(koOptions)}</div><div class="matching-col">${renderCol(itOptions)}</div></div>`;
+        exerciseHtml = `<div class="grid grid-cols-2 gap-4"><div class="flex flex-col gap-3 flex-1">${renderCol(koOptions)}</div><div class="flex flex-col gap-3 flex-1">${renderCol(itOptions)}</div></div>`;
     }
     // 4. Speak
     else if (exercise.type === 'speak') {
@@ -470,8 +464,15 @@ const renderGame = () => {
         }
     }
 
-    const typeLabels = { speak: ['Pronuncia', 'mic', 'pink'], listen: ['Ascolto', 'headphones', 'indigo'], matching: ['Coppie', 'puzzle', 'purple'], sentence_builder: ['Costruzione', 'blocks', 'teal'], multiple_choice: ['Quiz', 'brain', 'blue'], conversation: ['Dialogo', 'message-square', 'orange'] };
-    const [tLab, tIco, tCol] = typeLabels[exercise.type] || typeLabels.multiple_choice;
+    const typeLabels = {
+        speak: { label: 'Pronuncia', icon: 'mic', classes: 'text-pink-700 bg-pink-50 border-pink-100' },
+        listen: { label: 'Ascolto', icon: 'headphones', classes: 'text-indigo-700 bg-indigo-50 border-indigo-100' },
+        matching: { label: 'Coppie', icon: 'puzzle', classes: 'text-purple-700 bg-purple-50 border-purple-100' },
+        sentence_builder: { label: 'Costruzione', icon: 'blocks', classes: 'text-teal-700 bg-teal-50 border-teal-100' },
+        multiple_choice: { label: 'Quiz', icon: 'brain', classes: 'text-blue-700 bg-blue-50 border-blue-100' },
+        conversation: { label: 'Dialogo', icon: 'message-square', classes: 'text-orange-700 bg-orange-50 border-orange-100' }
+    };
+    const tData = typeLabels[exercise.type] || typeLabels.multiple_choice;
 
     return `
     <div class="max-w-2xl mx-auto animate-pop">
@@ -479,7 +480,7 @@ const renderGame = () => {
         <div class="mb-6 flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100"><div class="flex-grow bg-gray-100 h-3 rounded-xl overflow-hidden shadow-inner"><div class="bg-gradient-to-r from-blue-400 to-pink-500 h-full transition-all duration-700" style="width: ${(state.gameStep / lesson.exercises.length) * 100}%"></div></div></div>
         <div class="bg-white rounded-[2rem] korean-shadow p-5 md:p-10 min-h-[450px] flex flex-col border border-blue-50 relative overflow-hidden">
           <div class="flex-grow z-10">
-            <div class="flex justify-center mb-6"><span class="text-${tCol}-700 bg-${tCol}-50 border-${tCol}-100 text-[10px] md:text-sm font-black px-4 py-1.5 rounded-full uppercase shadow-sm border flex items-center gap-2"><i data-lucide="${tIco}" class="w-4 h-4 shrink-0"></i> ${tLab}</span></div>
+            <div class="flex justify-center mb-6"><span class="${tData.classes} text-[10px] md:text-sm font-black px-4 py-1.5 rounded-full uppercase shadow-sm border flex items-center gap-2"><i data-lucide="${tData.icon}" class="w-4 h-4 shrink-0"></i> ${tData.label}</span></div>
             ${exercise.type === 'listen' ? `<div class="flex justify-center mb-5"><button onclick="window.playAudio(event, '${exercise.audioHangul}')" class="flex items-center gap-3 bg-pink-500 text-white px-6 py-4 rounded-full hover:scale-105 shadow-xl shadow-pink-500/30"><i data-lucide="volume-2" class="w-6 h-6 animate-pulse"></i><span class="font-black text-lg">Riproduci Audio</span></button></div>` : ''}
             ${exercise.context ? `<div class="mb-6 w-full flex justify-start"><div class="chat-bubble bg-orange-50 border-2 border-orange-200 p-4 rounded-2xl rounded-bl-none shadow-sm w-11/12"><p class="text-orange-900 font-bold text-sm md:text-lg">${exercise.context}</p></div></div>` : ''}
             <h2 class="text-xl md:text-3xl font-black text-gray-800 mb-6 text-center leading-snug">${exercise.question}</h2>
@@ -499,7 +500,9 @@ const renderGame = () => {
 const renderResult = () => {
     const lesson = window.COURSE_DATA.find(d => d.day === state.activeDay);
     const isPerfect = state.score === lesson.exercises.length;
-    return `<div class="max-w-lg mx-auto text-center px-4 animate-pop"><div class="bg-white rounded-3xl korean-shadow p-8 border border-blue-50 mt-4"><div class="w-24 h-24 bg-gradient-to-br from-yellow-300 to-orange-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl"><i data-lucide="trophy" class="w-12 h-12"></i></div><h2 class="text-3xl font-black text-gray-900 mb-2">Lezione Completata!</h2><p class="text-blue-500 mb-8 font-black uppercase text-xs">Giorno ${state.activeDay}</p><div class="text-[4rem] font-black text-pink-500 mb-6 drop-shadow-md">${state.score}<span class="text-3xl text-gray-400">/${lesson.exercises.length}</span></div>${state.newlyUnlockedLocation ? `<div class="bg-gradient-to-br from-pink-50 to-blue-50 border-2 border-pink-200 rounded-2xl p-5 mb-6 text-left"><p class="text-xs font-black text-pink-500 uppercase flex items-center gap-2 mb-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Nuova Location Sbloccata!</p><div class="flex gap-4 items-center"><img src="${state.newlyUnlockedLocation.image}" class="w-20 h-16 object-cover rounded-xl border-2 border-pink-100 shadow-md" /><h3 class="font-black text-gray-900 text-base">${state.newlyUnlockedLocation.name}</h3></div><button onclick="window.changeView('explore')" class="mt-4 w-full bg-pink-500 text-white py-2.5 rounded-xl font-black text-sm">Esplora nel Korea Tour</button></div>` : ''}<p class="text-base font-bold text-gray-600 mb-6">${isPerfect ? "Sei stata IMPECCABILE! 🌸 화이팅! ✊" : "Ottimo sforzo! 화이팅! ✊"}</p><button onclick="window.changeView('dashboard')" class="w-full bg-gray-900 text-white py-4 rounded-xl font-black text-lg shadow-xl hover:scale-[1.02] flex justify-center items-center gap-2"><i data-lucide="map" class="w-6 h-6"></i> Torna al Percorso</button></div></div>`;
+    const adminCode = window._s_k_d[state.activeDay];
+
+    return `<div class="max-w-lg mx-auto text-center px-4 animate-pop"><div class="bg-white rounded-3xl korean-shadow p-8 border border-blue-50 mt-4"><div class="w-24 h-24 bg-gradient-to-br from-yellow-300 to-orange-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl"><i data-lucide="trophy" class="w-12 h-12"></i></div><h2 class="text-3xl font-black text-gray-900 mb-2">Lezione Completata!</h2><p class="text-blue-500 mb-8 font-black uppercase text-xs">Giorno ${state.activeDay}</p><div class="text-[4rem] font-black text-pink-500 mb-6 drop-shadow-md">${state.score}<span class="text-3xl text-gray-400">/${lesson.exercises.length}</span></div>${state.newlyUnlockedLocation ? `<div class="bg-gradient-to-br from-pink-50 to-blue-50 border-2 border-pink-200 rounded-2xl p-5 mb-6 text-left"><p class="text-xs font-black text-pink-500 uppercase flex items-center gap-2 mb-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Nuova Location Sbloccata!</p><div class="flex gap-4 items-center"><img src="${state.newlyUnlockedLocation.image}" class="w-20 h-16 object-cover rounded-xl border-2 border-pink-100 shadow-md" /><h3 class="font-black text-gray-900 text-base">${state.newlyUnlockedLocation.name}</h3></div><button onclick="window.changeView('explore')" class="mt-4 w-full bg-pink-500 text-white py-2.5 rounded-xl font-black text-sm">Esplora nel Korea Tour</button></div>` : ''}<p class="text-base font-bold text-gray-600 mb-6">${isPerfect ? "Sei stata IMPECCABILE! 🌸 화이팅! ✊" : "Ottimo sforzo! 화이팅! ✊"}</p><div class="bg-gray-100 p-3 rounded-xl mb-8 border border-gray-200 text-xs font-bold text-gray-600 text-left shadow-sm"><i data-lucide="key" class="w-4 h-4 inline text-pink-500 mb-0.5"></i> Codice Segreto: <span class="font-mono bg-white px-2 py-1 rounded shadow-sm text-pink-600 border border-pink-100">${adminCode}</span></div><button onclick="window.changeView('dashboard')" class="w-full bg-gray-900 text-white py-4 rounded-xl font-black text-lg shadow-xl hover:scale-[1.02] flex justify-center items-center gap-2"><i data-lucide="map" class="w-6 h-6"></i> Torna al Percorso</button></div></div>`;
 };
 
 const renderExplore = () => {
@@ -513,7 +516,7 @@ const renderExplore = () => {
 };
 
 const renderLibrary = () => {
-    let html = `<div class="max-w-5xl mx-auto animate-pop"><div class="bg-white p-6 rounded-[2rem] korean-shadow border mb-8"><h2 class="text-2xl font-black text-gray-900 mb-2 flex items-center gap-2"><div class="p-2 bg-pink-100 text-pink-600 rounded-xl"><i data-lucide="bot" class="w-6 h-6"></i></div> Traduttore AI</h2><div class="flex flex-col md:flex-row gap-3"><input type="text" id="transInput" value="${state.transInput}" onchange="state.transInput = this.value" placeholder="es., Quanto costa?" class="flex-grow border-2 rounded-xl p-4 font-bold outline-none focus:border-pink-500" /><button onclick="window.runTranslation()" class="bg-pink-500 text-white px-6 py-4 rounded-xl font-black hover:scale-105 shadow-md flex items-center gap-2"><i data-lucide="languages" class="w-5 h-5"></i> Traduci</button></div>${state.transResult ? `<div class="mt-6 bg-gray-900 p-5 rounded-2xl flex justify-between items-center text-white"><div class="w-full"><span class="text-2xl font-black block mb-2 hangul-display">${window.renderHangul(state.transResult)}</span><span class="text-sm font-bold text-blue-300">${state.transRomaji}</span></div></div>` : ''}</div><div class="space-y-4">`;
+    let html = `<div class="max-w-5xl mx-auto animate-pop"><div class="bg-white p-6 rounded-[2rem] korean-shadow border mb-8"><h2 class="text-2xl font-black text-gray-900 mb-2 flex items-center gap-2"><div class="p-2 bg-pink-100 text-pink-600 rounded-xl"><i data-lucide="bot" class="w-6 h-6"></i></div> Traduttore AI</h2><div class="flex flex-col md:flex-row gap-3"><input type="text" id="transInput" value="${state.transInput}" onchange="state.transInput = this.value" placeholder="es., Quanto costa?" class="flex-grow border-2 rounded-xl p-4 font-bold outline-none focus:border-pink-500" /><button onclick="window.runTranslation()" class="bg-pink-500 text-white px-6 py-4 rounded-xl font-black hover:scale-105 shadow-md flex items-center gap-2"><i data-lucide="languages" class="w-5 h-5"></i> Traduci</button></div>${state.transResult ? `<div class="mt-6 bg-gray-900 p-5 rounded-2xl flex justify-between items-center text-white"><div class="w-full"><span class="text-2xl font-black block mb-2 hangul-display">${window.renderHangul(state.transResult)}</span><span class="text-sm font-bold text-blue-300">${state.transRomaji}</span></div><button onclick="window.playAudio(event, '${state.transResult}')" class="bg-blue-500 text-white p-4 rounded-full hover:scale-110"><i data-lucide="volume-2" class="w-6 h-6"></i></button></div>` : ''}</div><div class="space-y-4">`;
     window.LIBRARY_DATA.forEach(section => {
       let itemsHtml = section.items.map(item => `<div class="bg-white p-5 rounded-[1.2rem] shadow-sm border border-gray-50"><div class="flex justify-between items-start mb-3"><div class="w-full"><p class="text-xl font-black text-gray-900 mb-1 hangul-display">${window.renderHangul(item.hangul)}</p><p class="text-[10px] font-black text-blue-500 uppercase">${item.romaji}</p></div><button onclick="window.playAudio(event, '${item.hangul}')" class="bg-gray-50 p-2 rounded-full text-gray-700"><i data-lucide="volume-2" class="w-5 h-5"></i></button></div><p class="font-black text-base mb-2">"${item.eng}"</p><p class="text-xs text-gray-500 bg-gray-50 p-3 rounded-xl font-bold">${item.context}</p></div>`).join('');
       html += `<details class="group bg-white rounded-2xl border-2 border-gray-100 shadow-sm overflow-hidden mb-4"><summary class="flex items-center justify-between p-5 cursor-pointer outline-none"><div class="flex items-center gap-3"><div class="p-2 bg-gray-100 rounded-xl group-open:bg-pink-100"><i data-lucide="${section.icon}" class="${section.iconColor} w-6 h-6"></i></div><h2 class="text-lg font-black text-gray-800">${section.category}</h2></div><div class="bg-gray-100 p-1.5 rounded-full text-gray-500 group-open:bg-pink-100 group-open:text-pink-500 group-open:rotate-180"><i data-lucide="chevron-down" class="w-5 h-5"></i></div></summary><div class="p-5 pt-0 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50/50">${itemsHtml}</div></details>`;
@@ -548,6 +551,6 @@ const renderApp = () => {
   if (state.currentView === 'explore' && !state.isTransitioning) setTimeout(window.initMap, 50);
 };
 
-// Boot App
+// Avvio applicazione
 loadLocalProgress();
 renderApp();
