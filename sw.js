@@ -1,5 +1,5 @@
 /* ===== sw.js — Service Worker for Sara Korean App ===== */
-const CACHE_NAME = 'sara-korean-v5';
+const CACHE_NAME = 'sara-korean-v6';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -17,12 +17,10 @@ const STATIC_ASSETS = [
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js'
 ];
 
-// Install
 self.addEventListener('install', (e) => {
   self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      // Cache local assets reliably, external ones best-effort
       const localAssets = STATIC_ASSETS.filter(a => a.startsWith('.') || a.startsWith('/'));
       const externalAssets = STATIC_ASSETS.filter(a => a.startsWith('http'));
       return cache.addAll(localAssets).then(() => {
@@ -32,25 +30,17 @@ self.addEventListener('install', (e) => {
   );
 });
 
-// Activate - clean old caches
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE_NAME && k !== CACHE_NAME + '-tiles').map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-// Fetch - Cache First for assets, Network First for API
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
-
-  // Skip cross-origin non-CDN requests (like translation API)
-  if (url.hostname.includes('translate.googleapis') || url.hostname.includes('youtube')) {
-    return;
-  }
-
-  // For map tiles: network first with cache fallback
+  if (url.hostname.includes('translate.googleapis') || url.hostname.includes('youtube')) return;
   if (url.hostname.includes('carto') || url.hostname.includes('openstreetmap')) {
     e.respondWith(
       fetch(e.request).then(res => {
@@ -61,8 +51,6 @@ self.addEventListener('fetch', (e) => {
     );
     return;
   }
-
-  // Cache first for everything else
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
@@ -73,18 +61,37 @@ self.addEventListener('fetch', (e) => {
         return res;
       });
     }).catch(() => {
-      // Offline fallback
-      if (e.request.destination === 'document') {
-        return caches.match('./index.html');
-      }
+      if (e.request.destination === 'document') return caches.match('./index.html');
     })
   );
 });
 
-// Background sync for saving progress when offline
+self.addEventListener('push', (e) => {
+  const data = e.data ? e.data.json() : {};
+  const title = data.title || '🌸 Annyeong Sara!';
+  const options = {
+    body: data.body || 'È ora di studiare il coreano! 화이팅!',
+    icon: './icons/icon-192.png',
+    badge: './icons/icon-192.png',
+    tag: 'study-reminder',
+    requireInteraction: false,
+    data: { url: './' }
+  };
+  e.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+      if (cs.length > 0) return cs[0].focus();
+      return clients.openWindow('./');
+    })
+  );
+});
+
 self.addEventListener('sync', (e) => {
   if (e.tag === 'sync-progress') {
-    // Progress is already saved in localStorage, nothing to do
-    console.log('Background sync: progress already in localStorage');
+    console.log('Background sync: progress in localStorage');
   }
 });
