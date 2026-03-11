@@ -1,0 +1,851 @@
+/* ===== SARA KOREAN APP — style.css ===== */
+
+/* === CSS VARIABLES === */
+:root {
+  --korean-pink: #f472b6;
+  --korean-blue: #60a5fa;
+  --korean-nature: #34d399;
+  --korean-gold: #fbbf24;
+  --hanbok-cream: #fdfbf7;
+  --hangul-scale: 1;
+  --transition-speed: 0.3s;
+  --shadow-soft: 0 10px 25px -5px rgba(59,130,246,0.08), 0 8px 10px -6px rgba(59,130,246,0.04);
+  --shadow-card: 0 4px 16px rgba(0,0,0,0.07);
+}
+
+/* === GLOBAL RESET & BODY === */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  background-color: #fdfbf7;  /* light mode base */
+  color: #111827;
+  font-family: 'Nunito', 'Noto Sans KR', sans-serif;
+  margin: 0; padding: 0;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* ===================================================
+   DARK MODE — comprehensive overrides
+   Using both Tailwind class overrides AND direct
+   element selectors so nothing slips through.
+   =================================================== */
+
+/* Base */
+html.dark body {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+/* ------ Background surfaces ------ */
+html.dark .bg-white,
+html.dark [class*="dark:bg-slate-800"],
+html.dark .wotd-card-inner { background-color: #1e293b !important; color: #f1f5f9 !important; }
+
+html.dark .bg-gray-50  { background-color: #0f172a !important; }
+html.dark .bg-gray-100 { background-color: #1e293b !important; }
+html.dark .bg-gray-200 { background-color: #334155 !important; }
+html.dark .bg-gray-900 { background-color: #020617 !important; }
+
+/* Tinted backgrounds */
+html.dark .bg-pink-50,
+html.dark .bg-rose-50   { background-color: #2d1a27 !important; }
+html.dark .bg-blue-50,
+html.dark .bg-indigo-50  { background-color: #0f1e2d !important; }
+html.dark .bg-green-50   { background-color: #0a1e14 !important; }
+html.dark .bg-amber-50,
+html.dark .bg-yellow-50  { background-color: #1e1a0a !important; }
+html.dark .bg-orange-50  { background-color: #1e150a !important; }
+html.dark .bg-red-50     { background-color: #1e0f0f !important; }
+
+/* Orange-50 border tints */
+html.dark .border-orange-100 { border-color: #431407 !important; }
+html.dark .border-yellow-100 { border-color: #3a2a00 !important; }
+html.dark .border-blue-50,
+html.dark .border-blue-100   { border-color: #1e3a5f !important; }
+
+/* ------ Text colours ------ */
+html.dark .text-gray-900 { color: #f8fafc !important; }
+html.dark .text-gray-800 { color: #f1f5f9 !important; }
+html.dark .text-gray-700 { color: #e2e8f0 !important; }
+html.dark .text-gray-600 { color: #94a3b8 !important; }
+html.dark .text-gray-500 { color: #64748b !important; }
+html.dark .text-gray-400 { color: #475569 !important; }
+
+/* ------ Border colours ------ */
+html.dark .border-gray-50  { border-color: #1e293b !important; }
+html.dark .border-gray-100 { border-color: #1e293b !important; }
+html.dark .border-gray-200 { border-color: #334155 !important; }
+
+/* ------ Form elements ------ */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder { color: #475569 !important; }
+
+/* Gradient cards always keep white text in dark mode */
+html.dark [class*="from-pink-4"],
+html.dark [class*="from-pink-3"],
+html.dark [class*="from-blue-5"],
+html.dark [class*="from-indigo-6"] { color: white !important; }
+
+/* ------ Nav bars ------ */
+html.dark nav,
+html.dark header.app-top-bar {
+  background-color: rgba(15,23,42,0.97) !important;
+  border-color: #1e293b !important;
+}
+
+/* ------ Map ------ */
+html.dark .leaflet-container { filter: invert(0.85) hue-rotate(180deg) brightness(0.85); }
+
+/* ------ Shadows in dark mode ------ */
+html.dark .shadow-sm  { box-shadow: 0 2px 8px  rgba(0,0,0,0.35) !important; }
+html.dark .shadow-md  { box-shadow: 0 4px 16px rgba(0,0,0,0.4)  !important; }
+html.dark .shadow-lg  { box-shadow: 0 8px 24px rgba(0,0,0,0.45) !important; }
+html.dark .shadow-xl  { box-shadow: 0 12px 32px rgba(0,0,0,0.5) !important; }
+
+/* ------ WOTD card ------ */
+html.dark .wotd-card { background: linear-gradient(135deg, #1e1020 0%, #0f1520 100%) !important; border-color: #4a1942 !important; }
+
+/* ------ Dict entries ------ */
+html.dark .dict-entry { background-color: #1e293b !important; border-color: #334155 !important; }
+html.dark .dict-entry:hover { background-color: #2d1a27 !important; }
+
+/* ------ Scrollbar ------ */
+html.dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+/* === LAYOUT === */
+.pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+.pt-safe { padding-top: max(env(safe-area-inset-top), 12px); }
+.no-select { user-select: none; -webkit-user-select: none; }
+.hide-scroll::-webkit-scrollbar { display: none; }
+.hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* === KOREAN THEME EFFECTS === */
+.korean-shadow { box-shadow: var(--shadow-soft); }
+.hangul-watermark {
+  position: absolute; right: -5%; top: -5%;
+  font-size: 140px; color: rgba(0,0,0,0.03);
+  font-weight: 900; pointer-events: none;
+  user-select: none; z-index: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+html.dark .hangul-watermark { color: rgba(255,255,255,0.03); }
+
+.bg-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e2e8f0' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* === ANIMATIONS === */
+@keyframes pop {
+  0% { transform: scale(0.95); opacity: 0; }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop { animation: pop 0.4s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadein { animation: fadein 0.3s ease-in-out forwards; }
+
+@keyframes slideup {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slideup { animation: slideup 0.4s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(236,72,153,0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(236,72,153,0); }
+  100% { box-shadow: 0 0 0 0 rgba(236,72,153,0); }
+}
+.recording-pulse { animation: pulse-ring 1.5s cubic-bezier(0.215,0.61,0.355,1) infinite; }
+
+@keyframes unlock-glow {
+  0%,100% { box-shadow: 0 0 10px 2px rgba(52,211,153,0.5); }
+  50% { box-shadow: 0 0 25px 8px rgba(52,211,153,0.8); }
+}
+.unlock-glow { animation: unlock-glow 2s ease-in-out infinite; }
+
+@keyframes bounce-slow {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-bounce-slow { animation: bounce-slow 3s infinite; }
+
+@keyframes xp-fill {
+  from { width: 0%; }
+}
+.xp-bar { animation: xp-fill 1s ease-out; }
+
+@keyframes badge-pop {
+  0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+  70% { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.badge-pop { animation: badge-pop 0.5s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+@keyframes wotd-timer {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* === CLICKABLE KOREAN WORDS === */
+.korean-click {
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  border-bottom: 2px dashed #fbcfe8;
+  transition: all 0.2s;
+  font-size: calc(var(--hangul-scale) * 1em);
+}
+.korean-click:hover {
+  color: #ec4899;
+  border-bottom-color: #ec4899;
+  background-color: #fdf2f8;
+  border-radius: 4px;
+}
+.korean-click::after {
+  content: '🔊';
+  position: absolute;
+  top: -10px; right: -15px;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.korean-click:hover::after { opacity: 1; }
+.hangul-display { font-size: calc(var(--hangul-scale) * 1em); }
+
+/* === WORD OF DAY CARD === */
+.wotd-card {
+  background: linear-gradient(135deg, #fff0f9 0%, #eff6ff 100%);
+  position: relative;
+  overflow: hidden;
+}
+html.dark .wotd-card { background: linear-gradient(135deg, #1e1020 0%, #0f1520 100%); }
+.wotd-card::before {
+  content: '한';
+  position: absolute; right: 16px; bottom: -10px;
+  font-size: 80px; font-weight: 900;
+  color: rgba(244,114,182,0.07);
+  font-family: 'Noto Sans KR', sans-serif;
+  pointer-events: none;
+}
+
+/* Timer bar for WOTD */
+.wotd-timer-bar {
+  height: 3px;
+  background: linear-gradient(to right, var(--korean-pink), var(--korean-blue));
+  border-radius: 99px;
+  transition: width 1s linear;
+}
+
+/* === CHAT BUBBLE === */
+.chat-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px; left: 20px;
+  border-width: 10px 10px 0 0;
+  border-style: solid;
+  border-color: #fff7ed transparent transparent transparent;
+}
+html.dark .chat-bubble::after { border-color: #1e150f transparent transparent transparent; }
+
+/* === MAP STYLES === */
+.custom-map-icon { background: transparent; border: none; }
+.custom-map-icon div {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; background: white; border-radius: 50%;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  border: 3px solid #f472b6; font-size: 22px;
+  transition: transform 0.2s ease-out;
+}
+.custom-map-icon div:hover { transform: scale(1.15) translateY(-5px); cursor: pointer; border-color: #60a5fa; }
+
+.leaflet-container { font-family: 'Nunito', sans-serif; z-index: 10; border-radius: 2rem; }
+.leaflet-popup-content-wrapper { border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); padding: 0; overflow: hidden; }
+.leaflet-popup-content { margin: 0; }
+
+/* === INPUT STYLING === */
+input[type="text"], input[type="search"], textarea { font-size: 16px; } /* Prevent zoom on iOS */
+
+input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; height: 24px; width: 24px;
+  border-radius: 50%; background: #ec4899; cursor: pointer;
+  margin-top: -8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%; height: 8px; cursor: pointer;
+  background: #fbcfe8; border-radius: 4px;
+}
+
+/* === DETAILS/SUMMARY (Dictionary) === */
+details > summary { list-style: none; cursor: pointer; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] summary ~ * { animation: fadeup 0.3s ease-in-out; }
+@keyframes fadeup {
+  0% { opacity: 0; margin-top: -10px; }
+  100% { opacity: 1; margin-top: 0; }
+}
+
+/* === DICTIONARY SPECIFIC === */
+.dict-entry {
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+.dict-entry:hover, .dict-entry:focus-within {
+  border-left-color: var(--korean-pink);
+  background-color: #fff0f9;
+  transform: translateX(3px);
+}
+html.dark .dict-entry:hover, html.dark .dict-entry:focus-within {
+  background-color: #2d1a27;
+}
+
+/* === BADGES === */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 99px;
+  font-size: 12px; font-weight: 800;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+.badge-gold { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #78350f; border-color: #fbbf24; }
+.badge-pink { background: #fdf2f8; color: #be185d; border-color: #fbcfe8; }
+.badge-blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.badge-green { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+.badge-orange { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+html.dark .badge-pink { background: #2d1a27; color: #f9a8d4; }
+html.dark .badge-blue { background: #0f1e2d; color: #93c5fd; }
+
+/* === HOMEPAGE / ONBOARDING === */
+.hero-gradient {
+  background: linear-gradient(135deg, #ff6eb4 0%, #f472b6 30%, #a78bfa 70%, #60a5fa 100%);
+}
+.korea-pattern {
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(244,114,182,0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(96,165,250,0.3) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(167,139,250,0.1) 0%, transparent 70%);
+}
+
+/* === PROFILE AVATAR === */
+.avatar-ring {
+  background: linear-gradient(135deg, #f472b6, #a78bfa, #60a5fa);
+  padding: 3px;
+  border-radius: 50%;
+}
+
+/* === PROGRESS ELEMENTS === */
+.progress-bar-inner {
+  background: linear-gradient(to right, #f472b6, #a78bfa, #60a5fa);
+  transition: width 1s ease-out;
+  border-radius: 99px;
+}
+
+/* === STREAK FIRE === */
+.streak-fire {
+  background: linear-gradient(135deg, #ff6b35, #f7c948);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* === TOAST NOTIFICATIONS === */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid rgba(255,255,255,0.2);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  animation: pop 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+  transition: opacity 0.3s, transform 0.3s;
+  max-width: 90vw;
+  white-space: nowrap;
+}
+
+/* === BOTTOM NAV ACTIVE INDICATOR === */
+.nav-active-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--korean-pink);
+  margin: 0 auto;
+  margin-top: 2px;
+}
+
+/* === FORMAL/INFORMAL BADGE (Translator) === */
+.formality-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  margin-top: 6px;
+}
+.formality-formal { background: #eff6ff; color: #1e40af; border: 1.5px solid #bfdbfe; }
+.formality-informal { background: #fdf2f8; color: #be185d; border: 1.5px solid #fbcfe8; }
+.formality-neutral { background: #f8fafc; color: #475569; border: 1.5px solid #e2e8f0; }
+
+/* === SCROLLBAR CUSTOM (Desktop) === */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 999px; }
+html.dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+/* === CARD HOVER ANIMATION === */
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease, border-color 0.25s;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.10);
+}
+
+/* === RESPONSIVE FIXES === */
+@media (max-width: 640px) {
+  .hangul-watermark { font-size: 90px; }
+  .leaflet-container { border-radius: 1.25rem; }
+}
+
+
+/* === ANIMAL LOCATION THEME === */
+.animal-location-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border-color: #bbf7d0;
+}
+html.dark .animal-location-card { background: linear-gradient(135deg, #0f1e1a 0%, #0b1e15 100%); }
+
+/* === FOCUS ACCESSIBILITY === */
+button:focus-visible, a:focus-visible, input:focus-visible {
+  outline: 3px solid #f472b6;
+  outline-offset: 2px;
+}
+
+/* === HIGH CONTRAST MODE === */
+@media (prefers-contrast: high) {
+  .korean-click { border-bottom: 3px solid #ec4899; }
+  .badge { border-width: 2px; }
+}
+
+/* === REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===================================================
+   LAYOUT FIXES — desktop nav, scroll, padding
+   =================================================== */
+
+/* Root flex column fills viewport */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  min-height: 100vh; /* fallback */
+  overflow-x: hidden;
+}
+
+/* Main content area: scrolls independently */
+#main-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* On MOBILE: leave room for the fixed bottom nav (≈72px) + safe-area */
+@media (max-width: 767px) {
+  #main-content { padding-bottom: calc(72px + env(safe-area-inset-bottom, 8px)) !important; }
+}
+
+/* On DESKTOP: bottom nav is hidden — zero extra padding */
+@media (min-width: 768px) {
+  #main-content { padding-bottom: 2rem !important; }
+  /* Hide bottom nav on desktop */
+  nav.bottom-nav-el { display: none !important; }
+}
+
+/* pb-20 md:pb-0 helper produced by renderApp — reinforce on desktop */
+@media (min-width: 768px) {
+  .md\\:pb-0 { padding-bottom: 0 !important; }
+}
+
+/* ===================================================
+   DESKTOP TOP NAV TABS inside the header
+   =================================================== */
+.desktop-nav-tabs {
+  display: none;
+}
+@media (min-width: 768px) {
+  .desktop-nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .desktop-nav-tabs button {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.18s;
+    border: none;
+    outline: none;
+    letter-spacing: 0.03em;
+    background: transparent;
+    color: #6b7280;
+  }
+  .desktop-nav-tabs button:hover { background: #f3f4f6; color: #111827; }
+  .desktop-nav-tabs button.active { background: #fdf2f8; color: #be185d; }
+  html.dark .desktop-nav-tabs button { color: #64748b; }
+  html.dark .desktop-nav-tabs button:hover { background: #1e293b; color: #f1f5f9; }
+  html.dark .desktop-nav-tabs button.active { background: #2d1a27; color: #f9a8d4; }
+}
+
+/* ===================================================
+   SYLLABUS TIMELINE — fix touch-scroll blocking
+   The onclick="if(!locked) startDay()" intercepts
+   scroll on touch devices. Fix: use pointer-events
+   only on the play button, not the whole row.
+   =================================================== */
+.syllabus-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* no onclick on the wrapper — moved to the card/button */
+}
+.syllabus-card {
+  width: calc(100% - 3.5rem);
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 2px solid #f9fafb;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  background: white;
+}
+.syllabus-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.08); transform: translateY(-2px); border-color: #fbcfe8; }
+.syllabus-card.locked { cursor: default; }
+.syllabus-card.locked:hover { box-shadow: none; transform: none; border-color: #f9fafb; }
+html.dark .syllabus-card { background-color: #1e293b; border-color: #334155; color: #f1f5f9; }
+html.dark .syllabus-card:hover { border-color: #be185d; }
+
+/* ===================================================
+   KOREA TOUR CARDS — ensure last card is reachable
+   =================================================== */
+.location-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  padding-bottom: 1rem;
+}
+@media (min-width: 768px) {
+  .location-cards-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+}
+.location-card {
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 2px solid #f9fafb;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.location-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.10); }
+.location-card.locked { opacity: 0.65; }
+html.dark .location-card { background: #1e293b; border-color: #334155; }
+html.dark .location-card:hover { border-color: #475569; }
+
+/* ===================================================
+   LIGHT MODE EXPLICIT (ensures nothing is transparent)
+   =================================================== */
+html:not(.dark) body { background-color: #fdfbf7; color: #111827; }
+html:not(.dark) #main-content { background-color: #fdfbf7; }
+html:not(.dark) .bg-white { background-color: #ffffff !important; }
+html:not(.dark) .bg-gray-50 { background-color: #f9fafb !important; }
+html:not(.dark) .bg-gray-100 { background-color: #f3f4f6 !important; }
+html:not(.dark) nav { background-color: rgba(255,255,255,0.97) !important; }
+html:not(.dark) header.app-top-bar { background-color: rgba(255,255,255,0.97) !important; }
+html:not(.dark) .text-gray-800 { color: #1f2937 !important; }
+html:not(.dark) .text-gray-900 { color: #111827 !important; }
+html:not(.dark) .wotd-card { background: linear-gradient(135deg, #fff0f9 0%, #eff6ff 100%) !important; }
+html:not(.dark) .dict-entry { background-color: #ffffff !important; color: #1f2937 !important; }
+html:not(.dark) input, html:not(.dark) textarea {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #e5e7eb !important;
+}
+
+/* ===================================================
+   ROOT & BODY BACKGROUND PROPAGATION
+   =================================================== */
+#root {
+  background-color: inherit;
+  min-height: 100dvh;
+  min-height: 100vh;
+}
+
+/* In light mode, all major containers use the warm cream background */
+body, #root, #main-content {
+  background-color: #fdfbf7;
+}
+html.dark body,
+html.dark #root,
+html.dark #main-content {
+  background-color: #0f172a;
+}
+
+/* ===================================================
+   BOTTOM NAV HEIGHT FIX — compact on all screen sizes
+   =================================================== */
+.bottom-nav-el {
+  /* Ensure it's not too tall */
+  max-height: 68px;
+}
+
+/* Hide bottom nav on desktop — desktop uses top header tabs instead */
+@media (min-width: 768px) {
+  .bottom-nav-el {
+    display: none !important;
+  }
+  /* No bottom padding needed on desktop since nav is gone */
+  #main-content {
+    padding-bottom: 2rem !important;
+  }
+}
+
+/* On mobile: ensure content scrolls above nav */
+@media (max-width: 767px) {
+  #main-content {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* ===================================================
+   SYLLABUS & KOREA TOUR SCROLL GUARANTEE
+   Final item always visible
+   =================================================== */
+.location-cards-grid,
+.space-y-5 {
+  padding-bottom: 16px;
+}
+
+/* ===================================================
+   MIGLIORAMENTI CONTRASTO LIGHT MODE
+   =================================================== */
+html:not(.dark) body, 
+html:not(.dark) #main-content {
+  background-color: #f4ece1; /* Sfondo leggermente più scuro/caldo per far "staccare" le card bianche */
+}
+
+html:not(.dark) .bg-white {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid #e5e7eb !important; /* Bordo più definito per le card */
+}
+
+/* Scuriamo leggermente i testi secondari per renderli più leggibili */
+html:not(.dark) .text-gray-400 { color: #6b7280 !important; }
+html:not(.dark) .text-gray-500 { color: #4b5563 !important; }
+
+/* Aumentiamo il contrasto dei bordi degli esercizi/quiz */
+html:not(.dark) .border-gray-200 { border-color: #d1d5db !important; }
+html:not(.dark) .bg-gray-50 { background-color: #f3f4f6 !important; }
+
+/* ===================================================
+   CORREZIONE DEFINITIVA CONTRASTO LIGHT MODE (FORZATA)
+   =================================================== */
+
+/* Applica le correzioni SOLO quando NON è attiva la dark mode */
+html:not(.dark) body, 
+html:not(.dark) #main-content {
+  background-color: #f3efea !important; /* Sfondo crema leggermente più scuro per far "staccare" le card bianche */
+}
+
+/* --- TEXT COLORS (Scuriamo drasticamente tutti i testi grigi) --- */
+
+/* Forza il testo secondario a un grigio molto scuro */
+html:not(.dark) .text-gray-400 {
+  color: #4b5563 !important; /* Molto più scuro di prima */
+}
+
+html:not(.dark) .text-gray-500 {
+  color: #374151 !important; /* Quasi nero */
+}
+
+/* Assicuriamoci che anche i testi dei tag o dei feedback siano leggibili */
+html:not(.dark) .text-xs.text-gray-400 {
+  color: #6b7280 !important;
+}
+
+/* --- CARDS & BACKGROUNDS (Miglioriamo lo stacco visivo) --- */
+
+/* Card bianche: aggiungiamo bordo e ombra definiti */
+html:not(.dark) .bg-white {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Sfondi secondari (es. dentro i quiz) */
+html:not(.dark) .bg-gray-50 {
+  background-color: #f9fafb !important;
+  border: 1px solid #f3f4f6 !important;
+}
+
+/* --- BORDERS & ELEMENTS --- */
+
+/* Miglioriamo la visibilità dei bordi (es. per esercizi di pronuncia/ascolto) */
+html:not(.dark) .border-gray-200,
+html:not(.dark) .border-gray-100 {
+  border-color: #d1d5db !important; /* Grigio più scuro per i bordi */
+}
+
+/* Input e aree di testo */
+html:not(.dark) input, 
+html:not(.dark) textarea {
+  border-color: #d1d5db !important;
+  color: #1f2937 !important;
+}
+
+/* --- BUTTONS & INTERACTION --- */
+
+/* Pulsanti grigi (secondari) */
+html:not(.dark) .bg-gray-100 {
+  background-color: #e5e7eb !important; /* Fondo grigio più scuro */
+  color: #1f2937 !important; /* Testo quasi nero */
+}
+
+/* Hover sui pulsanti grigi */
+html:not(.dark) .bg-gray-100:hover {
+  background-color: #d1d5db !important;
+}
+
+/* Mantieni i pulsanti rosa/principali */
+html:not(.dark) .bg-pink-500 {
+  background-color: #ec4899 !important;
+  color: #ffffff !important;
+}
+
+/* ===================================================
+   FIX DEFINITIVO TESTI INVISIBILI (MODALITÀ LIGHT)
+   =================================================== */
+
+/* 1. FIX BOX TEORIA (Giallo, Rosa, Blu, Verde) */
+html:not(.dark) .text-pink-900 { color: #831843 !important; } /* Rosa scuro */
+html:not(.dark) .text-amber-900 { color: #78350f !important; } /* Marrone/Ambra scuro */
+html:not(.dark) .text-amber-800 { color: #92400e !important; }
+html:not(.dark) .text-indigo-900 { color: #312e81 !important; }
+html:not(.dark) .text-indigo-800 { color: #3730a3 !important; }
+html:not(.dark) .text-green-900 { color: #14532d !important; }
+html:not(.dark) .text-green-800 { color: #166534 !important; }
+html:not(.dark) .text-blue-900 { color: #1e3a8a !important; }
+html:not(.dark) .text-rose-900 { color: #881337 !important; }
+
+/* 2. FIX TESTI GRIGI GENERICI ("Il Concetto Base", ecc.) */
+html:not(.dark) .text-gray-600 { color: #4b5563 !important; }
+html:not(.dark) .text-gray-500 { color: #374151 !important; } /* Scurito per massima leggibilità */
+html:not(.dark) .text-gray-400 { color: #4b5563 !important; } /* Scurito intenzionalmente */
+
+/* 3. FIX HOMEPAGE (Rende leggibili i testi sulla sfumatura chiara) */
+html:not(.dark) .hero-gradient {
+  color: #1f2937 !important; /* Testo base scuro invece che bianco */
+}
+html:not(.dark) .hero-gradient .text-white,
+html:not(.dark) .hero-gradient .text-white\/80,
+html:not(.dark) .hero-gradient .text-white\/70,
+html:not(.dark) .hero-gradient .text-white\/50 {
+  color: #111827 !important; /* Forza i testi bianchi a nero/grigio scurissimo */
+}
+
+/* Fix colori specifici nella Homepage (Nome, XP, Streak) */
+html:not(.dark) .hero-gradient .text-pink-200 { color: #be185d !important; }
+html:not(.dark) .hero-gradient .text-yellow-300 { color: #b45309 !important; } /* Nome "Sara" e numeri */
+html:not(.dark) .hero-gradient .text-orange-300 { color: #c2410c !important; }
+html:not(.dark) .hero-gradient .text-green-300 { color: #15803d !important; }
+
+/* Fix card semi-trasparenti nella Homepage */
+html:not(.dark) .hero-gradient .bg-white\/20,
+html:not(.dark) .hero-gradient .bg-white\/15,
+html:not(.dark) .hero-gradient .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.8) !important; /* Sfondo card più solido */
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #111827 !important;
+}
+
+/* Fix Testo nei Tag Opachi */
+html:not(.dark) .hero-gradient span.border-white\/20 {
+  border-color: #cbd5e1 !important;
+  color: #374151 !important;
+  background-color: white !important;
+}
+
+/* === SENTENCE BUILDER (GIOCO COMPONI FRASE) === */
+.builder-area {
+  min-height: 80px;
+  border: 2px dashed #e5e7eb;
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0.5rem;
+  transition: all 0.3s;
+}
+html.dark .builder-area { border-color: #334155; }
+
+.builder-area.has-content {
+  border-style: solid;
+  border-color: transparent;
+  background-color: #f8fafc;
+}
+html.dark .builder-area.has-content { background-color: #1e293b; }
+
+.builder-chip {
+  background-color: white;
+  border: 2px solid #e2e8f0;
+  color: #1f2937;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+html.dark .builder-chip { background-color: #334155; border-color: #475569; color: #f1f5f9; }
+
+.builder-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-color: #f472b6; }
+.builder-chip:active { transform: scale(0.95); }
+
+.builder-chip.in-pool { background-color: white; }
+.builder-chip.in-pool.used { opacity: 0; pointer-events: none; transform: scale(0.8); }
+
+.builder-chip.correct { background-color: #22c55e; border-color: #22c55e; color: white; pointer-events: none; }
+.builder-chip.wrong { background-color: #ef4444; border-color: #ef4444; color: white; pointer-events: none; }
