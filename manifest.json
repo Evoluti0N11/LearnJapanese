@@ -1,0 +1,28 @@
+{
+  "name": "Annyeong Sara! — Coreano in 45 Giorni",
+  "short_name": "Korean 🌸",
+  "description": "Impara il Coreano in 45 giorni con lezioni personalizzate per Sara: palestra, cosplay, LoL, K-drama e animali!",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdfbf7",
+  "theme_color": "#f472b6",
+  "lang": "it",
+  "categories": ["education", "entertainment"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
