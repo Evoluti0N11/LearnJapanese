@@ -48,7 +48,7 @@
 <body class="bg-[#fdfbf7] dark:bg-slate-900 transition-colors duration-300">
 
   <!-- Root App Container -->
-  <div id="root" class="h-[100dvh] flex flex-col w-full max-w-screen overflow-hidden">
+  <div id="root" class="min-h-screen flex flex-col w-full max-w-screen overflow-x-hidden">
     <!-- Loading state -->
     <div class="h-screen flex flex-col items-center justify-center gap-4 text-pink-500">
       <div class="text-6xl animate-bounce" style="font-family:'Noto Sans KR'">한</div>
@@ -56,9 +56,14 @@
     </div>
   </div>
 
-  <!-- Data -->
+  <!--
+    ORDINE DI CARICAMENTO IMPORTANTE:
+    1. lessons.js  — tutte le 45 lezioni (modifica qui per cambiare contenuti!)
+    2. data.js     — mappa, dizionario, badge, parola del giorno
+    3. app.js      — logica dell'app (non modificare se non sei sviluppatore)
+  -->
+  <script src="js/lessons.js"></script>
   <script src="js/data.js"></script>
-  <!-- App Logic -->
   <script src="js/app.js"></script>
 
 </body>

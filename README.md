@@ -1,71 +1,125 @@
-# 🌸 Annyeong Sara! — Coreano in 45 Giorni
+# 🌸 Annyeong Sara! — Coreano in 45 Giorni (v5.0)
 
-Un'app web progressiva (PWA) per imparare il coreano in 45 giorni, personalizzata per Sara.
+Un'app web progressiva (PWA) per imparare il coreano in 45 giorni, personalizzata per Sara con:
+- 💪 **Palestra & Fitness** — frasi per gym, proteine, allenamenti
+- 🎮 **League of Legends** — vocabolario gaming, PC Bang
+- 🎭 **Cosplay & Anime** — negozi, fiere, Animate Store
+- 📺 **K-Drama** — scene da 2521, Start-Up e altri
+- 🐾 **Animali** — cat café, zoo di Seoul
+- 🗺️ **Korea Tour** — mappa interattiva con 13 location da sbloccare
 
-## 🆕 Aggiornamenti v5.0
+---
 
-### ✅ Homepage Sempre Attiva al Login
-- La homepage ora si mostra **ogni volta** che apri l'app
-- Stats aggiornate in tempo reale (Giorni, Streak 🔥, XP ⚡)
-- Barra di progresso totale (0–45 giorni = 0–100%)
-- Preview della prossima lezione con titolo e topic
-- Saluto che cambia ogni 6 ore (Annyeong / Yeoboseyo / Waeosseo / Jal jinaeyo)
+## 🚀 Come usare
 
-### 🔔 Sistema di Notifiche
-- Pulsante "Attiva Promemoria Studio" in homepage e in profilo
-- Notifica automatica se non studi per più di **23 ore**
-- Messaggi personalizzati: Gym, LoL, 2521, Cosplay, Streak
-- Gestibile da: Homepage → bottone campana, oppure Profilo → sezione Promemoria
-- Funziona su Android (PWA installata) e browser Desktop
+1. Vai su **https://[tuo-username].github.io/[nome-repo]/**
+2. Su Android: tocca "Aggiungi alla schermata Home" per installare come app
+3. Studia ogni giorno e sblocca nuove location!
 
-### 🛠️ Miglioramenti Codice
-- `initApp()` ora carica sempre la homepage (non più Dashboard) così le stats sono sempre fresche
-- `enterApp()` non persiste più lo stato "homepage saltata" — ogni apertura = welcome screen
-- `markStudySession()` salva il timestamp dell'ultima sessione per il calcolo delle notifiche
-- Service Worker aggiornato a **v6** con supporto push notification e `notificationclick`
-- Cache naming migliorata, pulizia automatica delle tiles della mappa
+---
 
 ## 📁 Struttura Files
 
 ```
 /
-├── index.html          # App principale (CSS paths: css/ e js/)
+├── index.html          # App principale
 ├── manifest.json       # PWA manifest
-├── sw.js               # Service Worker v6 (offline + push)
-├── _config.yml         # GitHub Pages config
+├── sw.js               # Service Worker (offline support)
+├── _config.yml         # Config GitHub Pages
 ├── .gitignore
 ├── css/
 │   └── style.css       # Stili, dark mode, animazioni
-└── js/
-    ├── data.js         # 45 lezioni + mappa + dizionario + WOTD
-    └── app.js          # Logica app, render, notifiche, state management
+├── js/
+│   ├── lessons.js      # ⭐ LE 45 LEZIONI — modifica qui il contenuto!
+│   ├── data.js         # Mappa, dizionario, badge, parola del giorno
+│   └── app.js          # Logica app (non toccare se non sei sviluppatore)
+└── icons/
+    ├── icon-192.png    # Icona app (192x192)
+    └── icon-512.png    # Icona app (512x512)
 ```
 
-## 🚀 Deploy su GitHub Pages
+---
 
-1. Carica tutti i files nella root del repository **mantenendo la struttura cartelle**
-2. Settings → Pages → branch `main`, folder `/root`
-3. Attendi qualche minuto — il sito è live!
+## ✏️ Come modificare le lezioni (senza saper programmare)
 
-## 📱 Come Attivare le Notifiche
+### Il file da modificare è sempre: `js/lessons.js`
 
-**Su Android (app installata):**
-1. Apri l'app
-2. Premi "Attiva Promemoria Studio" in homepage
-3. Accetta il permesso notifiche
+Apri `js/lessons.js` in qualsiasi editor di testo (Blocco Note, TextEdit, VS Code).
+In cima al file trovi una guida completa in italiano.
 
-**Su browser Desktop:**
-- Stesso procedimento — funziona su Chrome, Edge, Firefox
+**Per cambiare una frase in una lezione:**
+```
+"hangul": "안녕하세요",       ← testo coreano (puoi copiarlo da Google)
+"romaji": "Annyeonghaseyo", ← come si pronuncia (SEMPRE modificare insieme all'hangul!)
+"eng": "Ciao (Formale)",   ← traduzione in italiano
+```
 
-## 🎯 Struttura 45 Giorni (~15 min/giorno)
+**Per cambiare una domanda a scelta multipla:**
+```
+"question": "La tua domanda qui",
+"options": ["Opzione A romaji", "Opzione B romaji", "Opzione C romaji"],
+"optionsHangul": ["옵션 A", "옵션 B", "옵션 C"],
+"answer": 1,   ← 0 = prima opzione, 1 = seconda, 2 = terza
+```
 
-| Giorni | Focus |
-|--------|-------|
-| 1–7    | Basi: Saluti, Presentazioni, Spesa, Gym |
-| 8–14   | LoL gaming chat, Cosplay, Ristoranti, Animali |
-| 15–21  | K-BBQ, Stanchezza, Mercati, 2521, Subway |
-| 22–28  | Spiagge, Busan, Farmacia, Inviti, Socialità |
-| 29–35  | Amicizie, Grammatica, Soju, Amore K-Drama |
-| 36–45  | Bulguksa, Cosplay crafting, Fangirling, Jeju 🌋 |
+> ⚠️ **Non modificare mai** i nomi dei campi (`day`, `type`, `answer`, ecc.)  
+> ✅ **Modifica solo** i valori tra virgolette `"..."` o i numeri di `answer`
 
-**화이팅 Sara! 🌸**
+---
+
+## 🎯 Funzionalità v5.0
+
+- ✅ **45 Giorni di Lezioni** progressive con esercizi vari
+- ✅ **7 Tipi di Esercizi**:
+  - Scelta multipla (con Hangul + romaji sempre visibili!)
+  - Test di ascolto (mostra il testo dopo la risposta)
+  - Pronuncia vocale (con target Hangul + romaji visibile sopra il microfono)
+  - Simulazione dialogo
+  - Completa la frase
+  - **NUOVO** Costruisci il dialogo (giorni 35-45) — conversazioni reali
+  - **NUOVO** Completa il testo (giorni 40-45) — paragrafi con più blank
+- ✅ **Pronuncia sempre visibile** — romaji sotto ogni opzione Hangul
+- ✅ **Mappa Interattiva** con 13 location della Corea da sbloccare
+- ✅ **Dizionario** con 8 categorie e ricerca live
+- ✅ **Traduttore** con rilevamento formalità (Formale/Informale)
+- ✅ **Parola del Giorno** con timer reset mezzanotte (ora di Roma)
+- ✅ **Sistema XP & Livelli** + Badge personalizzati
+- ✅ **Streak giornaliero** con fiamma animata
+- ✅ **Dark Mode** completo
+- ✅ **Voice Recognition** in coreano (ko-KR)
+- ✅ **Offline Support** via Service Worker
+- ✅ **PWA installabile** su Android/iOS
+
+---
+
+## 🔧 GitHub Pages Setup
+
+1. Fai **push** di tutti questi files nella root del repository
+2. Vai su **Settings > Pages**
+3. Seleziona branch `main`, cartella `/root`
+4. Salva — il sito sarà live in pochi minuti!
+
+## 📱 Icone
+
+Per le icone, crea due immagini PNG:
+- `icons/icon-192.png` — 192×192 pixels
+- `icons/icon-512.png` — 512×512 pixels
+
+Puoi usare il carattere 🌸 o la bandiera 🇰🇷 su sfondo rosa (#f472b6).
+
+---
+
+## 🆕 Changelog v5.0
+
+- **Struttura file**: `COURSE_DATA` spostato in `js/lessons.js` separato per facilità di modifica
+- **Bug fix**: reset corretto dello stato `sentence_builder` tra un esercizio e l'altro
+- **Bug fix**: migrazione del salvataggio da v4 a v5 senza perdita dati
+- **UX**: romaji sempre mostrato sotto l'Hangul nelle opzioni a scelta multipla
+- **UX**: esercizi `speak` mostrano il testo target (Hangul + romaji) sopra il microfono
+- **UX**: esercizi `listen` mostrano il testo Hangul dopo la risposta
+- **Nuovi esercizi** per giorni 35-45: `dialogue` (costruisci dialogo reale) e `text_fill` (completa un paragrafo)
+- **CSS**: classi dedicate per i nuovi tipi di esercizio
+
+---
+
+**화이팅 Sara! 🌸** *Forza, puoi farcela!*
